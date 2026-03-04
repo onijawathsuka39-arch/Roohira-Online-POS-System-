@@ -253,14 +253,24 @@
                     <td>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-secondary btn-sm" onclick='editCust(${JSON.stringify(c)})'><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-secondary btn-sm" onclick='toggleBlacklist(${c.id}, ${!c.isBlacklisted})'>
+                            <button class="btn btn-secondary btn-sm" onclick='toggleBlacklist(${c.id}, ${!c.isBlacklisted})' title="${c.isBlacklisted ? 'Whitelist' : 'Blacklist'}">
                                 <i class="fas ${c.isBlacklisted ? 'fa-user-check text-success' : 'fa-user-slash text-danger'}"></i>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="deleteCustomer(${c.id})" title="Delete Customer">
+                                <i class="fas fa-trash text-danger"></i>
                             </button>
                         </div>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+        }
+
+        async function deleteCustomer(id) {
+            if (confirm('Permanently delete this customer? This action cannot be undone.')) {
+                await DB.deleteCustomer(id);
+                refreshCustomers();
+            }
         }
 
         async function filterCustomers() {
