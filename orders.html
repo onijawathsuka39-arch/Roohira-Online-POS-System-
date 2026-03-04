@@ -197,6 +197,19 @@
                                 style="font-weight:800; color:var(--success); font-size:16px;"></span>
                         </div>
                     </div>
+
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn btn-secondary"
+                            style="flex:1; justify-content:center; color:var(--primary); border-color:var(--primary);"
+                            id="btn-edit-order">
+                            <i class="fas fa-edit"></i> EDIT
+                        </button>
+                        <button class="btn btn-secondary"
+                            style="flex:1; justify-content:center; color:var(--danger); border-color:var(--danger);"
+                            id="btn-delete-order">
+                            <i class="fas fa-trash"></i> DELETE
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -248,8 +261,7 @@
                         </button>
                     </td>
                     <td class="action-btns">
-                        <button class="btn btn-secondary btn-sm" onclick="viewOrder(${o.id})"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-secondary btn-sm" onclick="deleteOrder(${o.id})"><i class="fas fa-trash text-danger"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="viewOrder(${o.id})" title="View Details"><i class="fas fa-eye"></i> VIEW</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -365,6 +377,14 @@
                 document.getElementById('v-performance-box').style.display = 'block';
             }
 
+            document.getElementById('btn-edit-order').onclick = () => window.location.href = `pos.html?editOrder=${o.id}`;
+            document.getElementById('btn-delete-order').onclick = async () => {
+                if (confirm('Permanently delete this order?')) {
+                    await DB.deleteOrder(o.id);
+                    closeModal('viewOrderModal');
+                    refreshOrders();
+                }
+            };
             document.getElementById('viewOrderModal').style.display = 'flex';
         }
 

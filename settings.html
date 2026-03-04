@@ -150,96 +150,76 @@
             </aside>
 
             <div class="content-wrapper">
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Export System Data (JSON)</h3>
-                        <p>Generate a full system backup to move data to another computer.</p>
-                    </div>
-                    <button class="btn btn-secondary" onclick="exportDB()"><i class="fas fa-file-export"></i> Backup
-                        Now</button>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Export to Excel (CSV)</h3>
-                        <p>Download your sales history in Excel-compatible format.</p>
-                    </div>
-                    <button class="btn btn-primary" style="background:#16a34a; border-color:#16a34a; color:white;"
-                        onclick="DB.exportSalesToCSV()">
-                        <i class="fas fa-file-excel"></i> Download Excel
-                    </button>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Visual Appearance</h3>
-                        <p>Switch between Dark and Light mode for better visibility.</p>
-                    </div>
-                    <select id="themeSelect" onchange="themeManager.setTheme(this.value)" style="width:150px;">
-                        <option value="dark">Dark Theme</option>
-                        <option value="light">Light Theme</option>
-                    </select>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Restore from Backup</h3>
-                        <p>Import data from a previous backup file. <b>Warning: This will overwrite current data.</b>
-                        </p>
-                    </div>
-                    <label class="btn btn-secondary">
-                        <i class="fas fa-file-import"></i> Restore File
-                        <input type="file" id="importFile" hidden onchange="importDB(event)">
-                    </label>
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Shop Name</h3>
-                        <p>Update the shop title displayed on receipts.</p>
-                    </div>
-                    <input type="text" value="Ruhira Clothing Store" style="width:250px;">
-                </div>
-
-                <div class="setting-row">
-                    <div class="setting-info">
-                        <h3>Stock Alert Threshold</h3>
-                        <p>Notify when product stock falls below this number.</p>
-                    </div>
-                    <input type="number" value="5" style="width:100px;">
-                </div>
-
-                <div class="setting-row" style="border-bottom:none;">
-                    <div class="setting-info">
-                        <h3>Wipe All Data</h3>
-                        <p style="color:var(--danger);">Irreversibly delete all records from the system.</p>
-                    </div>
-                    <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger);"
-                        onclick="wipeData()"><i class="fas fa-exclamation-triangle"></i> Factory Reset</button>
-                </div>
+                <p>Generate a complete system backup including all inventory, sales, orders, and customers.</p>
             </div>
+            <button class="btn btn-secondary" onclick="DB.backupFullSystem()"><i class="fas fa-file-export"></i> Backup
+                Full System</button>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Export to Excel (CSV)</h3>
+                <p>Download your sales history in Excel-compatible format.</p>
+            </div>
+            <button class="btn btn-primary" style="background:#16a34a; border-color:#16a34a; color:white;"
+                onclick="DB.exportSalesToCSV()">
+                <i class="fas fa-file-excel"></i> Download Excel
+            </button>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Visual Appearance</h3>
+                <p>Switch between Dark and Light mode for better visibility.</p>
+            </div>
+            <select id="themeSelect" onchange="themeManager.setTheme(this.value)" style="width:150px;">
+                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme</option>
+            </select>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Restore from Backup</h3>
+                <p>Import data from a previous backup file. <b>Warning: This will overwrite current data.</b>
+                </p>
+            </div>
+            <label class="btn btn-secondary">
+                <i class="fas fa-file-import"></i> Restore File
+                <input type="file" id="importFile" hidden onchange="importDB(event)">
+            </label>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Shop Name</h3>
+                <p>Update the shop title displayed on receipts.</p>
+            </div>
+            <input type="text" value="Ruhira Clothing Store" style="width:250px;">
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Stock Alert Threshold</h3>
+                <p>Notify when product stock falls below this number.</p>
+            </div>
+            <input type="number" value="5" style="width:100px;">
+        </div>
+
+        <div class="setting-row" style="border-bottom:none;">
+            <div class="setting-info">
+                <h3>Wipe All Data</h3>
+                <p style="color:var(--danger);">Irreversibly delete all records from the system.</p>
+            </div>
+            <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger);"
+                onclick="wipeData()"><i class="fas fa-exclamation-triangle"></i> Factory Reset</button>
+        </div>
+        </div>
         </div>
     </main>
 
     <script src="db.js"></script>
     <script>
-        async function exportDB() {
-            const data = {
-                inventory: await db.inventory.toArray(),
-                sales: await db.sales.toArray(),
-                customers: await db.customers.toArray(),
-                categories: await db.categories.toArray(),
-                exportedAt: new Date().toISOString()
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `RuhiraPOS_DB_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-        }
-
         async function importDB(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -249,21 +229,12 @@
                 try {
                     const data = JSON.parse(event.target.result);
                     if (confirm('Are you sure? This will wipe existing data and replace it with backup.')) {
-                        await db.inventory.clear();
-                        await db.sales.clear();
-                        await db.customers.clear();
-                        await db.categories.clear();
-
-                        await db.inventory.bulkAdd(data.inventory);
-                        await db.sales.bulkAdd(data.sales);
-                        await db.customers.bulkAdd(data.customers);
-                        await db.categories.bulkAdd(data.categories);
-
+                        await DB.restoreFullSystem(data);
                         alert('System restored successfully!');
                         window.location.reload();
                     }
                 } catch (err) {
-                    alert('Invalid backup file!');
+                    alert('Invalid backup file! Make sure it is a RuhiraPOS JSON file.');
                 }
             };
             reader.readAsText(file);

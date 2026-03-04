@@ -22,6 +22,7 @@ const DB = {
     // Orders
     getAllOrders: async () => await db.orders.orderBy('date').reverse().toArray(),
     addOrder: async (order) => await db.orders.add({ ...order, date: new Date().toISOString() }),
+    updateOrder: async (id, data) => await db.orders.update(id, data),
     updateOrderStatus: async (id, status) => await db.orders.update(id, { status }),
     updateOrderPaymentStatus: async (id, paymentStatus) => {
         const order = await db.orders.get(id);
@@ -87,6 +88,7 @@ const DB = {
 
         return await db.sales.add(sale);
     },
+    updateSale: async (id, data) => await db.sales.update(id, data),
     deleteSale: async (id) => await db.sales.delete(id),
 
     // Customers
@@ -153,6 +155,68 @@ const DB = {
         } catch (err) {
             console.error(err);
             alert('Export failed: ' + err.message);
+        }
+    },
+
+    // Full System Backup/Restore
+    backupFullSystem: async () => {
+        try {
+            const data = {
+                inventory: await db.inventory.toArray(),
+                sales: await db.sales.toArray(),
+                orders: await db.orders.toArray(),
+                customers: await db.customers.toArray(),
+                categories: await db.categories.toArray(),
+                notes: await db.notes.toArray(),
+                settings: await db.settings.toArray(),
+                backups: await db.backups.toArray(),
+                version: db.verno,
+                exportedAt: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `RuhiraPOS_FULL_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert('Full backup failed: ' + err.message);
+        }
+    },
+
+    restoreFullSystem: async (data) => {
+        try {
+            // Clear all tables
+            await Promise.all([
+                db.inventory.clear(),
+                db.sales.clear(),
+                db.orders.clear(),
+                db.customers.clear(),
+                db.categories.clear(),
+                db.notes.clear(),
+                db.settings.clear(),
+                db.backups.clear()
+            ]);
+
+            // Restore data if exists in backup
+            if (data.inventory) await db.inventory.bulkAdd(data.inventory);
+            if (data.sales) await db.sales.bulkAdd(data.sales);
+            if (data.orders) await db.orders.bulkAdd(data.orders);
+            if (data.customers) await db.customers.bulkAdd(data.customers);
+            if (data.categories) await db.categories.bulkAdd(data.categories);
+            if (data.notes) await db.notes.bulkAdd(data.notes);
+            if (data.settings) await db.settings.bulkAdd(data.settings);
+            if (data.backups) await db.backups.bulkAdd(data.backups);
+
+            return true;
+        } catch (err) {
+            console.error('Restore failed:', err);
+            throw err;
         }
     }
 };

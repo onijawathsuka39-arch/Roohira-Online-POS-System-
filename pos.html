@@ -479,11 +479,80 @@
         let cart = [];
         let allProducts = [];
         let currentCust = null;
+        let editingOrderId = null;
+        let editingSaleId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             await initPOS();
-            generateOrderID();
+            checkEditMode();
         });
+
+        function checkEditMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('editOrder');
+            const saleId = urlParams.get('editSale');
+
+            if (orderId) {
+                loadOrder(parseInt(orderId));
+            } else if (saleId) {
+                loadSale(parseInt(saleId));
+            } else {
+                generateOrderID();
+            }
+        }
+
+        async function loadOrder(id) {
+            const order = await db.orders.get(id);
+            if (!order) return;
+
+            editingOrderId = id;
+            document.getElementById('order-id-display').innerHTML = `EDITING ORDER: #${order.orderId || order.id} <span class="badge badge-warning" style="font-size:10px;">EDIT MODE</span>`;
+
+            // Load items
+            cart = [...order.items];
+
+            // Load Customer Info
+            document.getElementById('cust-name').value = order.customer;
+            document.getElementById('cust-name').dispatchEvent(new Event('input'));
+
+            // Load delivery/discount
+            document.getElementById('order-discount').value = order.discount || 0;
+            document.getElementById('order-delivery').value = order.delivery || 0;
+            document.getElementById('loyalty-applied-cash').value = order.loyaltyDiscount || 0;
+
+            // Load checkout details
+            document.getElementById('cust-phone').value = order.phone || '';
+            document.getElementById('cust-address').value = order.address || '';
+            document.getElementById('delivery-method').value = order.deliveryMethod || 'Store Pickup';
+
+            updateCartUI();
+        }
+
+        async function loadSale(id) {
+            const sale = await db.sales.get(id);
+            if (!sale) return;
+
+            editingSaleId = id;
+            document.getElementById('order-id-display').innerHTML = `EDITING SALE: #SL-${sale.id} <span class="badge badge-warning" style="font-size:10px;">EDIT MODE</span>`;
+
+            // Load items
+            cart = [...sale.items];
+
+            // Load Customer Info
+            document.getElementById('cust-name').value = sale.customer || 'Guest';
+            document.getElementById('cust-name').dispatchEvent(new Event('input'));
+
+            // Load delivery/discount
+            document.getElementById('order-discount').value = sale.discount || 0;
+            document.getElementById('order-delivery').value = sale.delivery || 0;
+            document.getElementById('loyalty-applied-cash').value = sale.loyaltyDiscount || 0;
+
+            // Load checkout details
+            document.getElementById('cust-phone').value = sale.customerPhone || '';
+            document.getElementById('pay-method').value = sale.paymentMethod || 'cash';
+
+            updateCartUI();
+        }
 
         function generateOrderID() {
             const id = 'ORD-' + Math.floor(Math.random() * 9000 + 1000);
@@ -727,9 +796,14 @@
                 paymentStatus: 'pending'
             };
 
-            await DB.addOrder(orderData);
-            alert('Order saved as Draft!');
-            window.location.reload();
+            if (editingOrderId) {
+                await DB.updateOrder(editingOrderId, orderData);
+                alert('Order Updated Successfully!');
+            } else {
+                await DB.addOrder(orderData);
+                alert('Order saved as Draft!');
+            }
+            window.location.href = 'orders.html';
         }
 
         function calcChange() {
@@ -793,35 +867,52 @@
                 }
             }
 
-            if (type === 'direct') {
-                // ADD TO SALES TABLE ONLY
-                await DB.addSale({
+            let orderStatus = 'Pending';
+            let paymentStatus = 'pending';
+            if (deliveryMethod === 'COD') {
+                orderStatus = 'Pending';
+                paymentStatus = 'pending';
+            } else {
+                orderStatus = (deliveryMethod === 'Store Pickup') ? 'Paid' : 'Pending';
+                paymentStatus = 'paid';
+            }
+
+            if (editingOrderId) {
+                await DB.updateOrder(editingOrderId, {
+                    customer: customerName,
+                    customerId: currentCust ? currentCust.custId : 'Guest',
+                    phone: customerPhone || 'N/A',
+                    address: customerAddress || 'N/A',
                     items: cart,
                     total: total,
                     buyTotal: buyTotal,
                     discount: discountPercent,
                     delivery: deliveryCharge,
                     loyaltyDiscount: loyaltyAppliedCash,
-                    date: new Date().toISOString(),
+                    status: orderStatus,
+                    paymentStatus: paymentStatus,
+                    deliveryMethod: deliveryMethod,
+                    date: new Date().toISOString()
+                });
+                alert('Order Updated Successfully!');
+            } else if (editingSaleId) {
+                await DB.updateSale(editingSaleId, {
+                    items: cart,
+                    total: total,
+                    buyTotal: buyTotal,
+                    discount: discountPercent,
+                    delivery: deliveryCharge,
+                    loyaltyDiscount: loyaltyAppliedCash,
                     customer: customerName,
                     customerId: currentCust ? currentCust.custId : 'Guest',
                     customerPhone: currentCust ? currentCust.phone : 'N/A',
-                    paymentMethod: payMethod
+                    paymentMethod: payMethod,
+                    date: new Date().toISOString()
                 });
-                alert('Direct Sale completed & Revenue updated!');
+                alert('Sale Record Updated!');
             } else {
-                // ADD TO ORDERS TABLE ONLY
-                let orderStatus = 'Pending';
-                let paymentStatus = 'pending';
-
-                if (deliveryMethod === 'COD') {
-                    orderStatus = 'Pending';
-                    paymentStatus = 'pending';
-                } else {
-                    orderStatus = (deliveryMethod === 'Store Pickup') ? 'Paid' : 'Pending';
-                    paymentStatus = 'paid';
-
-                    // IF ALREADY PAID via Fast Delivery or Store Pickup, record as sale too
+                if (type === 'direct') {
+                    // ADD TO SALES TABLE ONLY
                     await DB.addSale({
                         items: cart,
                         total: total,
@@ -835,28 +926,54 @@
                         customerPhone: currentCust ? currentCust.phone : 'N/A',
                         paymentMethod: payMethod
                     });
+                    alert('Direct Sale completed & Revenue updated!');
+                } else {
+                    // ADD TO ORDERS TABLE ONLY
+                    let orderStatus = 'Pending';
+                    let paymentStatus = 'pending';
+
+                    if (deliveryMethod === 'COD') {
+                        orderStatus = 'Pending';
+                        paymentStatus = 'pending';
+                    } else {
+                        orderStatus = (deliveryMethod === 'Store Pickup') ? 'Paid' : 'Pending';
+                        paymentStatus = 'paid';
+
+                        // IF ALREADY PAID via Fast Delivery or Store Pickup, record as sale too
+                        await DB.addSale({
+                            items: cart,
+                            total: total,
+                            buyTotal: buyTotal,
+                            discount: discountPercent,
+                            delivery: deliveryCharge,
+                            loyaltyDiscount: loyaltyAppliedCash,
+                            date: new Date().toISOString(),
+                            customer: customerName,
+                            customerId: currentCust ? currentCust.custId : 'Guest',
+                            customerPhone: currentCust ? currentCust.phone : 'N/A',
+                            paymentMethod: payMethod
+                        });
+                    }
+
+                    await DB.addOrder({
+                        orderId: orderId,
+                        customer: customerName,
+                        customerId: currentCust ? currentCust.custId : 'Guest',
+                        phone: customerPhone || 'N/A',
+                        address: customerAddress || 'N/A',
+                        items: cart,
+                        total: total,
+                        buyTotal: buyTotal,
+                        discount: discountPercent,
+                        delivery: deliveryCharge,
+                        loyaltyDiscount: loyaltyAppliedCash,
+                        status: orderStatus,
+                        paymentStatus: paymentStatus,
+                        deliveryMethod: deliveryMethod
+                    });
                 }
-
-                await DB.addOrder({
-                    orderId: orderId,
-                    customer: customerName,
-                    customerId: currentCust ? currentCust.custId : 'Guest',
-                    phone: customerPhone || 'N/A',
-                    address: customerAddress || 'N/A',
-                    items: cart,
-                    total: total,
-                    buyTotal: buyTotal,
-                    discount: discountPercent,
-                    delivery: deliveryCharge,
-                    loyaltyDiscount: loyaltyAppliedCash,
-                    status: orderStatus,
-                    paymentStatus: paymentStatus,
-                    deliveryMethod: deliveryMethod
-                });
-                alert('Order #' + orderId + ' Placed Successfully!');
             }
-
-            window.location.reload();
+            window.location.href = type === 'direct' || editingSaleId ? 'sales.html' : 'orders.html';
         }
 
         function applyLoyalty() {
