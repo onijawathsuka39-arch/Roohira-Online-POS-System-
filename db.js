@@ -1,7 +1,7 @@
 // Database Structure using Dexie.js
 const db = new Dexie('RuhiraPOS_DB');
 
-db.version(5).stores({
+db.version(7).stores({
     inventory: '++id, name, category, type, stock, buyPrice, sellPrice, size, packageItems',
     sales: '++id, total, buyTotal, date, customer, paymentMethod',
     orders: '++id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date',
@@ -9,7 +9,8 @@ db.version(5).stores({
     categories: '++id, name, description',
     notes: '++id, title, content, date',
     settings: 'key, value',
-    backups: '++id, date, name, size'
+    backups: '++id, date, name, size',
+    users: 'username, role, password'
 });
 
 // Helper functions for DB access
@@ -59,10 +60,14 @@ const DB = {
 
     // Inventory
     getAllInventory: async () => await db.inventory.toArray(),
-    getInventoryById: async (id) => await db.inventory.get(id),
-    addInventory: async (item) => await db.inventory.add(item),
-    updateInventory: async (id, changes) => await db.inventory.update(id, changes),
-    deleteInventory: async (id) => await db.inventory.delete(id),
+    getItem: async (id) => await db.inventory.get(id),
+    getInventoryById: async (id) => await db.inventory.get(id), // Alias
+    addItem: async (item) => await db.inventory.add(item),
+    addInventory: async (item) => await db.inventory.add(item), // Alias
+    updateItem: async (id, changes) => await db.inventory.update(id, changes),
+    updateInventory: async (id, changes) => await db.inventory.update(id, changes), // Alias
+    deleteItem: async (id) => await db.inventory.delete(id),
+    deleteInventory: async (id) => await db.inventory.delete(id), // Alias
 
     // Sales
     getAllSales: async () => await db.sales.orderBy('date').reverse().toArray(),
@@ -191,6 +196,15 @@ const DB = {
 
     restoreFullSystem: async (data) => {
         try {
+            // Validate that it's actually a RuhiraPOS backup
+            if (!data || (typeof data !== 'object')) {
+                throw new Error('Invalid backup format.');
+            }
+            const hasValidData = data.inventory || data.sales || data.orders || data.customers || data.categories || data.notes;
+            if (!hasValidData) {
+                throw new Error('Backup file does not contain valid POS data.');
+            }
+
             // Clear all tables
             await Promise.all([
                 db.inventory.clear(),
@@ -203,20 +217,79 @@ const DB = {
                 db.backups.clear()
             ]);
 
-            // Restore data if exists in backup
-            if (data.inventory) await db.inventory.bulkAdd(data.inventory);
-            if (data.sales) await db.sales.bulkAdd(data.sales);
-            if (data.orders) await db.orders.bulkAdd(data.orders);
-            if (data.customers) await db.customers.bulkAdd(data.customers);
-            if (data.categories) await db.categories.bulkAdd(data.categories);
-            if (data.notes) await db.notes.bulkAdd(data.notes);
-            if (data.settings) await db.settings.bulkAdd(data.settings);
-            if (data.backups) await db.backups.bulkAdd(data.backups);
+            // Restore data using bulkPut (handles ID conflicts gracefully)
+            if (data.inventory && data.inventory.length) await db.inventory.bulkPut(data.inventory);
+            if (data.sales && data.sales.length) await db.sales.bulkPut(data.sales);
+            if (data.orders && data.orders.length) await db.orders.bulkPut(data.orders);
+            if (data.customers && data.customers.length) await db.customers.bulkPut(data.customers);
+            if (data.categories && data.categories.length) await db.categories.bulkPut(data.categories);
+            if (data.notes && data.notes.length) await db.notes.bulkPut(data.notes);
+            if (data.settings && data.settings.length) await db.settings.bulkPut(data.settings);
+            if (data.backups && data.backups.length) await db.backups.bulkPut(data.backups);
 
             return true;
         } catch (err) {
             console.error('Restore failed:', err);
             throw err;
         }
+    },
+
+    // Authentication Logic
+    initUsers: async () => {
+        try {
+            const adminExists = await db.users.get('admin');
+            if (!adminExists) {
+                await db.users.put({ username: 'admin', password: '123', role: 'admin', name: 'Master Admin' });
+            }
+            const staffExists = await db.users.get('staff');
+            if (!staffExists) {
+                await db.users.put({ username: 'staff', password: '123', role: 'staff', name: 'Roohira Staff' });
+            }
+        } catch (err) {
+            console.error("User initialization skipped due to DB state:", err);
+        }
+    },
+
+    login: async (username, password) => {
+        const cleanUser = username.trim().toLowerCase();
+        const cleanPass = password.trim();
+
+        try {
+            const user = await db.users.get(cleanUser);
+            if (user && user.password === cleanPass) {
+                const sessionData = {
+                    username: user.username,
+                    role: user.role,
+                    name: user.name,
+                    loginTime: new Date().toISOString()
+                };
+                sessionStorage.setItem('ruhira_user', JSON.stringify(sessionData));
+                return sessionData;
+            }
+        } catch (err) {
+            console.error("DB Login check failed, falling back:", err);
+        }
+
+        if (cleanUser === 'admin' && cleanPass === '123') {
+            const sessionData = { username: 'admin', role: 'admin', name: 'Master Admin' };
+            sessionStorage.setItem('ruhira_user', JSON.stringify(sessionData));
+            return sessionData;
+        } else if (cleanUser === 'staff' && cleanPass === '123') {
+            const sessionData = { username: 'staff', role: 'staff', name: 'Roohira Staff' };
+            sessionStorage.setItem('ruhira_user', JSON.stringify(sessionData));
+            return sessionData;
+        }
+
+        return null;
+    },
+
+    logout: () => {
+        sessionStorage.removeItem('ruhira_user');
+        window.location.href = 'login.html';
+    },
+
+    getCurrentUser: () => {
+        const user = sessionStorage.getItem('ruhira_user');
+        return user ? JSON.parse(user) : null;
     }
 };

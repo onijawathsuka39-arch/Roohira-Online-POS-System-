@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Command | Ruhira POS</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="db.js"></script>
+    <script src="theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --ap: #8b5cf6;
+            --ap2: #ec4899;
+            --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+            --bg: #070c18;
+            --sid: #0c1220;
+            --card: #111827;
+            --border: rgba(255, 255, 255, 0.07);
+            --txt: #e2e8f0;
+            --muted: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR ── */
+        .sid {
+            width: 270px;
+            min-width: 270px;
+            background: var(--sid);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .sid-brand {
+            padding: 28px 24px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sid-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: var(--grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            flex-shrink: 0;
+        }
+
+        .sid-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .sid-subtitle {
+            font-size: 10px;
+            color: var(--ap);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--muted);
+            padding: 8px 12px 4px;
+            font-weight: 700;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: 0.2s;
+            margin-bottom: 2px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--ap);
+        }
+
+        .nav-link.active {
+            background: var(--ap);
+            color: white;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+        }
+
+        .nav-link.danger {
+            color: #f87171;
+        }
+
+        .nav-link.danger:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .nav-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 8px;
+        }
+
+        /* ── MAIN ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .topbar {
+            background: rgba(7, 12, 24, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .topbar-left h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .topbar-left p {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 6px 16px 6px 6px;
+        }
+
+        .profile-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .profile-name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .profile-role {
+            font-size: 10px;
+            color: var(--ap);
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            font-size: 15px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 32px;
+        }
+
+        /* ALL-TIME PROFIT HERO */
+        .hero-profit {
+            background: var(--grad);
+            border-radius: 22px;
+            padding: 28px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 50px -10px rgba(139, 92, 246, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-profit::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='rgba(255,255,255,0.04)' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='10'/%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .hero-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.75;
+        }
+
+        .hero-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            position: relative;
+        }
+
+        .hero-sub {
+            font-size: 13px;
+            opacity: 0.7;
+            position: relative;
+        }
+
+        /* PROFIT TILES */
+        .tiles {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .tile {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px 22px;
+            transition: 0.3s;
+        }
+
+        .tile:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tile-lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .tile-val {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .tile-val.green {
+            color: #34d399;
+        }
+
+        .tile-val.blue {
+            color: #60a5fa;
+        }
+
+        .tile-val.yellow {
+            color: #fbbf24;
+        }
+
+        /* SECTIONS */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.35s ease-out;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 22px;
+        }
+
+        .panel-head h2 {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        /* TABLE */
+        .atable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .atable th {
+            text-align: left;
+            padding: 12px 14px;
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .atable td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .atable tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* INPUTS */
+        .ainput {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--txt);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .ainput:focus {
+            border-color: var(--ap);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        /* BUTTONS */
+        .abtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 10px;
+            border: none;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .abtn-primary {
+            background: var(--ap);
+            color: white;
+        }
+
+        .abtn-primary:hover {
+            filter: brightness(1.15);
+        }
+
+        .abtn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--txt);
+            border: 1px solid var(--border);
+        }
+
+        .abtn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .abtn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .abtn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .abtn-sm {
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 8px;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-green {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+        }
+
+        .badge-yellow {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+        }
+
+        .badge-red {
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+        }
+
+        .badge-purple {
+            background: rgba(139, 92, 246, 0.1);
+            color: #c4b5fd;
+        }
+
+        /* MODAL */
+        .modal-bg {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            backdrop-filter: blur(6px);
+        }
+
+        .modal-box {
+            background: #1e2d45;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            width: 500px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mfield {
+            margin-bottom: 16px;
+        }
+
+        .mfield label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 7px;
+        }
+
+        .mfield .ainput {
+            width: 100%;
+        }
+
+        /* DUAL GRID */
+        .dual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dual {
+                grid-template-columns: 1fr;
+            }
+
+            .tiles {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sid">
+        <div class="sid-brand">
+            <div class="sid-logo"><i class="fas fa-brain"></i></div>
+            <div>
+                <div class="sid-title">RUHIRA</div>
+                <div class="sid-subtitle">Admin Command</div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <div class="nav-label">Analytics</div>
+            <div class="nav-link active" onclick="nav('overview',this)"><i class="fas fa-chart-line"></i> Performance
+                Dashboard</div>
+
+            <div class="nav-label" style="margin-top:10px;">Management</div>
+            <div class="nav-link" onclick="nav('inventory',this)"><i class="fas fa-boxes"></i> Stock & Items</div>
+            <div class="nav-link" onclick="nav('customers',this)"><i class="fas fa-users-crown"></i> VIP Database</div>
+            <div class="nav-link" onclick="nav('sales',this)"><i class="fas fa-file-invoice-dollar"></i> Sales Reports
+            </div>
+            <div class="nav-link" onclick="nav('orders',this)"><i class="fas fa-truck-loading"></i> Order Logs</div>
+
+            <div class="nav-label" style="margin-top:10px;">System</div>
+            <div class="nav-link" onclick="nav('security',this)"><i class="fas fa-shield-alt"></i> System Security</div>
+
+            <div class="nav-sep"></div>
+            <a href="pos.html" class="nav-link"><i class="fas fa-shopping-basket"></i> POS Cart</a>
+        </nav>
+
+        <div style="padding: 16px 12px; border-top: 1px solid var(--border);">
+            <div class="nav-link danger" onclick="DB.logout()"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 id="view-title">Performance Dashboard</h1>
+                <p id="view-subtitle">Real-time business intelligence &amp; audit</p>
+            </div>
+            <div class="topbar-right">
+                <div class="profile-pill">
+                    <div class="profile-avatar"><i class="fas fa-user-shield"></i></div>
+                    <div>
+                        <div class="profile-name" id="logged-username">Admin</div>
+                        <div class="profile-role">FULL CONTROL</div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="DB.logout()" title="Sign Out">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content">
+
+            <!-- ALL TIME HERO PROFIT -->
+            <div class="hero-profit">
+                <div>
+                    <div class="hero-label" style="position:relative;">Global All-Time Net Profit</div>
+                    <div class="hero-value" id="val-alltime">Rs. 0</div>
+                    <div class="hero-sub">Since the business began</div>
+                </div>
+                <div style="text-align:right; position:relative;">
+                    <div class="hero-label">Total Revenue Generated</div>
+                    <div style="font-size:24px; font-weight:800;" id="val-rev">Rs. 0</div>
+                    <div class="hero-sub" style="margin-top:6px;">All transactions combined</div>
+                </div>
+            </div>
+
+            <!-- PROFIT TILES -->
+            <div class="tiles">
+                <div class="tile">
+                    <div class="tile-lbl">Today's Profit</div>
+                    <div class="tile-val green" id="val-today">Rs. 0</div>
+                </div>
+                <div class="tile">
+                    <div class="tile-lbl">Yesterday</div>
+                    <div class="tile-val" id="val-yesterday">Rs. 0</div>
+                </div>
+                <div class="tile">
+                    <div class="tile-lbl">This Month</div>
+                    <div class="tile-val green" id="val-month">Rs. 0</div>
+                </div>
+                <div class="tile">
+                    <div class="tile-lbl">Previous Month</div>
+                    <div class="tile-val yellow" id="val-prevmonth">Rs. 0</div>
+                </div>
+            </div>
+
+            <!-- ── OVERVIEW SECTION ── -->
+            <section id="view-overview" class="view-section active">
+                <div class="dual">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2>Weekly Revenue Trend</h2>
+                        </div>
+                        <div style="height:260px;"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2>Stock Alerts <span class="badge badge-red" id="low-count">0</span></h2>
+                        </div>
+                        <div id="low-stock-list" style="font-size:13px; color:var(--muted);">Loading...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── INVENTORY SECTION ── -->
+            <section id="view-inventory" class="view-section">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Master Inventory Control</h2>
+                        <div style="display:flex; gap:10px;">
+                            <input class="ainput" placeholder="Search…" style="width:200px;"
+                                onkeyup="filterTbl('tbl-inv',this.value)">
+                            <button class="abtn abtn-primary" onclick="openAddInv()"><i class="fas fa-plus"></i> Add
+                                Item</button>
+                        </div>
+                    </div>
+                    <table class="atable" id="tbl-inv">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Stock</th>
+                                <th>Buy Price</th>
+                                <th>Sell Price</th>
+                                <th>Margin</th>
+                                <th>Status</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-inv"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ── CUSTOMERS SECTION ── -->
+            <section id="view-customers" class="view-section">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>VIP Client Database</h2>
+                        <input class="ainput" placeholder="Search client…" style="width:220px;"
+                            onkeyup="filterTbl('tbl-cust',this.value)">
+                    </div>
+                    <table class="atable" id="tbl-cust">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Total Spent</th>
+                                <th>Loyalty Pts</th>
+                                <th>Tier</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-cust"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ── SALES SECTION ── -->
+            <section id="view-sales" class="view-section">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Sales Performance Audit</h2>
+                        <input type="month" id="sales-month" class="ainput" style="width:170px;" onchange="loadSales()">
+                    </div>
+                    <table class="atable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Ref</th>
+                                <th>Customer</th>
+                                <th>Revenue</th>
+                                <th>Cost</th>
+                                <th>Net Profit</th>
+                                <th>Margin%</th>
+                                <th style="text-align:right;">View</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-sales"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ── ORDERS SECTION ── -->
+            <section id="view-orders" class="view-section">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Order Logistics</h2>
+                        <select id="ord-filter" class="ainput" style="width:180px;" onchange="loadOrders()">
+                            <option value="all">All Orders</option>
+                            <option value="Pending">Pending Only</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <table class="atable">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                                <th>Method</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-orders"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ── SECURITY SECTION ── -->
+            <section id="view-security" class="view-section">
+                <div class="dual">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2><i class="fas fa-cloud-download-alt"
+                                    style="color:var(--ap);margin-right:8px;"></i>Backup &amp; Recovery</h2>
+                        </div>
+                        <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Export a complete JSON
+                            snapshot of all business data, or restore from a previous backup.</p>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <button class="abtn abtn-primary" onclick="DB.backupFullSystem()"
+                                style="justify-content:center; padding:14px;">
+                                <i class="fas fa-download"></i> Export Global Backup
+                            </button>
+                            <button class="abtn abtn-secondary" onclick="document.getElementById('importFile').click()"
+                                style="justify-content:center; padding:14px;">
+                                <i class="fas fa-upload"></i> Restore From Snapshot
+                            </button>
+                            <input type="file" id="importFile" hidden accept=".json" onchange="handleRestore(event)">
+                        </div>
+                    </div>
+                    <div class="panel" style="border-color:rgba(239,68,68,0.15);">
+                        <div class="panel-head">
+                            <h2 style="color:#f87171;"><i class="fas fa-skull-crossbones"
+                                    style="margin-right:8px;"></i>Danger Zone</h2>
+                        </div>
+                        <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Permanently wipe all sales,
+                            orders, inventory, and customer data. This cannot be undone.</p>
+                        <button class="abtn abtn-danger" onclick="wipeDB()"
+                            style="width:100%; justify-content:center; padding:14px;">
+                            <i class="fas fa-trash-alt"></i> Wipe Entire Database
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div><!-- /content -->
+    </main>
+
+    <!-- ═══ MODAL ═══ -->
+    <div id="admin-modal" class="modal-bg">
+        <div class="modal-box">
+            <div class="modal-title" id="modal-title">Edit</div>
+            <div id="modal-body"></div>
+            <div style="display:flex; gap:12px; margin-top:24px;">
+                <button class="abtn abtn-secondary" style="flex:1;" onclick="closeModal()">Cancel</button>
+                <button class="abtn abtn-primary" id="modal-save" style="flex:2; justify-content:center;">Save
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ── NAVIGATION ── */
+        const headers = {
+            overview: ["Performance Dashboard", "Real-time business intelligence & audit"],
+            inventory: ["Master Inventory Control", "Manage stock, prices & margins"],
+            customers: ["VIP Client Database", "Lifetime value & engagement tracking"],
+            sales: ["Sales Performance Audit", "Deep financial transaction analysis"],
+            orders: ["Order Logistics", "Shipment management & fulfillment status"],
+            security: ["System Security", "Database management & access control"]
+        };
+
+        function nav(view, el) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            if (el) el.classList.add('active');
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-' + view).classList.add('active');
+            document.getElementById('view-title').innerText = headers[view][0];
+            document.getElementById('view-subtitle').innerText = headers[view][1];
+            if (view === 'inventory') loadInventory();
+            if (view === 'customers') loadCustomers();
+            if (view === 'sales') loadSales();
+            if (view === 'orders') loadOrders();
+        }
+
+        /* ── INIT ── */
+        document.addEventListener('DOMContentLoaded', async () => {
+            const now = new Date();
+            const mInput = document.getElementById('sales-month');
+            if (mInput) mInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            await refreshProfits();
+            await renderOverview();
+        });
+
+        /* ── PROFITS ── */
+        async function refreshProfits() {
+            const sales = await DB.getAllSales();
+            const orders = await DB.getAllOrders();
+            const now = new Date();
+            const d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const d1 = d0 - 86400000;
+            const m0 = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            const pm0 = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+            const pm1 = m0 - 1;
+
+            let allP = 0, rev = 0, todP = 0, yesP = 0, monP = 0, prevP = 0;
+            sales.forEach(s => {
+                const t = new Date(s.date).getTime();
+                const p = s.total - (s.buyTotal || 0);
+                allP += p; rev += s.total;
+                if (t >= d0) todP += p;
+                else if (t >= d1) yesP += p;
+                if (t >= m0) monP += p;
+                else if (t >= pm0 && t <= pm1) prevP += p;
+            });
+
+            set('val-alltime', `Rs. ${fmt(allP)}`);
+            set('val-rev', `Rs. ${fmt(rev)}`);
+            set('val-today', `Rs. ${fmt(todP)}`);
+            set('val-yesterday', `Rs. ${fmt(yesP)}`);
+            set('val-month', `Rs. ${fmt(monP)}`);
+            set('val-prevmonth', `Rs. ${fmt(prevP)}`);
+        }
+
+        /* ── OVERVIEW ── */
+        let revenueChart = null;
+        async function renderOverview() {
+            // Stock alerts
+            const inv = await DB.getAllInventory();
+            const low = inv.filter(i => i.stock <= 5);
+            set('low-count', low.length);
+            const box = document.getElementById('low-stock-list');
+            if (!low.length) {
+                box.innerHTML = '<div style="color:#34d399; padding:10px 0;"><i class="fas fa-check-circle" style="margin-right:6px;"></i>All stock levels healthy</div>';
+            } else {
+                box.innerHTML = low.map(i => `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px 14px; background:rgba(248,113,113,0.05); border-radius:10px; border:1px solid rgba(248,113,113,0.1);">
+                    <span>${i.name}</span>
+                    <span class="badge badge-red">${i.stock} LEFT</span>
+                </div>`).join('');
+            }
+
+            // Chart
+            const sales = await DB.getAllSales();
+            const last7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toISOString().split('T')[0]; });
+            const map = Object.fromEntries(last7.map(d => [d, 0]));
+            sales.forEach(s => { const d = s.date.split('T')[0]; if (d in map) map[d] += s.total; });
+
+            const ctx = document.getElementById('revenueChart');
+            if (!ctx) return;
+            if (revenueChart) revenueChart.destroy();
+            revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: last7.map(d => new Date(d).toLocaleDateString(undefined, { weekday: 'short' })),
+                    datasets: [{
+                        label: 'Revenue (Rs)',
+                        data: last7.map(d => map[d]),
+                        backgroundColor: 'rgba(139,92,246,0.7)',
+                        borderRadius: 10,
+                        hoverBackgroundColor: '#8b5cf6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', callback: v => 'Rs.' + v.toLocaleString() } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+        }
+
+        /* ── INVENTORY ── */
+        async function loadInventory() {
+            const items = await DB.getAllInventory();
+            document.getElementById('body-inv').innerHTML = items.map(i => {
+                const margin = i.sellPrice > 0 ? (((i.sellPrice - i.buyPrice) / i.sellPrice) * 100).toFixed(1) : 0;
+                return `<tr>
+                <td style="font-weight:700;">${i.name}</td>
+                <td><span class="badge badge-purple">${i.category || '—'}</span></td>
+                <td style="${i.stock <= 5 ? 'color:#f87171; font-weight:800;' : ''}">${i.stock}</td>
+                <td>Rs. ${fmt(i.buyPrice)}</td>
+                <td style="font-weight:700; color:#c4b5fd;">Rs. ${fmt(i.sellPrice)}</td>
+                <td>${margin}%</td>
+                <td><span class="badge ${i.stock <= 5 ? 'badge-red' : 'badge-green'}">${i.stock <= 5 ? 'LOW' : 'OK'}</span></td>
+                <td style="text-align:right; display:flex; justify-content:flex-end; gap:6px;">
+                    <button class="abtn abtn-secondary abtn-sm" onclick="editInv(${i.id})"><i class="fas fa-pen"></i></button>
+                    <button class="abtn abtn-danger  abtn-sm" onclick="delInv(${i.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+            }).join('');
+        }
+
+        async function openAddInv() {
+            openModal('Add New Product');
+            document.getElementById('modal-body').innerHTML = `
+            <div class="mfield"><label>Product Name</label><input id="mi-name" class="ainput" style="width:100%;" placeholder="e.g. Silk Saree"></div>
+            <div class="mfield"><label>Category</label><input id="mi-cat" class="ainput" style="width:100%;" placeholder="e.g. Women's Wear"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                <div class="mfield"><label>Stock</label><input id="mi-stock" type="number" class="ainput" style="width:100%;" value="0"></div>
+                <div class="mfield"><label>Buy Price</label><input id="mi-buy" type="number" class="ainput" style="width:100%;" value="0"></div>
+                <div class="mfield"><label>Sell Price</label><input id="mi-sell" type="number" class="ainput" style="width:100%;" value="0"></div>
+            </div>`;
+            document.getElementById('modal-save').onclick = async () => {
+                await DB.addItem({ name: g('mi-name'), category: g('mi-cat'), stock: +g('mi-stock'), buyPrice: +g('mi-buy'), sellPrice: +g('mi-sell') });
+                closeModal(); loadInventory();
+            };
+        }
+
+        async function editInv(id) {
+            const it = await db.inventory.get(id);
+            openModal('Edit: ' + it.name);
+            document.getElementById('modal-body').innerHTML = `
+            <div class="mfield"><label>Product Name</label><input id="mi-name" class="ainput" style="width:100%;" value="${it.name}"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                <div class="mfield"><label>Stock</label><input id="mi-stock" type="number" class="ainput" style="width:100%;" value="${it.stock}"></div>
+                <div class="mfield"><label>Buy Price</label><input id="mi-buy" type="number" class="ainput" style="width:100%;" value="${it.buyPrice}"></div>
+                <div class="mfield"><label>Sell Price</label><input id="mi-sell" type="number" class="ainput" style="width:100%;" value="${it.sellPrice}"></div>
+            </div>`;
+            document.getElementById('modal-save').onclick = async () => {
+                await DB.updateItem(id, { name: g('mi-name'), stock: +g('mi-stock'), buyPrice: +g('mi-buy'), sellPrice: +g('mi-sell') });
+                closeModal(); loadInventory();
+            };
+        }
+
+        async function delInv(id) {
+            if (confirm('Delete this product?')) { await DB.deleteItem(id); loadInventory(); }
+        }
+
+        /* ── CUSTOMERS ── */
+        async function loadCustomers() {
+            const custs = await DB.getAllCustomers();
+            document.getElementById('body-cust').innerHTML = custs.map(c => `<tr>
+            <td style="font-weight:700;">${c.name}</td>
+            <td>${c.phone || '—'}</td>
+            <td>${c.totalOrders || 0}</td>
+            <td style="font-weight:700; color:#34d399;">Rs. ${fmt(c.totalSpent || 0)}</td>
+            <td>${c.loyaltyPoints || 0}</td>
+            <td><span class="badge ${(c.totalSpent || 0) > 5000 ? 'badge-purple' : 'badge-green'}">${(c.totalSpent || 0) > 5000 ? 'PLATINUM' : 'REGULAR'}</span></td>
+            <td style="text-align:right;">
+                <button class="abtn abtn-secondary abtn-sm" onclick="editCust(${c.id})"><i class="fas fa-pen"></i></button>
+            </td>
+        </tr>`).join('');
+        }
+
+        async function editCust(id) {
+            const c = await db.customers.get(id);
+            openModal('Edit Client: ' + c.name);
+            document.getElementById('modal-body').innerHTML = `
+            <div class="mfield"><label>Name</label><input id="mc-name" class="ainput" style="width:100%;" value="${c.name}"></div>
+            <div class="mfield"><label>Phone</label><input id="mc-phone" class="ainput" style="width:100%;" value="${c.phone || ''}"></div>
+            <div class="mfield"><label>Loyalty Points</label><input id="mc-pts" type="number" class="ainput" style="width:100%;" value="${c.loyaltyPoints || 0}"></div>`;
+            document.getElementById('modal-save').onclick = async () => {
+                await db.customers.update(id, { name: g('mc-name'), phone: g('mc-phone'), loyaltyPoints: +g('mc-pts') });
+                closeModal(); loadCustomers();
+            };
+        }
+
+        /* ── SALES ── */
+        async function loadSales() {
+            const [year, month] = document.getElementById('sales-month').value.split('-').map(Number);
+            const all = await DB.getAllSales();
+            const filtered = all.filter(s => { const d = new Date(s.date); return d.getFullYear() === year && d.getMonth() + 1 === month; });
+            document.getElementById('body-sales').innerHTML = filtered.map(s => {
+                const profit = s.total - (s.buyTotal || 0);
+                const margin = s.total > 0 ? ((profit / s.total) * 100).toFixed(1) : 0;
+                return `<tr>
+                <td>${new Date(s.date).toLocaleDateString()}</td>
+                <td style="font-weight:700;">#SL-${s.id}</td>
+                <td>${s.customer || 'Guest'}</td>
+                <td style="font-weight:700;">Rs. ${fmt(s.total)}</td>
+                <td style="color:var(--muted);">Rs. ${fmt(s.buyTotal || 0)}</td>
+                <td style="font-weight:800; color:#34d399;">Rs. ${fmt(profit)}</td>
+                <td><span class="badge badge-purple">${margin}%</span></td>
+                <td style="text-align:right;"><button class="abtn abtn-secondary abtn-sm" onclick="viewSaleItems(${s.id})"><i class="fas fa-eye"></i></button></td>
+            </tr>`;
+            }).join('') || `<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--muted);">No sales for this month</td></tr>`;
+        }
+
+        async function viewSaleItems(id) {
+            const s = await db.sales.get(id);
+            if (!s) return;
+            const items = (s.items || []).map(i => `<li>${i.name} × ${i.qty} = Rs. ${fmt(i.price * i.qty)}</li>`).join('');
+            openModal('Sale #SL-' + id + ' Details');
+            document.getElementById('modal-body').innerHTML = `
+            <p style="color:var(--muted); font-size:13px; margin-bottom:12px;">Customer: ${s.customer || 'Guest'}</p>
+            <ul style="padding-left:20px; font-size:13px; line-height:2;">${items}</ul>
+            <div style="margin-top:16px; padding:14px; background:rgba(139,92,246,0.08); border-radius:12px; font-size:14px;">
+                Total: <strong style="color:#c4b5fd;">Rs. ${fmt(s.total)}</strong> &nbsp;|&nbsp;
+                Profit: <strong style="color:#34d399;">Rs. ${fmt(s.total - (s.buyTotal || 0))}</strong>
+            </div>`;
+            document.getElementById('modal-save').style.display = 'none';
+        }
+
+        /* ── ORDERS ── */
+        async function loadOrders() {
+            const filter = document.getElementById('ord-filter').value;
+            const all = await DB.getAllOrders();
+            const list = filter === 'all' ? all : all.filter(o => o.status === filter);
+            document.getElementById('body-orders').innerHTML = list.map(o => `<tr>
+            <td style="font-weight:700;">#ORD-${o.orderId || o.id}</td>
+            <td>${o.customer}</td>
+            <td><span class="badge ${o.status === 'Completed' ? 'badge-green' : 'badge-yellow'}">${o.status}</span></td>
+            <td>${o.deliveryMethod || '—'}</td>
+            <td style="font-weight:700;">Rs. ${fmt(o.total)}</td>
+            <td>${new Date(o.date).toLocaleDateString()}</td>
+            <td style="text-align:right;">
+                ${o.status === 'Pending' ? `<button class="abtn abtn-primary abtn-sm" onclick="completeOrder(${o.id})">COMPLETE</button>` : '<span class="badge badge-green">Done</span>'}
+            </td>
+        </tr>`).join('') || `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No orders found</td></tr>`;
+        }
+
+        async function completeOrder(id) {
+            await DB.updateOrder(id, { status: 'Completed' });
+            loadOrders();
+        }
+
+        /* ── SECURITY ── */
+        async function wipeDB() {
+            if (confirm('⚠️ CRITICAL: This will permanently erase ALL data. Type "WIPE" to confirm.')) {
+                const conf = prompt('Type WIPE to confirm:');
+                if (conf === 'WIPE') { await db.delete(); location.reload(); }
+            }
+        }
+
+        async function handleRestore(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (confirm('Restore will overwrite all current data. Continue?')) {
+                        await DB.restoreFullSystem(data);
+                        alert('System restored successfully!');
+                        location.reload();
+                    }
+                } catch { alert('Invalid backup file.'); }
+            };
+            reader.readAsText(file);
+        }
+
+        /* ── MODAL HELPERS ── */
+        function openModal(title) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-save').style.display = '';
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('admin-modal').style.display = 'none'; }
+
+        /* ── UTILS ── */
+        function filterTbl(id, q) {
+            document.querySelectorAll('#' + id + ' tbody tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(q.toLowerCase()) ? '' : 'none');
+        }
+        function set(id, val) { const el = document.getElementById(id); if (el) el.innerText = val; }
+        function g(id) { return document.getElementById(id).value; }
+        function fmt(n) { return Number(n).toLocaleString(); }
+    </script>
+</body>
+
+</html>

@@ -129,6 +129,13 @@
                 <h1>System Settings</h1>
                 <p>Configure your shop profile and manage data backups</p>
             </div>
+            <div class="header-actions" style="display: flex; gap: 10px;">
+                <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
+                        class="fas fa-sign-in-alt"></i> Login</a>
+                <button onclick="DB.logout()" class="btn btn-secondary"
+                    style="padding: 8px 16px; font-size: 13px; border-color: var(--danger); color: var(--danger);"><i
+                        class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
         </header>
 
         <div class="settings-grid">
@@ -224,17 +231,36 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            // Validate file type
+            if (!file.name.endsWith('.json')) {
+                alert('❌ Wrong file type! Please select a RuhiraPOS .json backup file.');
+                e.target.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = async (event) => {
+                let data;
                 try {
-                    const data = JSON.parse(event.target.result);
-                    if (confirm('Are you sure? This will wipe existing data and replace it with backup.')) {
-                        await DB.restoreFullSystem(data);
-                        alert('System restored successfully!');
-                        window.location.reload();
-                    }
+                    data = JSON.parse(event.target.result);
+                } catch (parseErr) {
+                    alert('❌ File is corrupted or not a valid JSON file.\nPlease use a proper RuhiraPOS backup file.');
+                    e.target.value = '';
+                    return;
+                }
+
+                if (!confirm('⚠️ Are you sure? This will wipe all existing data and replace it with the backup.\n\nThis cannot be undone!')) {
+                    e.target.value = '';
+                    return;
+                }
+
+                try {
+                    await DB.restoreFullSystem(data);
+                    alert('✅ System restored successfully! The page will reload.');
+                    window.location.reload();
                 } catch (err) {
-                    alert('Invalid backup file! Make sure it is a RuhiraPOS JSON file.');
+                    alert('❌ Restore failed: ' + err.message + '\n\nPlease make sure you are using a valid RuhiraPOS backup file.');
+                    e.target.value = '';
                 }
             };
             reader.readAsText(file);

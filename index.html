@@ -91,7 +91,7 @@
                 <i class="fas fa-sun theme-toggle-icon"></i>
                 <span>Theme Mode</span>
             </div>
-            <div class="nav-item">
+            <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </div>
@@ -102,18 +102,28 @@
     <main class="main-content">
         <header class="header-top">
             <div class="page-title">
-                <h1>Welcome Back, Admin</h1>
+                <h1>Welcome Back, Staff</h1>
                 <p>Track your business performance in real-time</p>
             </div>
 
-            <div class="user-profile">
-                <div class="user-info text-right mr-4 d-none d-md-block" style="text-align: right; margin-right: 12px;">
-                    <div style="font-weight: 600; font-size: 14px;">Onija Wathsuka</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">Store Manager</div>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div class="user-profile">
+                    <div class="user-info text-right mr-4 d-none d-md-block"
+                        style="text-align: right; margin-right: 12px;">
+                        <div style="font-weight: 600; font-size: 14px;">Onija Wathsuka</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Store Manager</div>
+                    </div>
+                    <div class="user-avatar"
+                        style="width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                        OW
+                    </div>
                 </div>
-                <div class="user-avatar"
-                    style="width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                    OW
+                <div class="header-actions" style="display: flex; gap: 10px;">
+                    <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
+                            class="fas fa-sign-in-alt"></i> Login</a>
+                    <button onclick="DB.logout()" class="btn btn-secondary"
+                        style="padding: 8px 16px; font-size: 13px; border-color: var(--danger); color: var(--danger);"><i
+                            class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
         </header>

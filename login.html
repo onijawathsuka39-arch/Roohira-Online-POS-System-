@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Ruhira POS</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23be185d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="db.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #060b14;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Animated background orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: drift 8s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: #be185d;
+            top: -200px;
+            left: -200px;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #7c3aed;
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -4s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #0ea5e9;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.08;
+            animation-delay: -2s;
+        }
+
+        @keyframes drift {
+            from {
+                transform: scale(1) translate(0, 0);
+            }
+
+            to {
+                transform: scale(1.1) translate(20px, 20px);
+            }
+        }
+
+        /* Dot grid */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        .login-wrap {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            margin: auto;
+        }
+
+        @media (max-height: 700px) {
+            .login-card {
+                padding: 28px 32px;
+            }
+
+            .brand {
+                margin-bottom: 20px;
+            }
+
+            .brand-logo {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+            }
+        }
+
+        .login-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 48px 44px;
+            box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 36px;
+        }
+
+        .brand-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #be185d, #9333ea);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 16px;
+            box-shadow: 0 0 40px rgba(190, 24, 93, 0.4);
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            color: #f1f5f9;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        .field input:focus {
+            border-color: #be185d;
+            background: rgba(190, 24, 93, 0.05);
+            box-shadow: 0 0 0 4px rgba(190, 24, 93, 0.1);
+        }
+
+        .field input::placeholder {
+            color: #475569;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #be185d, #9333ea);
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0);
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(190, 24, 93, 0.4);
+        }
+
+        .btn-login:hover::before {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .error-box {
+            display: none;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fca5a5;
+            font-size: 13px;
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 28px 0 20px;
+            position: relative;
+            color: #334155;
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .roles-hint {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .role-chip {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .role-chip:hover {
+            border-color: rgba(190, 24, 93, 0.4);
+            background: rgba(190, 24, 93, 0.05);
+        }
+
+        .role-chip .role-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .role-chip .role-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .role-chip .role-creds {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 11px;
+            color: #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="login-wrap">
+        <div class="login-card">
+            <div class="brand">
+                <div class="brand-logo"><i class="fas fa-gem"></i></div>
+                <div class="brand-name">RUHIRA POS</div>
+                <div class="brand-sub">Business Intelligence Platform</div>
+            </div>
+
+            <form id="loginForm" autocomplete="on">
+                <div class="field">
+                    <label>Username</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="Enter your username" required
+                            autocomplete="username">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="••••••••" required
+                            autocomplete="current-password">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>LOGIN TO POS
+                </button>
+                <div class="error-box" id="errorMsg">
+                    <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i>Invalid username or password
+                </div>
+            </form>
+
+            <div class="divider">Quick Login</div>
+
+            <div class="roles-hint">
+                <div class="role-chip" onclick="quickFill('admin','123')">
+                    <div class="role-icon">🛡️</div>
+                    <div class="role-name">Admin</div>
+                    <div class="role-creds">admin / 123</div>
+                </div>
+                <div class="role-chip" onclick="quickFill('staff','123')">
+                    <div class="role-icon">🧑‍💼</div>
+                    <div class="role-name">Staff</div>
+                    <div class="role-creds">staff / 123</div>
+                </div>
+            </div>
+
+            <div class="footer-note">Ruhira Online &copy; 2025 &mdash; Secure POS Platform</div>
+        </div>
+    </div>
+
+    <script>
+        // Quick-fill from role chips
+        function quickFill(user, pass) {
+            document.getElementById('username').value = user;
+            document.getElementById('password').value = pass;
+            document.getElementById('username').focus();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errBox = document.getElementById('errorMsg');
+            errBox.style.display = 'none';
+            btn.classList.add('loading');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="margin-right:8px;"></i>Authenticating...';
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            try {
+                await DB.initUsers();
+                const loggedUser = await DB.login(username, password);
+
+                if (loggedUser) {
+                    btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;"></i>Access Granted!';
+                    setTimeout(() => {
+                        window.location.href = loggedUser.role === 'admin' ? 'admin.html' : 'index.html';
+                    }, 400);
+                } else {
+                    errBox.style.display = 'block';
+                    btn.classList.remove('loading');
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>LOGIN TO POS';
+                    document.getElementById('password').value = '';
+                }
+            } catch (err) {
+                console.error(err);
+                errBox.style.display = 'block';
+                btn.classList.remove('loading');
+                btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>LOGIN TO POS';
+            }
+        });
+    </script>
+</body>
+
+</html>

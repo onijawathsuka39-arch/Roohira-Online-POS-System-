@@ -1,8 +1,49 @@
-// Theme Management
+// Theme & Auth Management
 const themeManager = {
     init() {
         const savedTheme = localStorage.getItem('pos-theme') || 'dark';
         this.setTheme(savedTheme);
+        this.checkAuth();
+    },
+
+    checkAuth() {
+        const path = window.location.pathname.split('/').pop();
+        const currentPage = path === '' ? 'index.html' : path;
+        const raw = sessionStorage.getItem('ruhira_user');
+        const user = raw ? JSON.parse(raw) : null;
+
+        // Never redirect on the login page itself
+        if (currentPage === 'login.html') return;
+
+        // Not logged in → go to login
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        // Populate UI name/role elements if they exist
+        const nameEl = document.getElementById('logged-username');
+        const roleEl = document.getElementById('logged-role');
+        const welcomeEl = document.getElementById('welcome-message');
+        if (nameEl) nameEl.innerText = user.username;
+        if (roleEl) roleEl.innerText = user.role;
+        if (welcomeEl) welcomeEl.innerText = `Welcome Back, ${user.name || user.username}`;
+
+        // Show admin-only elements
+        document.querySelectorAll('.isAdminOnly').forEach(el => {
+            el.style.display = (user.role === 'admin') ? 'flex' : 'none';
+        });
+
+        // Role-based page restriction
+        const staffPages = ['index.html', 'inventory.html', 'customers.html', 'sales.html',
+            'orders.html', 'reports.html', 'analysis.html', 'notes.html', 'settings.html'];
+        const adminPages = ['admin.html'];
+
+        if (user.role === 'admin' && staffPages.includes(currentPage)) {
+            window.location.href = 'admin.html';
+        } else if (user.role === 'staff' && adminPages.includes(currentPage)) {
+            window.location.href = 'index.html';
+        }
     },
 
     setTheme(theme) {
@@ -13,24 +54,15 @@ const themeManager = {
 
     toggle() {
         const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        this.setTheme(next);
+        this.setTheme(current === 'dark' ? 'light' : 'dark');
     },
 
     updateIcons(theme) {
-        const icons = document.querySelectorAll('.theme-toggle-icon');
-        icons.forEach(icon => {
-            if (theme === 'dark') {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
+        document.querySelectorAll('.theme-toggle-icon').forEach(icon => {
+            icon.classList.toggle('fa-sun', theme === 'dark');
+            icon.classList.toggle('fa-moon', theme !== 'dark');
         });
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    themeManager.init();
-});
+document.addEventListener('DOMContentLoaded', () => themeManager.init());
