@@ -589,11 +589,13 @@
                 Dashboard</div>
 
             <div class="nav-label" style="margin-top:10px;">Management</div>
-            <div class="nav-link" onclick="nav('inventory',this)"><i class="fas fa-boxes"></i> Stock & Items</div>
+            <div class="nav-link" onclick="nav('inventory',this)"><i class="fas fa-boxes"></i> Stock &amp; Items</div>
             <div class="nav-link" onclick="nav('customers',this)"><i class="fas fa-users-crown"></i> VIP Database</div>
             <div class="nav-link" onclick="nav('sales',this)"><i class="fas fa-file-invoice-dollar"></i> Sales Reports
             </div>
             <div class="nav-link" onclick="nav('orders',this)"><i class="fas fa-truck-loading"></i> Order Logs</div>
+            <div class="nav-link" onclick="nav('combined',this)"><i class="fas fa-layer-group"></i> Sales &amp; Orders
+            </div>
 
             <div class="nav-label" style="margin-top:10px;">System</div>
             <div class="nav-link" onclick="nav('security',this)"><i class="fas fa-shield-alt"></i> System Security</div>
@@ -677,9 +679,11 @@
                     </div>
                     <div class="panel">
                         <div class="panel-head">
-                            <h2>Stock Alerts <span class="badge badge-red" id="low-count">0</span></h2>
+                            <h2>Recent Activity <span class="badge badge-purple" id="activity-count">0</span></h2>
                         </div>
-                        <div id="low-stock-list" style="font-size:13px; color:var(--muted);">Loading...</div>
+                        <div id="recent-activity-list"
+                            style="font-size:13px; color:var(--muted); max-height:220px; overflow-y:auto;">Loading...
+                        </div>
                     </div>
                 </div>
             </section>
@@ -792,6 +796,39 @@
                 </div>
             </section>
 
+            <!-- ── COMBINED SALES & ORDERS SECTION ── -->
+            <section id="view-combined" class="view-section">
+                <div class="panel">
+                    <div class="panel-head" style="flex-wrap:wrap; gap:12px;">
+                        <h2><i class="fas fa-layer-group" style="color:var(--ap); margin-right:8px;"></i>All
+                            Transactions</h2>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="month" id="combined-month" class="ainput" style="width:160px;"
+                                onchange="loadCombined()">
+                            <select id="combined-filter" class="ainput" style="width:160px;" onchange="loadCombined()">
+                                <option value="all">Sales + Orders</option>
+                                <option value="sales">Sales Only</option>
+                                <option value="orders">Orders Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="atable" id="tbl-combined">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Ref #</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Profit / Status</th>
+                                <th style="text-align:right;">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="body-combined"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- ── SECURITY SECTION ── -->
             <section id="view-security" class="view-section">
                 <div class="dual">
@@ -853,6 +890,7 @@
             customers: ["VIP Client Database", "Lifetime value & engagement tracking"],
             sales: ["Sales Performance Audit", "Deep financial transaction analysis"],
             orders: ["Order Logistics", "Shipment management & fulfillment status"],
+            combined: ["Sales & Orders", "All transactions in one unified view"],
             security: ["System Security", "Database management & access control"]
         };
 
@@ -867,6 +905,7 @@
             if (view === 'customers') loadCustomers();
             if (view === 'sales') loadSales();
             if (view === 'orders') loadOrders();
+            if (view === 'combined') loadCombined();
         }
 
         /* ── INIT ── */
@@ -911,23 +950,33 @@
         /* ── OVERVIEW ── */
         let revenueChart = null;
         async function renderOverview() {
-            // Stock alerts
-            const inv = await DB.getAllInventory();
-            const low = inv.filter(i => i.stock <= 5);
-            set('low-count', low.length);
-            const box = document.getElementById('low-stock-list');
-            if (!low.length) {
-                box.innerHTML = '<div style="color:#34d399; padding:10px 0;"><i class="fas fa-check-circle" style="margin-right:6px;"></i>All stock levels healthy</div>';
+            // Recent Activity (combined sales + orders, last 8)
+            const [allSales, allOrders] = await Promise.all([DB.getAllSales(), DB.getAllOrders()]);
+            const combined = [
+                ...allSales.map(s => ({ type: 'sale', date: s.date, label: `Sale #SL-${s.id}`, customer: s.customer || 'Guest', amount: s.total, profit: s.total - (s.buyTotal || 0) })),
+                ...allOrders.map(o => ({ type: 'order', date: o.date, label: `Order #${o.orderId || o.id}`, customer: o.customer, amount: o.total, status: o.status }))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+            set('activity-count', combined.length);
+            const box = document.getElementById('recent-activity-list');
+            if (!combined.length) {
+                box.innerHTML = '<div style="color:#64748b; padding:10px 0;"><i class="fas fa-inbox" style="margin-right:6px;"></i>No recent activity</div>';
             } else {
-                box.innerHTML = low.map(i => `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px 14px; background:rgba(248,113,113,0.05); border-radius:10px; border:1px solid rgba(248,113,113,0.1);">
-                    <span>${i.name}</span>
-                    <span class="badge badge-red">${i.stock} LEFT</span>
+                box.innerHTML = combined.map(r => `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:9px 12px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+                    <div>
+                        <span style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:5px; margin-right:6px; ${r.type === 'sale' ? 'background:rgba(139,92,246,0.2); color:#c4b5fd;' : 'background:rgba(251,191,36,0.15); color:#fbbf24;'}">${r.type.toUpperCase()}</span>
+                        <span style="font-size:12px; font-weight:600;">${r.customer}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:12px; font-weight:800; color:#34d399;">Rs. ${fmt(r.amount)}</div>
+                        <div style="font-size:10px; color:var(--muted);">${new Date(r.date).toLocaleDateString()}</div>
+                    </div>
                 </div>`).join('');
             }
 
             // Chart
-            const sales = await DB.getAllSales();
+            const sales = allSales;
             const last7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toISOString().split('T')[0]; });
             const map = Object.fromEntries(last7.map(d => [d, 0]));
             sales.forEach(s => { const d = s.date.split('T')[0]; if (d in map) map[d] += s.total; });
@@ -1102,6 +1151,63 @@
         async function completeOrder(id) {
             await DB.updateOrder(id, { status: 'Completed' });
             loadOrders();
+        }
+
+        /* ── COMBINED SALES & ORDERS ── */
+        async function loadCombined() {
+            const now = new Date();
+            const mInput = document.getElementById('combined-month');
+            if (!mInput.value) mInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const [year, month] = mInput.value.split('-').map(Number);
+            const filterType = document.getElementById('combined-filter').value;
+
+            const [allSales, allOrders] = await Promise.all([DB.getAllSales(), DB.getAllOrders()]);
+
+            const inMonth = item => { const d = new Date(item.date); return d.getFullYear() === year && d.getMonth() + 1 === month; };
+
+            let rows = [];
+            if (filterType !== 'orders') {
+                allSales.filter(inMonth).forEach(s => rows.push({
+                    date: s.date, type: 'sale', ref: '#SL-' + s.id,
+                    customer: s.customer || 'Guest', amount: s.total,
+                    extra: `<span class="badge badge-green">Profit: Rs. ${fmt(s.total - (s.buyTotal || 0))}</span>`,
+                    detail: () => viewSaleItems(s.id)
+                }));
+            }
+            if (filterType !== 'sales') {
+                allOrders.filter(inMonth).forEach(o => rows.push({
+                    date: o.date, type: 'order', ref: '#ORD-' + (o.orderId || o.id),
+                    customer: o.customer, amount: o.total,
+                    extra: `<span class="badge ${o.status === 'Completed' ? 'badge-green' : 'badge-yellow'}">${o.status}</span>`,
+                    detail: null
+                }));
+            }
+
+            rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const tbody = document.getElementById('body-combined');
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--muted);">No transactions for this period</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map((r, i) => `<tr>
+                <td style="font-size:12px;">${new Date(r.date).toLocaleDateString()}</td>
+                <td><span class="badge ${r.type === 'sale' ? 'badge-purple' : 'badge-yellow'}">${r.type.toUpperCase()}</span></td>
+                <td style="font-weight:700;">${r.ref}</td>
+                <td>${r.customer}</td>
+                <td style="font-weight:800; color:#c4b5fd;">Rs. ${fmt(r.amount)}</td>
+                <td>${r.extra}</td>
+                <td style="text-align:right;">${r.detail ? `<button class="abtn abtn-secondary abtn-sm" onclick="loadCombinedDetail(${rows.indexOf(r)})"><i class="fas fa-eye"></i></button>` : '<span style="color:var(--muted); font-size:11px;">—</span>'}</td>
+            </tr>`).join('');
+
+            // store rows for detail lookup
+            window._combinedRows = rows;
+        }
+
+        async function loadCombinedDetail(idx) {
+            const r = window._combinedRows && window._combinedRows[idx];
+            if (!r || !r.detail) return;
+            r.detail();
         }
 
         /* ── SECURITY ── */

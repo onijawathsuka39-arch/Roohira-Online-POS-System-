@@ -213,28 +213,40 @@
             </div>
         </div>
 
-        <!-- Recent Activity Table -->
+        <!-- Combined Sales & Orders Table -->
         <div class="content-wrapper" style="margin-top: 24px;">
-            <div class="table-header">
-                <h2>Recent Transactions</h2>
-                <a href="reports.html" class="btn btn-secondary">View All</a>
+            <div class="table-header" style="flex-wrap:wrap; gap:12px;">
+                <h2><i class="fas fa-layer-group" style="color:var(--primary); margin-right:8px;"></i>Sales &amp; Orders
+                </h2>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <input type="month" id="staff-month"
+                        style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-color); font-size:13px;"
+                        onchange="loadStaffCombined()">
+                    <select id="staff-filter"
+                        style="padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); color:var(--text-color); font-size:13px;"
+                        onchange="loadStaffCombined()">
+                        <option value="all">All Types</option>
+                        <option value="sales">Sales Only</option>
+                        <option value="orders">Orders Only</option>
+                    </select>
+                </div>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Bill ID</th>
-                            <th>Customer</th>
-                            <th>Items Summary</th>
-                            <th>Amount</th>
                             <th>Date</th>
-                            <th>Status</th>
+                            <th>Type</th>
+                            <th>Ref #</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status / Profit</th>
                         </tr>
                     </thead>
-                    <tbody id="recentSalesTable">
+                    <tbody id="staffCombinedTable">
                         <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 40px;">No recent
-                                transactions found</td>
+                            <td colspan="6" style="text-align:center; color:var(--text-dim); padding:40px;">Loading...
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -254,27 +266,8 @@
             document.getElementById('orders-stat').textContent = stats.totalOrders;
             document.getElementById('low-stock-stat').textContent = stats.lowStockCount;
 
-            // Load recent sales
-            const sales = await DB.getAllSales();
-            const tableBody = document.getElementById('recentSalesTable');
-            if (sales.length > 0) {
-                tableBody.innerHTML = '';
-                sales.slice(0, 5).forEach(sale => {
-                    const itemsText = sale.items ? sale.items.map(i => i.name).join(', ') : 'N/A';
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td style="font-weight:600;">#${sale.id}</td>
-                        <td>${sale.customer || 'Guest'}</td>
-                        <td style="font-size:12px; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${itemsText}">
-                            ${itemsText}
-                        </td>
-                        <td>Rs. ${sale.total.toLocaleString()}</td>
-                        <td>${new Date(sale.date).toLocaleDateString()}</td>
-                        <td><span class="badge badge-success">Completed</span></td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            }
+            // Load combined sales + orders for staff
+            await loadStaffCombined();
 
             // Dynamic Chart Logic
             const salesData = await DB.getAllSales();
@@ -356,6 +349,50 @@
                 }
             });
         });
+
+        // Combined Sales + Orders for Staff
+        async function loadStaffCombined() {
+            const now = new Date();
+            const mInput = document.getElementById('staff-month');
+            if (!mInput.value) mInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            const [year, month] = mInput.value.split('-').map(Number);
+            const filterType = document.getElementById('staff-filter').value;
+
+            const [allSales, allOrders] = await Promise.all([DB.getAllSales(), DB.getAllOrders()]);
+            const inMonth = item => { const d = new Date(item.date); return d.getFullYear() === year && d.getMonth() + 1 === month; };
+
+            let rows = [];
+            if (filterType !== 'orders') {
+                allSales.filter(inMonth).forEach(s => rows.push({
+                    date: s.date, type: 'sale', ref: '#SL-' + s.id,
+                    customer: s.customer || 'Guest', amount: s.total,
+                    badge: `<span class="badge badge-success">Profit: Rs. ${(s.total - (s.buyTotal || 0)).toLocaleString()}</span>`
+                }));
+            }
+            if (filterType !== 'sales') {
+                allOrders.filter(inMonth).forEach(o => rows.push({
+                    date: o.date, type: 'order', ref: '#ORD-' + (o.orderId || o.id),
+                    customer: o.customer, amount: o.total,
+                    badge: `<span class="badge ${o.status === 'Completed' || o.status === 'Paid' ? 'badge-success' : 'badge-warning'}">${o.status}</span>`
+                }));
+            }
+
+            rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const tbody = document.getElementById('staffCombinedTable');
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:40px;">No transactions for this period</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map(r => `<tr>
+                <td style="font-size:12px;">${new Date(r.date).toLocaleDateString()}</td>
+                <td><span class="badge ${r.type === 'sale' ? 'badge-primary' : 'badge-warning'}" style="${r.type === 'sale' ? 'background:rgba(190,24,93,0.15); color:var(--primary);' : ''}">${r.type.toUpperCase()}</span></td>
+                <td style="font-weight:700;">${r.ref}</td>
+                <td>${r.customer}</td>
+                <td style="font-weight:700;">Rs. ${r.amount.toLocaleString()}</td>
+                <td>${r.badge}</td>
+            </tr>`).join('');
+        }
     </script>
 </body>
 
