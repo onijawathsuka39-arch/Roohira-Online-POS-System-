@@ -12,8 +12,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@700;800&display=swap"
         rel="stylesheet">
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-    <script src="db.js"></script>
     <style>
         *,
         *::before,
@@ -419,6 +417,25 @@
             document.getElementById('username').focus();
         }
 
+        // ─── HARDCODED FALLBACK CREDENTIALS ───
+        // These ALWAYS work even if IndexedDB / Dexie fails (e.g. GitHub Pages)
+        const FALLBACK_USERS = {
+            'admin': { password: '123', role: 'admin', name: 'Master Admin' },
+            'staff': { password: '123', role: 'staff', name: 'Roohira Staff' }
+        };
+
+        function hardcodedLogin(username, password) {
+            const u = username.trim().toLowerCase();
+            const p = password.trim();
+            const found = FALLBACK_USERS[u];
+            if (found && found.password === p) {
+                const session = { username: u, role: found.role, name: found.name, loginTime: new Date().toISOString() };
+                try { sessionStorage.setItem('ruhira_user', JSON.stringify(session)); } catch (e) { }
+                return session;
+            }
+            return null;
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
@@ -430,29 +447,44 @@
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
 
-            try {
-                await DB.initUsers();
-                const loggedUser = await DB.login(username, password);
+            function loginSuccess(loggedUser) {
+                btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;"></i>Access Granted!';
+                setTimeout(() => {
+                    window.location.href = loggedUser.role === 'admin' ? 'admin.html' : 'index.html';
+                }, 400);
+            }
 
-                if (loggedUser) {
-                    btn.innerHTML = '<i class="fas fa-check" style="margin-right:8px;"></i>Access Granted!';
-                    setTimeout(() => {
-                        window.location.href = loggedUser.role === 'admin' ? 'admin.html' : 'index.html';
-                    }, 400);
-                } else {
-                    errBox.style.display = 'block';
-                    btn.classList.remove('loading');
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>LOGIN TO POS';
-                    document.getElementById('password').value = '';
-                }
-            } catch (err) {
-                console.error(err);
+            function loginFail(msg) {
+                errBox.textContent = msg || 'Invalid username or password';
                 errBox.style.display = 'block';
                 btn.classList.remove('loading');
                 btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i>LOGIN TO POS';
+                document.getElementById('password').value = '';
             }
+
+            // ── LAYER 1: Try IndexedDB-based login ──
+            if (typeof DB !== 'undefined') {
+                try {
+                    await DB.initUsers();
+                    const loggedUser = await DB.login(username, password);
+                    if (loggedUser) { loginSuccess(loggedUser); return; }
+                } catch (err) {
+                    console.warn('DB login failed, trying fallback:', err.message);
+                }
+            }
+
+            // ── LAYER 2: Hardcoded fallback (works on GitHub Pages / fresh DB) ──
+            const fallbackUser = hardcodedLogin(username, password);
+            if (fallbackUser) { loginSuccess(fallbackUser); return; }
+
+            // ── LAYER 3: Nothing matched ──
+            loginFail('⚠️ Invalid username or password. Default: admin / 123');
         });
     </script>
+
+    <!-- DB Scripts at bottom so they don't block page render or login fallback -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="db.js"></script>
 </body>
 
 </html>
