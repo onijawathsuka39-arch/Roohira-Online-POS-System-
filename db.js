@@ -1,11 +1,11 @@
 // Database Structure using Dexie.js
 const db = new Dexie('RuhiraPOS_DB');
 
-db.version(7).stores({
+db.version(8).stores({
     inventory: '++id, name, category, type, stock, buyPrice, sellPrice, size, packageItems',
     sales: '++id, total, buyTotal, date, customer, paymentMethod',
     orders: '++id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date',
-    customers: '++id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints',
+    customers: '++id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic',
     categories: '++id, name, description',
     notes: '++id, title, content, date',
     settings: 'key, value',
@@ -130,6 +130,8 @@ const DB = {
     },
     updateSale: async (id, data) => await db.sales.update(id, data),
     deleteSale: async (id) => await db.sales.delete(id),
+    getSalesByCustomer: async (customerName) => await db.sales.where('customer').equals(customerName).reverse().toArray(),
+    getOrdersByCustomer: async (customerName) => await db.orders.where('customer').equals(customerName).reverse().toArray(),
 
     // Customers
     getAllCustomers: async () => await db.customers.toArray(),
