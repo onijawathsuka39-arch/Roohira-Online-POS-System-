@@ -961,7 +961,7 @@
                             customerId: currentCust ? currentCust.custId : 'Guest',
                             customerPhone: currentCust ? currentCust.phone : 'N/A',
                             paymentMethod: payMethod
-                        });
+                        }, true); // SKIP stock update because DB.addOrder will handle it 100%
                     }
 
                     await DB.addOrder({

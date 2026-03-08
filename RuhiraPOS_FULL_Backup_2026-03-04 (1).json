@@ -1,0 +1,425 @@
+{
+  "inventory": [
+    {
+      "name": "Handloom Bedsheet",
+      "category": "Handloom Bedsheet",
+      "size": "60 * 90",
+      "stock": 2,
+      "buyPrice": 962,
+      "sellPrice": 1200,
+      "type": "regular",
+      "id": 1
+    },
+    {
+      "name": "Handloom Bedsheet",
+      "category": "Handloom Bedsheet",
+      "size": "54 * 80",
+      "stock": 0,
+      "buyPrice": 722,
+      "sellPrice": 950,
+      "type": "regular",
+      "id": 2
+    },
+    {
+      "name": "Towel",
+      "category": "Towel ",
+      "size": "30 * 54",
+      "stock": 1,
+      "buyPrice": 712,
+      "sellPrice": 900,
+      "type": "regular",
+      "id": 3
+    },
+    {
+      "name": "Pillow Covers",
+      "category": "Pillow Covers",
+      "size": "",
+      "stock": 1,
+      "buyPrice": 225,
+      "sellPrice": 250,
+      "type": "regular",
+      "id": 4
+    },
+    {
+      "name": "Red Rous Flower ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 2,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 5
+    },
+    {
+      "name": "Yellow and Green Half ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 1,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 6
+    },
+    {
+      "name": "Indego Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 5,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 7
+    },
+    {
+      "name": "Black and white Leave ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 1,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 8
+    },
+    {
+      "name": "Black and white Leave",
+      "category": "Design Bedsheets",
+      "size": "72 * 90",
+      "stock": 1,
+      "buyPrice": 1220,
+      "sellPrice": 1500,
+      "type": "regular",
+      "id": 9
+    },
+    {
+      "name": "Dark Purple Flower ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 1,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 10
+    },
+    {
+      "name": "For Little Baby",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 2,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 11
+    },
+    {
+      "name": "With Purple Square ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 1,
+      "buyPrice": 1290,
+      "sellPrice": 1900,
+      "type": "regular",
+      "id": 12
+    },
+    {
+      "name": "Green Flower Design ",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 1,
+      "buyPrice": 1220,
+      "sellPrice": 1750,
+      "type": "regular",
+      "id": 13
+    }
+  ],
+  "sales": [
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 3,
+          "buyPrice": 712,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        }
+      ],
+      "total": 900,
+      "buyTotal": 712,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:06:15.081Z",
+      "customer": "Sameera",
+      "customerId": "CUS-101",
+      "customerPhone": "070000000",
+      "paymentMethod": "cash",
+      "id": 6
+    },
+    {
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "54 * 80",
+          "stock": 4,
+          "buyPrice": 722,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 2,
+          "qty": 3
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 8,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 2
+        },
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 4
+        }
+      ],
+      "total": 5900,
+      "buyTotal": 4990,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:17:20.880Z",
+      "customer": "Yasadi Nandha",
+      "customerId": "CUS-105",
+      "customerPhone": "0700000",
+      "paymentMethod": "cash",
+      "id": 8
+    },
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 2,
+          "buyPrice": 712,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "54 * 80",
+          "stock": 1,
+          "buyPrice": 722,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 2,
+          "qty": 1
+        }
+      ],
+      "total": 1800,
+      "buyTotal": 1434,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:18:11.689Z",
+      "customer": "Achchi",
+      "customerId": "CUS-103",
+      "customerPhone": "0710664973",
+      "paymentMethod": "cash",
+      "id": 9
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "ORD-9951",
+      "customer": "Mallika Miss",
+      "customerId": "CUS-104",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1200,
+      "buyTotal": 962,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Pending",
+      "paymentStatus": "pending",
+      "deliveryMethod": "COD",
+      "date": "2026-03-04T18:22:51.509Z",
+      "id": 1
+    },
+    {
+      "orderId": "ORD-6824",
+      "customer": "Chandharathana mama",
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        },
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 1
+        }
+      ],
+      "total": 1400,
+      "status": "pending",
+      "paymentStatus": "pending",
+      "date": "2026-03-04T18:23:12.399Z",
+      "id": 2
+    },
+    {
+      "orderId": "ORD-7435",
+      "customer": "Achchi",
+      "items": [
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 2
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1600,
+      "status": "pending",
+      "paymentStatus": "pending",
+      "date": "2026-03-04T18:25:03.377Z",
+      "id": 3
+    }
+  ],
+  "customers": [
+    {
+      "name": "Sameera",
+      "phone": "070000000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-101",
+      "totalOrders": 1,
+      "totalSpent": 900,
+      "loyaltyPoints": 0,
+      "id": 2
+    },
+    {
+      "name": "Achchi",
+      "phone": "0710664973",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-103",
+      "totalOrders": 1,
+      "totalSpent": 1800,
+      "loyaltyPoints": 0,
+      "id": 4
+    },
+    {
+      "name": "Yasadi Nandha",
+      "phone": "0700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-105",
+      "totalOrders": 1,
+      "totalSpent": 5900,
+      "loyaltyPoints": 20,
+      "id": 7
+    },
+    {
+      "name": "Mallika Miss",
+      "phone": "070700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-104",
+      "totalOrders": 0,
+      "totalSpent": 0,
+      "loyaltyPoints": 0,
+      "id": 8
+    },
+    {
+      "name": "Chandharathana mama",
+      "phone": "077700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-105",
+      "totalOrders": 0,
+      "totalSpent": 0,
+      "loyaltyPoints": 0,
+      "id": 9
+    }
+  ],
+  "categories": [
+    {
+      "name": "Handloom Bedsheet",
+      "id": 1
+    },
+    {
+      "name": "Design Bedsheets",
+      "id": 2
+    },
+    {
+      "name": "Pillow Covers",
+      "id": 3
+    },
+    {
+      "name": "Towel ",
+      "id": 4
+    }
+  ],
+  "notes": [],
+  "settings": [],
+  "backups": [],
+  "version": 5,
+  "exportedAt": "2026-03-04T18:55:03.373Z"
+}

@@ -290,7 +290,7 @@
 
         async function togglePayment(id, currentStatus) {
             if (currentStatus === 'paid') return;
-            if (confirm('Mark this order as PAID? This will record the sale and deduct inventory stock.')) {
+            if (confirm('Mark this order as PAID? This will record the sale record and finalize the transaction.')) {
                 await DB.updateOrderPaymentStatus(id, 'paid');
                 refreshOrders();
             }

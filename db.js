@@ -22,9 +22,42 @@ const DB = {
 
     // Orders
     getAllOrders: async () => await db.orders.orderBy('date').reverse().toArray(),
-    addOrder: async (order) => await db.orders.add({ ...order, date: new Date().toISOString() }),
+    addOrder: async (order) => {
+        // Update inventory stock for ALL items in the order
+        for (const item of order.items) {
+            const dbItem = await db.inventory.get(item.id || item.itemId);
+            if (dbItem) {
+                await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
+            }
+        }
+        return await db.orders.add({ ...order, date: new Date().toISOString() });
+    },
     updateOrder: async (id, data) => await db.orders.update(id, data),
-    updateOrderStatus: async (id, status) => await db.orders.update(id, { status }),
+    updateOrderStatus: async (id, status) => {
+        const order = await db.orders.get(id);
+        if (!order) return;
+
+        // If newly marked as Cancelled, restore stock
+        if (status === 'Cancelled' && order.status !== 'Cancelled') {
+            for (const item of order.items) {
+                const dbItem = await db.inventory.get(item.id || item.itemId);
+                if (dbItem) {
+                    await db.inventory.update(dbItem.id, { stock: dbItem.stock + item.qty });
+                }
+            }
+        }
+        // If moving OUT of Cancelled status, deduct stock again
+        else if (order.status === 'Cancelled' && status !== 'Cancelled') {
+            for (const item of order.items) {
+                const dbItem = await db.inventory.get(item.id || item.itemId);
+                if (dbItem) {
+                    await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
+                }
+            }
+        }
+
+        return await db.orders.update(id, { status });
+    },
     updateOrderPaymentStatus: async (id, paymentStatus) => {
         const order = await db.orders.get(id);
         if (!order) return;
@@ -43,7 +76,7 @@ const DB = {
                 customerId: order.customerId || 'Guest',
                 customerPhone: order.phone || 'N/A',
                 paymentMethod: 'cash'
-            });
+            }, true); // SKIP stock update because it was already deducted on order creation
             await db.orders.update(id, { paymentStatus: 'paid', status: 'Paid' });
         } else {
             await db.orders.update(id, { paymentStatus });
@@ -71,12 +104,14 @@ const DB = {
 
     // Sales
     getAllSales: async () => await db.sales.orderBy('date').reverse().toArray(),
-    addSale: async (sale) => {
-        // Update inventory stock for ALL items in the bill
-        for (const item of sale.items) {
-            const dbItem = await db.inventory.get(item.id || item.itemId);
-            if (dbItem) {
-                await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
+    addSale: async (sale, skipStockUpdate = false) => {
+        if (!skipStockUpdate) {
+            // Update inventory stock for ALL items in the bill
+            for (const item of sale.items) {
+                const dbItem = await db.inventory.get(item.id || item.itemId);
+                if (dbItem) {
+                    await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
+                }
             }
         }
 
