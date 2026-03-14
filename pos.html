@@ -18,13 +18,91 @@
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 15px;
-            height: calc(100vh - 130px);
+            height: calc(100vh - 110px);
             min-height: 500px;
+        }
+
+        .product-selection-area {
+            display: flex;
+            gap: 15px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .category-sidebar {
+            width: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 10px;
+            height: 100%;
+        }
+
+        .category-filter {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: hidden;
+            flex: 1;
+            scroll-behavior: smooth;
+        }
+
+        .cat-nav-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .cat-nav-btn:hover {
+            background: var(--primary-glow);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .cat-chip {
+            padding: 12px 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+
+        .cat-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .product-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             padding: 4px;
             overflow-y: auto;
@@ -40,54 +118,69 @@
             transition: var(--transition);
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 4px;
             text-align: center;
+            height: fit-content;
         }
 
         .product-card:hover {
             border-color: var(--primary);
             background: var(--card-hover);
-            transform: translateY(-4px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
 
         .product-card .img-placeholder {
-            height: 50px;
+            height: 60px;
             background: var(--primary-glow);
             border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
             color: var(--primary);
         }
 
         .product-card .p-name {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 11px;
-            white-space: nowrap;
+            line-height: 1.2;
+            height: 2.4em;
             overflow: hidden;
-            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-clamp: 2;
         }
 
         .product-card .p-price {
-            font-weight: 700;
+            font-weight: 800;
             color: var(--primary);
-            font-size: 12px;
+            font-size: 13px;
+        }
+
+        .cart-item-info h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: var(--text-main);
+        }
+
+        .cart-item-info p {
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 700;
         }
 
         .product-card .p-size {
             font-size: 9px;
             color: var(--text-muted);
-            font-weight: 600;
-            background: var(--border);
-            padding: 1px 4px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
             border-radius: 4px;
             align-self: center;
-        }
-
-        .product-card .p-stock {
-            font-size: 10px;
-            color: var(--text-dim);
+            border: 1px solid var(--border);
         }
 
         .cart-section {
@@ -98,147 +191,59 @@
             border-radius: var(--radius-lg);
             padding: 15px;
             min-height: 0;
+            height: 100%;
         }
 
         .cart-items {
             flex: 1;
             overflow-y: auto;
-            margin: 16px 0;
+            margin: 10px 0;
             display: flex;
             flex-direction: column;
             gap: 12px;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: var(--card-bg);
+            padding-right: 5px;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
+            padding: 10px;
+            background: rgba(0,0,0,0.1);
         }
 
-        .cart-item-info h4 {
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .cart-item-info p {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .cart-totals {
-            border-top: 1px solid var(--border);
-            padding-top: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-        }
-
-        .total-row.grand {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed var(--border);
-        }
-
-        .checkout-btn {
-            width: 100%;
-            justify-content: center;
-            padding: 12px;
-            font-size: 15px;
-            margin-top: 12px;
-        }
-
-        .category-filter {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-        }
-
-        .cat-chip {
-            padding: 6px 12px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: var(--transition);
-        }
-
-        .cat-chip:hover,
-        .cat-chip.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 10px var(--primary-glow);
-        }
-
-        .backlist-alert {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 12px;
-            border-radius: var(--radius-md);
-            margin-bottom: 16px;
-            display: none;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* Compact Modal Styles */
         #checkoutModal .modal {
-            padding: 24px;
-            max-width: 550px;
-            gap: 12px;
-            display: flex;
-            flex-direction: column;
+            max-width: 600px;
+            width: 95%;
         }
 
-        #checkoutModal .modal-header {
-            margin-bottom: 12px;
+        @media (max-width: 1200px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
-        #checkoutModal h1#modal-total {
-            font-size: 36px;
-            margin-bottom: 12px;
+        @media (max-width: 992px) {
+            .pos-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+            .product-selection-area {
+                height: 600px;
+            }
+            .cart-section {
+                height: 600px;
+            }
         }
 
-        #checkoutModal .input-group {
-            margin-bottom: 12px;
-        }
-
-        #checkoutModal .input-group label {
-            margin-bottom: 4px;
-            font-size: 11px;
-        }
-
-        #checkoutModal input,
-        #checkoutModal select {
-            padding: 8px 12px;
-        }
-
-        #checkoutModal .modal-footer-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 12px;
+        @media (max-width: 600px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .category-sidebar {
+                width: 90px;
+            }
+            .cat-chip {
+                font-size: 9px;
+                padding: 8px 4px;
+            }
         }
     </style>
 </head>
@@ -281,8 +286,13 @@
 
     <main class="main-content" style="padding: 15px;">
         <header class="header-top" style="margin-bottom: 12px;">
-            <div class="page-title">
-                <h1 style="font-size: 20px;">POS Terminal</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="hamburger-menu" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="page-title">
+                    <h1 style="font-size: 20px;">POS Terminal</h1>
+                </div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 16px;">
@@ -300,54 +310,54 @@
         </header>
 
         <div class="pos-grid">
-            <!-- Product Selection -->
-            <div class="content-wrapper" style="display: flex; flex-direction: column;">
-                <div class="category-filter" id="categoryTabs">
-                    <div class="cat-chip active" data-category="all">All Products</div>
-                    <!-- Categories will be injected here -->
+            <!-- Product Selection Area -->
+            <div class="product-selection-area">
+                <div class="category-sidebar">
+                    <button class="cat-nav-btn" onclick="scrollCategories('up')">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                    <div class="category-filter" id="categoryTabs">
+                        <div class="cat-chip active" data-category="all">All Items</div>
+                        <!-- Categories will be injected here -->
+                    </div>
+                    <button class="cat-nav-btn" onclick="scrollCategories('down')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
 
-                <div class="product-grid" id="productGrid">
-                    <!-- Products will be injected here -->
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--text-dim);">
-                        <i class="fas fa-search" style="font-size: 40px; margin-bottom: 16px;"></i>
-                        <p>No products found. Add some in the Inventory page.</p>
+                <div class="product-main">
+                    <div class="product-grid" id="productGrid">
+                        <!-- Products will be injected here -->
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--text-dim);">
+                            <i class="fas fa-search" style="font-size: 40px; margin-bottom: 16px;"></i>
+                            <p>No products found. Add some in the Inventory page.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Cart Section -->
             <div class="cart-section">
-                <div class="table-header" style="flex-direction:column; align-items:flex-start; gap:8px;">
+                <div class="table-header" style="flex-direction:column; align-items:flex-start; gap:10px;">
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <h3>Current Order</h3>
-                        <button class="btn btn-secondary" onclick="clearCart()"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <div style="font-size:11px; color:var(--text-muted);" id="order-id-display">ID: #0000</div>
-                        <div
-                            style="display:flex; align-items:center; gap:4px; font-size:10px; color:var(--success); font-weight:700;">
-                            <i class="fas fa-database"></i> AUTO-SAVING...
+                        <h3 style="font-size: 18px; font-weight: 800; color: var(--primary);">Current Order</h3>
+                        <div style="display:flex; gap: 8px; align-items:center;">
+                            <div style="font-size:11px; color:var(--text-muted); font-weight:700;" id="order-id-display">ID: #0000</div>
+                            <button class="btn btn-secondary" onclick="clearCart()" style="padding: 5px 10px;"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
-                </div>
 
-                <div class="input-group" style="margin-top: 10px;">
-                    <label>Customer Name / ID</label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="text" id="cust-name" list="cust-list" placeholder="Search Name, ID or Phone"
-                            style="flex:1;">
-                        <button class="btn btn-secondary" id="loyalty-tag"
-                            style="display:none; font-size:11px; padding:4px 8px; color:#f59e0b; border-color:#f59e0b;">
-                            <i class="fas fa-star"></i> <span id="loyalty-val">0</span>
-                        </button>
+                    <div class="input-group" style="width: 100%; margin-bottom: 0;">
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="cust-name" list="cust-list" placeholder="Customer Name / ID"
+                                style="flex:1; padding: 10px; font-weight: 600; border-color: var(--primary);">
+                            <button class="btn btn-secondary" id="loyalty-tag"
+                                style="display:none; font-size:11px; padding:4px 8px; color:#f59e0b; border-color:#f59e0b;">
+                                <i class="fas fa-star"></i> <span id="loyalty-val">0</span>
+                            </button>
+                        </div>
+                        <datalist id="cust-list"></datalist>
                     </div>
-                    <datalist id="cust-list"></datalist>
-                </div>
-
-                <div class="backlist-alert" id="backlist-warning">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>WARNING: This customer is in the Blacklist!</span>
                 </div>
 
                 <div class="cart-items" id="cartItems">
@@ -598,28 +608,36 @@
                 const val = e.target.value;
                 const customers = await DB.getAllCustomers();
                 let cust = customers.find(c => c.name === val || c.custId === val || c.phone === val);
-                const alert = document.getElementById('backlist-warning');
                 const loyaltyTag = document.getElementById('loyalty-tag');
                 const loyaltyVal = document.getElementById('loyalty-val');
                 const loyaltySection = document.getElementById('loyalty-section');
 
                 if (cust) {
                     currentCust = cust;
-                    alert.style.display = cust.isBlacklisted ? 'flex' : 'none';
-                    loyaltyTag.style.display = 'flex';
-                    loyaltyVal.textContent = cust.loyaltyPoints || 0;
+                    if (loyaltyTag) {
+                        loyaltyTag.style.display = 'flex';
+                        loyaltyVal.textContent = cust.loyaltyPoints || 0;
+                    }
 
                     // 10 points = Rs. 5, so 1 point = Rs. 0.5
                     const pointsValue = (cust.loyaltyPoints || 0) * 0.5;
-                    document.getElementById('max-pts-val').textContent = pointsValue.toLocaleString();
+                    const maxPtsVal = document.getElementById('max-pts-val');
+                    if (maxPtsVal) maxPtsVal.textContent = pointsValue.toLocaleString();
 
-                    loyaltySection.style.display = (cust.loyaltyPoints >= 10) ? 'block' : 'none';
+                    if (loyaltySection) {
+                        loyaltySection.style.display = (cust.loyaltyPoints >= 1) ? 'block' : 'none';
+                    }
+                    
+                    if (cust.isBlacklisted) {
+                        console.warn("User is blacklisted:", cust.name);
+                        // Optionally show a subtle indicator if needed, but per request warning was removed
+                    }
                 } else {
                     currentCust = null;
-                    alert.style.display = 'none';
-                    loyaltyTag.style.display = 'none';
-                    loyaltySection.style.display = 'none';
-                    document.getElementById('loyalty-applied-cash').value = 0;
+                    if (loyaltyTag) loyaltyTag.style.display = 'none';
+                    if (loyaltySection) loyaltySection.style.display = 'none';
+                    const appliedCash = document.getElementById('loyalty-applied-cash');
+                    if (appliedCash) appliedCash.value = 0;
                 }
                 updateCartUI();
             });
@@ -627,6 +645,7 @@
 
         function renderCategories(categories) {
             const container = document.getElementById('categoryTabs');
+            container.innerHTML = '<div class="cat-chip active" data-category="all">All Items</div>'; // Added 'All Items' chip
             categories.forEach(cat => {
                 const chip = document.createElement('div');
                 chip.className = 'cat-chip';
@@ -637,9 +656,37 @@
             });
         }
 
+        async function refreshCategories() {
+            const cats = await DB.getAllCategories();
+            const tabContainer = document.getElementById('categoryTabs');
+            tabContainer.innerHTML = '<div class="cat-chip active" data-category="all">All Items</div>';
+            cats.forEach(c => {
+                const chip = document.createElement('div');
+                chip.className = 'cat-chip';
+                chip.innerText = c.name;
+                chip.dataset.category = c.name;
+                chip.onclick = () => {
+                    document.querySelectorAll('.cat-chip').forEach(x => x.classList.remove('active'));
+                    chip.classList.add('active');
+                    filterByCategory(c.name); // Changed from filterCategory to filterByCategory
+                };
+                tabContainer.appendChild(chip);
+            });
+        }
+
+        function scrollCategories(direction) {
+            const container = document.getElementById('categoryTabs');
+            const scrollAmount = 200;
+            if (direction === 'up') {
+                container.scrollTop -= scrollAmount;
+            } else {
+                container.scrollTop += scrollAmount;
+            }
+        }
+
         function filterByCategory(catName, chip) {
             document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
+            if (chip) chip.classList.add('active'); // Check if chip exists before adding class
 
             if (catName === 'all') {
                 renderProducts(allProducts);

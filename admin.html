@@ -46,7 +46,7 @@
         }
 
         /* ── SIDEBAR ── */
-        .sid {
+        .sidebar {
             width: 270px;
             min-width: 270px;
             background: var(--sid);
@@ -54,6 +54,14 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            position: fixed;
+            left: -270px; /* Hide by default */
+            z-index: 1000;
+            transition: 0.3s ease;
+        }
+
+        .sidebar.show {
+            left: 0;
         }
 
         .sid-brand {
@@ -155,11 +163,13 @@
         }
 
         /* ── MAIN ── */
-        .main {
+        .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            margin-left: 0;
+            transition: 0.3s ease;
         }
 
         /* Header */
@@ -624,7 +634,7 @@
 <body>
 
     <!-- ═══ SIDEBAR ═══ -->
-    <aside class="sid">
+    <aside class="sidebar">
         <div class="sid-brand">
             <div class="sid-logo"><i class="fas fa-brain"></i></div>
             <div>
@@ -660,12 +670,17 @@
     </aside>
 
     <!-- ═══ MAIN ═══ -->
-    <main class="main">
+    <main class="main-content">
         <!-- Top Bar -->
         <header class="topbar">
-            <div class="topbar-left">
-                <h1 id="view-title">Performance Dashboard</h1>
-                <p id="view-subtitle">Real-time business intelligence &amp; audit</p>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="hamburger-menu" id="sidebarToggle" style="color: var(--txt); font-size: 20px; cursor: pointer;">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="topbar-left">
+                    <h1 id="view-title">Performance Dashboard</h1>
+                    <p id="view-subtitle">Real-time business intelligence &amp; audit</p>
+                </div>
             </div>
             <div class="topbar-right">
                 <div class="profile-pill">

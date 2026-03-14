@@ -100,9 +100,14 @@
 
     <main class="main-content">
         <header class="header-top">
-            <div class="page-title">
-                <h1>Notes & Reminders</h1>
-                <p>Keep track of shop tasks, ideas, and reminders</p>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="hamburger-menu" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="page-title">
+                    <h1>Notes & Reminders</h1>
+                    <p>Keep track of shop tasks, ideas, and reminders</p>
+                </div>
             </div>
             <button class="btn btn-primary" onclick="openModal('noteModal')"><i class="fas fa-plus"></i> New
                 Note</button>

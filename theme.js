@@ -1,9 +1,10 @@
-// Theme & Auth Management
+// Theme, Auth & Sidebar Management
 const themeManager = {
     init() {
         const savedTheme = localStorage.getItem('pos-theme') || 'dark';
         this.setTheme(savedTheme);
         this.checkAuth();
+        this.initSidebar();
     },
 
     checkAuth() {
@@ -43,6 +44,25 @@ const themeManager = {
             window.location.href = 'admin.html';
         } else if (user.role === 'staff' && adminPages.includes(currentPage)) {
             window.location.href = 'index.html';
+        }
+    },
+
+    initSidebar() {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('show');
+            });
+
+            // Close sidebar when clicking outside
+            document.addEventListener('click', (e) => {
+                if (sidebar.classList.contains('show') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            });
         }
     },
 
