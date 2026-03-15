@@ -163,12 +163,22 @@ const DB = {
         const inventory = await db.inventory.toArray();
         const customers = await db.customers.toArray();
 
-        const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-        const totalProfit = sales.reduce((sum, s) => sum + (s.total - (s.buyTotal || 0)), 0);
-        const lowStockCount = inventory.filter(i => i.stock <= 5).length;
+        const totalRevenue = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+        const totalProfit = sales.reduce((sum, s) => {
+            const revenue = Number(s.total) || 0;
+            const cost = Number(s.buyTotal) || 0;
+            return sum + (revenue - cost);
+        }, 0);
+        const lowStockCount = inventory.filter(i => (Number(i.stock) || 0) <= 5).length;
         const totalOrders = sales.length;
 
-        return { totalRevenue, totalProfit, totalOrders, totalCustomers: customers.length, lowStockCount };
+        return { 
+            totalRevenue: Number(totalRevenue.toFixed(2)), 
+            totalProfit: Number(totalProfit.toFixed(2)), 
+            totalOrders, 
+            totalCustomers: customers.length, 
+            lowStockCount 
+        };
     },
 
     // CSV Export Utility

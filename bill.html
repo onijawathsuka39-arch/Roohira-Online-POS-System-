@@ -13,6 +13,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- QR Code Generator Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Dexie and DB -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="db.js"></script>
     <style>
         /* Windows XP Theme */
         :root {
@@ -629,20 +632,93 @@
             color: #666;
         }
         
-        /* Bill item selection styles */
-        .bill-item-row {
+        /* POS Terminal Style Bill Item Cards */
+        #billItemsContainer {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+            padding: 5px;
+        }
+
+        .bill-item-row {
+            display: flex;
+            flex-direction: column;
             gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
+            padding: 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .bill-item-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .bill-item-row .remove-btn-container {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            z-index: 5;
+        }
+
+        .bill-item-row .card-title-area {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 8px;
+            margin-bottom: 5px;
+        }
+
+        .bill-item-row .card-grid-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .bill-item-row .label-small {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .bill-item-row .input-styled {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 13px;
         }
         
         .bill-items-container {
             margin: 15px 0;
+            padding: 20px;
+            background: rgba(0,0,0,0.03);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+        }
+
+        .quick-add-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            background: var(--accent);
             padding: 15px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .quick-add-container input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
         }
         
         .bill-summary {
@@ -841,15 +917,17 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <div class="brand" style="gap:18px">
-                <div class="pay-logos" style="display:flex;gap:12px;align-items:center">
-                    <img src="https://via.placeholder.com/80" style="height:80px;border-radius:8px" alt="logo">
-                    <div>
-                        <div id="brand-title" class="brand-title-small" style="font-size:20px">Roohira Online</div>
-                        <div class="muted muted-small" style="font-size:29px">Billing System</div>
-                    </div>
+            <div class="brand" style="display: flex; align-items: center; gap: 20px;">
+                <div class="hamburger-menu" id="sidebarToggle" style="color: white; font-size: 20px; cursor: pointer; background: var(--xp-blue-dark); padding: 8px 12px; border-radius: 4px;">
+                    <i class="fas fa-bars"></i>
                 </div>
-                <div class="header-actions">
+                <div class="logo">RO</div>
+                <div>
+                    <div id="brand-title" class="brand-title-small" style="font-size:20px; font-weight:800; color:var(--xp-blue-dark)">Roohira Online</div>
+                    <div class="muted muted-small" style="font-size:11px; letter-spacing:1px; text-transform:uppercase;">Billing System</div>
+                </div>
+            </div>
+            <div class="header-actions">
                     <div class="theme-toggle" id="themeToggle">
                         <span>🌙</span> Dark Mode
                     </div>
@@ -1031,16 +1109,23 @@
                     </div>
                 </div>
                 
-                <h3 style="color: var(--primary); margin-bottom: 15px;">Order Items (Select from Inventory)</h3>
+                <h3 style="color: var(--primary); margin-bottom: 15px;">Add Order Items (Search or Manual Entry)</h3>
                 <div class="bill-items-container">
+                    <!-- Terminal Style Search -->
+                    <div class="quick-add-container">
+                        <input type="text" id="terminalSearch" placeholder="Search Inventory (Name, ID, Category) or Type Custom Item Name..." list="inventoryList">
+                        <datalist id="inventoryList"></datalist>
+                        <button type="button" class="btn success" id="quickAddBtn" style="font-weight: bold; padding: 0 20px;">
+                            <i class="fas fa-plus"></i> ADD
+                        </button>
+                    </div>
+
                     <div id="billItemsContainer">
-                        <div id="noItemsMessage" style="text-align: center; padding: 20px; color: var(--muted); font-style: italic;">
-                            No items added. Click "Add Item" to start.
+                        <div id="noItemsMessage" style="text-align: center; padding: 30px; color: var(--muted); font-style: italic;">
+                            <i class="fas fa-shopping-cart" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                            No items added. Use the search bar above to add products.
                         </div>
                     </div>
-                    <button type="button" class="btn btn-primary" id="addBillItem" style="margin-top: 10px;">
-                        <i class="fas fa-plus"></i> Add Item from Inventory
-                    </button>
                 </div>
                 
                 <div class="bill-summary">
@@ -1151,51 +1236,14 @@
         let facebookURL = 'https://www.facebook.com/yourpage'; // Default Facebook URL
         let autoSaveEnabled = true;
 
-        // Load Data from LocalStorage
-        function loadData() {
+        // Load Data from LocalStorage/IndexedDB
+        async function loadData() {
             try {
-                inventory = JSON.parse(localStorage.getItem(STORAGE_KEYS.INVENTORY)) || [];
-                billHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.BILL_HISTORY)) || [];
+                // Load from IndexedDB (POS Inventory)
+                inventory = await DB.getAllInventory();
                 
-                // Initialize default inventory if empty
-                if (inventory.length === 0) {
-                    inventory = [
-                        { 
-                            id: '1', 
-                            name: 'Men\'s T-Shirt', 
-                            size: 'M', 
-                            color: 'Black',
-                            category: 'Men',
-                            buyPrice: 800,
-                            sellPrice: 1500,
-                            stock: 50,
-                            type: 'regular'
-                        },
-                        { 
-                            id: '2', 
-                            name: 'Women\'s Dress', 
-                            size: 'L', 
-                            color: 'Red',
-                            category: 'Women',
-                            buyPrice: 2000,
-                            sellPrice: 4500,
-                            stock: 30,
-                            type: 'regular'
-                        },
-                        { 
-                            id: '3', 
-                            name: 'Kids Package', 
-                            size: 'S', 
-                            color: 'Mixed',
-                            category: 'Kids',
-                            buyPrice: 3000,
-                            sellPrice: 6000,
-                            stock: 20,
-                            type: 'package'
-                        }
-                    ];
-                    saveInventory();
-                }
+                // Load Bill History from LocalStorage
+                billHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.BILL_HISTORY)) || [];
                 
                 // Load theme
                 const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
@@ -1822,65 +1870,60 @@ yPosition += addressBoxHeight + 8;
             doc.text('Contact: 072-089-8640 / 071-443-3279 (WhatsApp)', pageWidth/2, textY + 4, { align: 'center' });
             doc.text('Your Trusted Online Fashion Partner', pageWidth/2, textY + 8, { align: 'center' });
             
-            // **STEP 2: Generate SYSTEM QR Code for invoice details (LEFT SIDE)**
-            try {
-                // Create SYSTEM QR Code with invoice details
-                const systemQRData = {
-                    invoiceId: orderData.orderId,
-                    customerName: orderData.customerInfo.name,
-                    totalAmount: total,
-                    date: currentDate.toLocaleDateString('en-LK'),
-                    company: 'Roohira Online'
+                // **STEP 2: Generate SYSTEM QR Code for invoice details (LEFT SIDE)**
+                const addSystemQR = () => {
+                    return new Promise((qrResolve) => {
+                        try {
+                            const systemQRData = {
+                                invoiceId: orderData.orderId,
+                                customerName: orderData.customerInfo.name,
+                                totalAmount: total,
+                                date: currentDate.toLocaleDateString('en-LK'),
+                                company: 'Roohira Online'
+                            };
+                            
+                            const systemQRText = JSON.stringify(systemQRData);
+                            const tempDiv = document.createElement('div');
+                            tempDiv.style.display = 'none';
+                            document.body.appendChild(tempDiv);
+                            
+                            new QRCode(tempDiv, {
+                                text: systemQRText,
+                                width: 80,
+                                height: 80,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff",
+                                correctLevel: QRCode.CorrectLevel.H
+                            });
+                            
+                            // Small delay to ensure canvas is ready
+                            setTimeout(() => {
+                                const canvas = tempDiv.querySelector('canvas');
+                                if (canvas) {
+                                    const systemQRCode = canvas.toDataURL('image/png');
+                                    const systemQrSize = 14;
+                                    const systemQrX = margin;
+                                    const systemQrY = textY + 2;
+                                    doc.addImage(systemQRCode, 'PNG', systemQrX, systemQrY, systemQrSize, systemQrSize);
+                                    
+                                    doc.setFontSize(6);
+                                    doc.setFont(undefined, 'bold');
+                                    doc.setTextColor(0, 100, 0); 
+                                    doc.text('Invoice QR', systemQrX + (systemQrSize/2), systemQrY + systemQrSize + 2, { align: 'center' });
+                                    qrResolve();
+                                } else {
+                                    qrResolve();
+                                }
+                                document.body.removeChild(tempDiv);
+                            }, 50);
+                        } catch (e) {
+                            console.error('QR Error:', e);
+                            qrResolve();
+                        }
+                    });
                 };
-                
-                const systemQRText = JSON.stringify(systemQRData);
-                
-                // Create temporary div for system QR code
-                const tempDiv = document.createElement('div');
-                tempDiv.style.display = 'none';
-                document.body.appendChild(tempDiv);
-                
-                // Generate SYSTEM QR code
-                new QRCode(tempDiv, {
-                    text: systemQRText,
-                    width: 80,
-                    height: 80,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-                
-                // Get SYSTEM QR code as data URL
-                setTimeout(() => {
-                    const canvas = tempDiv.querySelector('canvas');
-                    if (canvas) {
-                        const systemQRCode = canvas.toDataURL('image/png');
-                        
-                        // Add SYSTEM QR Code on LEFT SIDE
-                        const systemQrSize = 14;
-                        const systemQrX = margin;
-                        const systemQrY = textY + 2;
-                        
-                        doc.addImage(systemQRCode, 'PNG', systemQrX, systemQrY, systemQrSize, systemQrSize);
-                        
-                        // SYSTEM QR Code labels
-                        doc.setFontSize(6);
-                        doc.setFont(undefined, 'bold');
-                        doc.setTextColor(0, 100, 0); // GREEN color for system QR
-                        doc.text('Invoice QR', systemQrX + (systemQrSize/2), systemQrY + systemQrSize + 2, { align: 'center' });
-                        
-                        doc.setFont(undefined, 'normal');
-                        doc.setFontSize(5);
-                        doc.text('Scan for details', systemQrX + (systemQrSize/2), systemQrY + systemQrSize + 4, { align: 'center' });
-                    }
-                    
-                    // Clean up
-                    document.body.removeChild(tempDiv);
-                }, 100);
-                
-            } catch (e) {
-                console.log('Could not generate system QR code:', e);
-            }
+
+                await addSystemQR();
             
             // **STEP 3: Add CUSTOM QR Code on RIGHT SIDE (user uploaded/generated)**
             if (currentQRCode) {
@@ -1958,29 +2001,23 @@ function fallbackFooter(doc, pageWidth, footerY) {
             // Get items from bill items container
             const itemRows = document.querySelectorAll('.bill-item-row');
             itemRows.forEach(row => {
-                const select = row.querySelector('.bill-item-select');
-                const quantityInput = row.querySelector('.item-qty-input');
-                const priceInput = row.querySelector('.item-price-input');
-                const totalDisplay = row.querySelector('.item-total-display');
-                const sizeDisplay = row.querySelector('.item-size-display');
+                const nameIn = row.querySelector('.item-name-input');
+                const sizeIn = row.querySelector('.item-size-input');
+                const qtyIn = row.querySelector('.item-qty-input');
+                const priceIn = row.querySelector('.item-price-input');
                 
-                if (select && select.value) {
-                    const itemId = select.value;
-                    const inventoryItem = inventory.find(item => item.id === itemId);
+                if (nameIn && nameIn.value) {
+                    const quantity = parseInt(qtyIn.value) || 1;
+                    const price = parseFloat(priceIn.value) || 0;
+                    const total = quantity * price;
                     
-                    if (inventoryItem) {
-                        const quantity = parseInt(quantityInput.value) || 1;
-                        const price = parseFloat(priceInput.value) || inventoryItem.sellPrice;
-                        const total = parseFloat(totalDisplay.textContent.replace('Rs. ', '').replace(',', '')) || (quantity * price);
-                        
-                        orderData.items.push({
-                            name: inventoryItem.name,
-                            size: inventoryItem.size || 'N/A',
-                            quantity: quantity,
-                            price: price,
-                            total: total
-                        });
-                    }
+                    orderData.items.push({
+                        name: nameIn.value,
+                        size: sizeIn.value || 'N/A',
+                        quantity: quantity,
+                        price: price,
+                        total: total
+                    });
                 }
             });
             
@@ -1993,104 +2030,116 @@ function fallbackFooter(doc, pageWidth, footerY) {
             return orderData;
         }
 
-        // Add Bill Item from Inventory
-        function addBillItemFromInventory(item = null) {
+        // Generate datalist for terminal search
+        function updateInventoryDatalist() {
+            const datalist = document.getElementById('inventoryList');
+            if (!datalist) return;
+            datalist.innerHTML = '';
+            inventory.forEach(item => {
+                const opt = document.createElement('option');
+                // Display Name (Size) [Category]
+                opt.value = `${item.name} (${item.size || 'N/A'}) [${item.category || 'Uncategorized'}]`;
+                opt.dataset.id = item.id;
+                datalist.appendChild(opt);
+            });
+        }
+
+        // Add Bill Item Row - Improved for Manual & Inventory Selection
+        function addBillItemRow(itemData = null) {
             const container = document.getElementById('billItemsContainer');
             const noItemsMessage = document.getElementById('noItemsMessage');
             
-            if (noItemsMessage) {
-                noItemsMessage.style.display = 'none';
-            }
+            if (noItemsMessage) noItemsMessage.style.display = 'none';
             
             const rowId = 'bill_item_' + Date.now();
             const row = document.createElement('div');
             row.className = 'bill-item-row';
             row.id = rowId;
             
-            // Create item select options
-            let optionsHtml = '<option value="">Select Item...</option>';
-            inventory.forEach(invItem => {
-                let typeLabel = invItem.type === 'package' ? '📦 Package' : '👕 Regular';
-                optionsHtml += `<option value="${invItem.id}" ${item && item.id === invItem.id ? 'selected' : ''}>
-                    ${invItem.name} ${invItem.type === 'package' ? '(Package)' : ''} (${invItem.size || 'N/A'}, ${invItem.color || 'N/A'}) - Stock: ${invItem.stock} - Sell: Rs. ${formatNumber(invItem.sellPrice)} - ${typeLabel}
-                </option>`;
-            });
-            
+            const name = itemData ? itemData.name : '';
+            const size = itemData ? (itemData.size || 'N/A') : 'N/A';
+            const price = itemData ? (itemData.sellPrice || 0) : 0;
+            const itemId = itemData ? itemData.id : '';
+
             row.innerHTML = `
-                <div class="item-selection" style="position: relative;">
-                    <select class="bill-item-select" style="width: 100%; padding: 6px;">
-                        ${optionsHtml}
-                    </select>
-                </div>
-                <div>
-                    <span class="item-size-display" style="padding: 6px; display: block;">${item ? (item.size || 'N/A') : 'N/A'}</span>
-                </div>
-                <div>
-                    <input type="number" class="item-qty-input" min="1" value="${item ? 1 : 1}" style="width: 100%; padding: 6px;" placeholder="Qty">
-                </div>
-                <div>
-                    <input type="number" class="item-price-input" min="0" step="0.01" value="${item ? item.sellPrice : 0}" style="width: 100%; padding: 6px;" placeholder="Unit Price">
-                </div>
-                <div>
-                    <span class="item-total-display" style="padding: 6px; display: block;">Rs. ${formatNumber(item ? item.sellPrice : 0)}</span>
-                </div>
-                <div>
-                    <button type="button" class="btn btn-small btn-danger" onclick="removeBillItemRow('${rowId}')">
-                        <i class="fas fa-times"></i>
+                <div class="remove-btn-container">
+                    <button type="button" class="btn danger btn-small" style="border-radius: 50%; width: 28px; height: 28px; padding: 0;" onclick="removeBillItemRow('${rowId}')">
+                        <i class="fas fa-times" style="font-size: 12px;"></i>
                     </button>
+                </div>
+                
+                <div class="card-title-area">
+                    <label class="label-small">Product Name</label>
+                    <input type="text" class="item-name-input input-styled" value="${name}" placeholder="Item Name" style="font-weight: bold; color: var(--accent);">
+                    <input type="hidden" class="item-id-hidden" value="${itemId}">
+                </div>
+                
+                <div class="card-grid-details">
+                    <div>
+                        <label class="label-small">Size</label>
+                        <input type="text" class="item-size-input input-styled" value="${size}" placeholder="Size">
+                    </div>
+                    <div>
+                        <label class="label-small">Quantity</label>
+                        <input type="number" class="item-qty-input input-styled" min="1" value="1" placeholder="Qty">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 5px;">
+                    <label class="label-small">Unit Price (Rs.)</label>
+                    <input type="number" class="item-price-input input-styled" min="0" step="0.01" value="${price}" placeholder="0.00">
+                </div>
+                
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 2px dashed rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 11px; color: var(--muted); font-weight: bold;">SUBTOTAL:</span>
+                    <span class="item-total-display" style="font-weight: 800; color: var(--success); font-size: 16px;">Rs. ${formatNumber(price)}</span>
                 </div>
             `;
             
             container.appendChild(row);
             
-            // Add event listeners
-            const qtyInput = row.querySelector('.item-qty-input');
-            const priceInput = row.querySelector('.item-price-input');
-            const itemSelect = row.querySelector('.bill-item-select');
-            const totalDisplay = row.querySelector('.item-total-display');
-            const sizeDisplay = row.querySelector('.item-size-display');
+            // Event Listeners for Dynamic Calculation
+            const qtyIn = row.querySelector('.item-qty-input');
+            const priceIn = row.querySelector('.item-price-input');
+            const totalOut = row.querySelector('.item-total-display');
             
-            const updateItemTotal = () => {
-                const qty = Number(qtyInput.value) || 0;
-                const price = Number(priceInput.value) || 0;
-                const total = qty * price;
-                totalDisplay.textContent = `Rs. ${formatNumber(total)}`;
+            const updateRow = () => {
+                const q = parseFloat(qtyIn.value) || 0;
+                const p = parseFloat(priceIn.value) || 0;
+                totalOut.textContent = `Rs. ${formatNumber(q * p)}`;
                 updateBillSummary();
             };
             
-            qtyInput.addEventListener('input', updateItemTotal);
-            priceInput.addEventListener('input', updateItemTotal);
+            qtyIn.addEventListener('input', updateRow);
+            priceIn.addEventListener('input', updateRow);
             
-            itemSelect.addEventListener('change', function() {
-                const selectedItemId = this.value;
-                if (selectedItemId) {
-                    const selectedItem = inventory.find(item => item.id === selectedItemId);
-                    if (selectedItem) {
-                        // Update size display
-                        sizeDisplay.textContent = selectedItem.size || 'N/A';
-                        
-                        // Update price input
-                        priceInput.value = selectedItem.sellPrice;
-                        
-                        // Check stock availability
-                        if (parseInt(qtyInput.value) > selectedItem.stock) {
-                            showInvoiceAlert(`Only ${selectedItem.stock} items available in stock!`, 'error');
-                            qtyInput.value = selectedItem.stock;
-                        }
-                        
-                        updateItemTotal();
-                    }
-                } else {
-                    // Reset if no item selected
-                    sizeDisplay.textContent = 'N/A';
-                    priceInput.value = 0;
-                    updateItemTotal();
-                }
-            });
-            
-            updateItemTotal();
             updateBillSummary();
         }
+
+        // Terminal Search & Add Implementation
+        document.getElementById('quickAddBtn').addEventListener('click', () => {
+            const input = document.getElementById('terminalSearch');
+            const val = input.value.trim();
+            if (!val) return;
+
+            // Try to find in inventory first (matches the datalist value pattern)
+            const matchedItem = inventory.find(i => `${i.name} (${i.size || 'N/A'}) [${i.category || 'Uncategorized'}]` === val || i.name === val);
+            
+            if (matchedItem) {
+                addBillItemRow(matchedItem);
+            } else {
+                // Add as manual entry
+                addBillItemRow({ name: val, size: 'N/A', sellPrice: 0 });
+            }
+            
+            input.value = '';
+            input.focus();
+        });
+
+        // Allow pressing Enter in search
+        document.getElementById('terminalSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('quickAddBtn').click();
+        });
 
         // Remove Bill Item Row
         window.removeBillItemRow = function(rowId) {
@@ -2118,7 +2167,8 @@ function fallbackFooter(doc, pageWidth, footerY) {
             itemRows.forEach(row => {
                 const totalDisplay = row.querySelector('.item-total-display');
                 if (totalDisplay) {
-                    const totalText = totalDisplay.textContent.replace('Rs. ', '').replace(',', '');
+                    // Correctly handle multiple commas in formatted numbers
+                    const totalText = totalDisplay.textContent.replace('Rs. ', '').replace(/,/g, '');
                     subtotal += parseFloat(totalText) || 0;
                 }
             });
@@ -2150,13 +2200,37 @@ function fallbackFooter(doc, pageWidth, footerY) {
                 
                 // Add to beginning of array
                 billHistory.unshift(billRecord);
-                
-                // Keep only last 100 bills
                 billHistory = billHistory.slice(0, 100);
                 saveBillHistory();
-                
-                // Update display
                 displayBillHistory();
+
+                // Sync with main sales database
+                const syncSale = async () => {
+                    const buyTotal = orderData.items.reduce((sum, item) => {
+                        // Try to find buy price in inventory for accurate profit
+                        const invItem = inventory.find(i => i.name === item.name);
+                        return sum + ((invItem ? Number(invItem.buyPrice) : 0) * (Number(item.quantity) || 0));
+                    }, 0);
+
+                    await DB.addSale({
+                        items: orderData.items.map(i => ({
+                            name: i.name,
+                            qty: Number(i.quantity) || 0,
+                            sellPrice: Number(i.price) || 0,
+                            size: i.size || 'N/A'
+                        })),
+                        total: Number(orderData.totals.total) || 0,
+                        buyTotal: buyTotal,
+                        discount: Number(orderData.totals.discount) || 0,
+                        delivery: Number(orderData.totals.delivery) || 0,
+                        date: new Date().toISOString(),
+                        customer: orderData.customerInfo.name || 'Guest',
+                        customerId: 'MANUAL',
+                        customerPhone: orderData.customerInfo.phone || 'N/A',
+                        paymentMethod: orderData.paymentMethod || 'Manual Bill'
+                    }, true); // SKIP stock update to avoid double counting if they just generated a bill
+                };
+                syncSale();
                 
                 return true;
             } catch (error) {
@@ -2187,6 +2261,32 @@ function fallbackFooter(doc, pageWidth, footerY) {
                 billHistory = billHistory.slice(0, 100);
                 saveBillHistory();
                 displayBillHistory();
+
+                // Explicitly record to main database if NOT already auto-saved
+                if (!autoSaveEnabled) {
+                     const buyTotal = orderData.items.reduce((sum, item) => {
+                        const invItem = inventory.find(i => i.name === item.name);
+                        return sum + ((invItem ? Number(invItem.buyPrice) : 0) * (Number(item.quantity) || 0));
+                    }, 0);
+
+                    DB.addSale({
+                        items: orderData.items.map(i => ({
+                            name: i.name,
+                            qty: Number(i.quantity) || 0,
+                            sellPrice: Number(i.price) || 0,
+                            size: i.size || 'N/A'
+                        })),
+                        total: Number(orderData.totals.total) || 0,
+                        buyTotal: buyTotal,
+                        discount: Number(orderData.totals.discount) || 0,
+                        delivery: Number(orderData.totals.delivery) || 0,
+                        date: new Date().toISOString(),
+                        customer: orderData.customerInfo.name || 'Guest',
+                        customerId: 'MANUAL',
+                        customerPhone: orderData.customerInfo.phone || 'N/A',
+                        paymentMethod: orderData.paymentMethod || 'Manual Bill'
+                    }, true);
+                }
                 
                 return true;
             } catch (error) {
@@ -2496,14 +2596,16 @@ function fallbackFooter(doc, pageWidth, footerY) {
                         
                         updatePreview(orderData);
                         
-                        loadingText.textContent = 'Generating PDF...';
                         currentPdfBlob = await generatePDF(orderData);
+                        currentOrderData = orderData;
                         
                         const pdfUrl = URL.createObjectURL(currentPdfBlob);
                         const downloadPdfBtn = document.getElementById('downloadPdf');
                         const printPdfBtn = document.getElementById('printPdf');
+                        const saveToHistoryBtn = document.getElementById('saveToHistory');
                         
                         if (downloadPdfBtn) {
+                            downloadPdfBtn.disabled = false;
                             downloadPdfBtn.onclick = () => {
                                 const link = document.createElement('a');
                                 link.href = pdfUrl;
@@ -2513,6 +2615,7 @@ function fallbackFooter(doc, pageWidth, footerY) {
                         }
                         
                         if (printPdfBtn) {
+                            printPdfBtn.disabled = false;
                             printPdfBtn.onclick = () => {
                                 const printWindow = window.open(pdfUrl);
                                 if (printWindow) {
@@ -2522,6 +2625,8 @@ function fallbackFooter(doc, pageWidth, footerY) {
                                 }
                             };
                         }
+
+                        if (saveToHistoryBtn) saveToHistoryBtn.disabled = false;
                         
                         // Auto-save to history
                         const autoSaved = autoSaveBillToHistory(orderData, currentPdfBlob);
@@ -2543,7 +2648,7 @@ function fallbackFooter(doc, pageWidth, footerY) {
             // Add Bill Item Button
             if (addBillItemBtn) {
                 addBillItemBtn.addEventListener('click', () => {
-                    addBillItemFromInventory();
+                    addBillItemRow(); // Fixed: Renamed from addBillItemFromInventory
                 });
             }
 
@@ -2624,10 +2729,16 @@ function fallbackFooter(doc, pageWidth, footerY) {
         }
 
         // Initialize the entire application
-        function initApp() {
-            loadData();
+        async function initApp() {
+            await loadData();
+            updateInventoryDatalist();
             initInvoiceGenerator();
             initInvoiceEventListeners();
+            
+            // Sync with sidebar toggle
+            if (typeof initSidebar === 'function') {
+                initSidebar();
+            }
             
             // Add auto-save toggle
             const autoSaveToggle = document.createElement('div');
