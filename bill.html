@@ -1300,7 +1300,25 @@
 
         // Save bill history
         function saveBillHistory() {
-            localStorage.setItem(STORAGE_KEYS.BILL_HISTORY, JSON.stringify(billHistory));
+            try {
+                localStorage.setItem(STORAGE_KEYS.BILL_HISTORY, JSON.stringify(billHistory));
+                return true;
+            } catch (e) {
+                console.error('LocalStorage Save Error:', e);
+                if (e.name === 'QuotaExceededError') {
+                    // Try to save a smaller version if quota exceeded
+                    if (billHistory.length > 20) {
+                        billHistory = billHistory.slice(0, 20);
+                        try {
+                            localStorage.setItem(STORAGE_KEYS.BILL_HISTORY, JSON.stringify(billHistory));
+                            return true;
+                        } catch (innerE) {
+                            return false;
+                        }
+                    }
+                }
+                return false;
+            }
         }
 
         // Format Number
@@ -2201,34 +2219,41 @@ function fallbackFooter(doc, pageWidth, footerY) {
                 // Add to beginning of array
                 billHistory.unshift(billRecord);
                 billHistory = billHistory.slice(0, 100);
-                saveBillHistory();
+                const saved = saveBillHistory();
                 displayBillHistory();
+
+                if (!saved) {
+                    console.warn('Auto-save to LocalHistory failed (Storage Full), but will attempt Database Sync.');
+                }
 
                 // Sync with main sales database
                 const syncSale = async () => {
-                    const buyTotal = orderData.items.reduce((sum, item) => {
-                        // Try to find buy price in inventory for accurate profit
-                        const invItem = inventory.find(i => i.name === item.name);
-                        return sum + ((invItem ? Number(invItem.buyPrice) : 0) * (Number(item.quantity) || 0));
-                    }, 0);
+                    try {
+                        const buyTotal = orderData.items.reduce((sum, item) => {
+                            const invItem = inventory.find(i => i.name === item.name);
+                            return sum + ((invItem ? Number(invItem.buyPrice) : 0) * (Number(item.quantity) || 0));
+                        }, 0);
 
-                    await DB.addSale({
-                        items: orderData.items.map(i => ({
-                            name: i.name,
-                            qty: Number(i.quantity) || 0,
-                            sellPrice: Number(i.price) || 0,
-                            size: i.size || 'N/A'
-                        })),
-                        total: Number(orderData.totals.total) || 0,
-                        buyTotal: buyTotal,
-                        discount: Number(orderData.totals.discount) || 0,
-                        delivery: Number(orderData.totals.delivery) || 0,
-                        date: new Date().toISOString(),
-                        customer: orderData.customerInfo.name || 'Guest',
-                        customerId: 'MANUAL',
-                        customerPhone: orderData.customerInfo.phone || 'N/A',
-                        paymentMethod: orderData.paymentMethod || 'Manual Bill'
-                    }, true); // SKIP stock update to avoid double counting if they just generated a bill
+                        await DB.addSale({
+                            items: (orderData.items || []).map(i => ({
+                                name: i.name || 'Unknown',
+                                qty: Number(i.quantity) || 1,
+                                sellPrice: Number(i.price) || 0,
+                                size: i.size || 'N/A'
+                            })),
+                            total: Number(orderData.totals.total) || 0,
+                            buyTotal: Number(buyTotal) || 0,
+                            discount: Number(orderData.totals.discount) || 0,
+                            delivery: Number(orderData.totals.delivery) || 0,
+                            date: new Date().toISOString(),
+                            customer: orderData.customerInfo.name || 'Guest',
+                            customerId: 'MANUAL',
+                            customerPhone: orderData.customerInfo.phone || 'N/A',
+                            paymentMethod: orderData.paymentMethod || 'Manual Bill'
+                        }, true); 
+                    } catch (syncErr) {
+                        console.error('Database Sync Error:', syncErr);
+                    }
                 };
                 syncSale();
                 
@@ -2259,7 +2284,7 @@ function fallbackFooter(doc, pageWidth, footerY) {
                 
                 billHistory.unshift(billRecord);
                 billHistory = billHistory.slice(0, 100);
-                saveBillHistory();
+                const savedLocally = saveBillHistory();
                 displayBillHistory();
 
                 // Explicitly record to main database if NOT already auto-saved
@@ -2270,14 +2295,14 @@ function fallbackFooter(doc, pageWidth, footerY) {
                     }, 0);
 
                     DB.addSale({
-                        items: orderData.items.map(i => ({
-                            name: i.name,
-                            qty: Number(i.quantity) || 0,
+                        items: (orderData.items || []).map(i => ({
+                            name: i.name || 'Unknown',
+                            qty: Number(i.quantity) || 1,
                             sellPrice: Number(i.price) || 0,
                             size: i.size || 'N/A'
                         })),
                         total: Number(orderData.totals.total) || 0,
-                        buyTotal: buyTotal,
+                        buyTotal: Number(buyTotal) || 0,
                         discount: Number(orderData.totals.discount) || 0,
                         delivery: Number(orderData.totals.delivery) || 0,
                         date: new Date().toISOString(),
@@ -2285,12 +2310,17 @@ function fallbackFooter(doc, pageWidth, footerY) {
                         customerId: 'MANUAL',
                         customerPhone: orderData.customerInfo.phone || 'N/A',
                         paymentMethod: orderData.paymentMethod || 'Manual Bill'
-                    }, true);
+                    }, true).catch(e => console.error('Manual DB Save Error:', e));
                 }
                 
+                if (!savedLocally) throw new Error('Storage space full. Could not save to local history table.');
                 return true;
             } catch (error) {
                 console.error('Error saving bill to history:', error);
+                // If it's a quota error, provide a better message
+                if (error.message && error.message.includes('Storage space')) {
+                    alert('Storage space is full! Please clear your Bill History to make room for new bills.');
+                }
                 return false;
             }
         }

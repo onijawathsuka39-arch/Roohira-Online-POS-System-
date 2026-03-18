@@ -245,6 +245,33 @@
                 padding: 8px 4px;
             }
         }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .total-row.grand {
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 2px solid var(--border);
+            font-size: 20px;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        
+        .profit-row {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 700;
+            padding: 2px 0;
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
 </head>
 
@@ -372,6 +399,11 @@
                     <div class="total-row">
                         <span>Subtotal</span>
                         <span id="sub-total">Rs. 0.00</span>
+                    </div>
+
+                    <div class="profit-row">
+                        <span>Est. Profit</span>
+                        <span id="profit-total">Rs. 0.00</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin: 8px 0;">
@@ -742,6 +774,7 @@
             const container = document.getElementById('cartItems');
             const subTotalSpan = document.getElementById('sub-total');
             const grandTotalSpan = document.getElementById('grand-total');
+            const profitTotalSpan = document.getElementById('profit-total');
             const payBtn = document.getElementById('pay-btn');
 
             const discountPercent = parseFloat(document.getElementById('order-discount').value) || 0;
@@ -751,23 +784,32 @@
                 container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-dim);"><i class="fas fa-shopping-basket" style="font-size: 32px; margin-bottom: 12px;"></i><p>Cart is empty</p></div>';
                 subTotalSpan.textContent = 'Rs. 0.00';
                 grandTotalSpan.textContent = 'Rs. 0.00';
+                if (profitTotalSpan) profitTotalSpan.textContent = 'Rs. 0.00';
                 payBtn.disabled = true;
                 return;
             }
 
             container.innerHTML = '';
             let subtotal = 0;
+            let totalBuy = 0;
 
             cart.forEach((item, index) => {
                 const itemTotal = item.sellPrice * item.qty;
                 subtotal += itemTotal;
+                totalBuy += (item.buyPrice || 0) * item.qty;
 
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
                     <div class="cart-item-info">
                         <h4>${item.name}</h4>
-                        <p>Rs. ${parseFloat(item.sellPrice).toLocaleString()} x ${item.qty}</p>
+                        <div style="display:flex; align-items:center; gap:5px; margin-top: 2px;">
+                            <span style="font-size:12px; color:var(--text-muted);">Rs.</span>
+                            <input type="number" step="0.01" value="${item.sellPrice}" 
+                                onchange="updateItemPrice(${index}, this.value)" 
+                                style="width: 85px; padding: 2px 5px; border: 1px dashed var(--primary); border-radius: 4px; background: rgba(190, 24, 93, 0.05); color: var(--primary); font-weight: 700; outline: none; font-size: 14px;">
+                            <span style="font-size:13px; font-weight:700; color:var(--text-muted);">x ${item.qty}</span>
+                        </div>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeQty(${index}, -1)">-</button>
@@ -783,10 +825,28 @@
 
             const discountAmount = subtotal * (discountPercent / 100);
             const total = (subtotal - discountAmount - loyaltyAppliedCash) + deliveryCharge;
+            
+            // Profit calculation: (Subtotal - Discount - Loyalty) - BuyTotal
+            const profit = (subtotal - discountAmount - loyaltyAppliedCash) - totalBuy;
 
             subTotalSpan.textContent = `Rs. ${subtotal.toLocaleString()}`;
             grandTotalSpan.textContent = `Rs. ${total.toLocaleString()}`;
+            if (profitTotalSpan) {
+                profitTotalSpan.textContent = `Rs. ${profit.toLocaleString()}`;
+                profitTotalSpan.parentElement.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+            }
             payBtn.disabled = false;
+        }
+
+        function updateItemPrice(index, newPrice) {
+            newPrice = parseFloat(newPrice);
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert('Please enter a valid price!');
+                updateCartUI();
+                return;
+            }
+            cart[index].sellPrice = newPrice;
+            updateCartUI();
         }
 
         function changeQty(index, delta) {
