@@ -56,10 +56,6 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -78,9 +74,14 @@
                     <p>Track pending, paid, and delivery orders</p>
                 </div>
             </div>
-            <div class="action-btns">
-                <button class="btn btn-primary" onclick="window.location.href='pos.html'"><i class="fas fa-plus"></i>
-                    New Order</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <div class="action-btns">
+                    <button class="btn btn-primary" onclick="window.location.href='pos.html'"><i class="fas fa-plus"></i>
+                        New Order</button>
+                </div>
             </div>
         </header>
 
