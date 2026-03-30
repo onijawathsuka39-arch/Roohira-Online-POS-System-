@@ -208,6 +208,54 @@
             background: rgba(0,0,0,0.1);
         }
 
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-discount-ui {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .item-discount-ui input {
+            width: 60px !important;
+            padding: 2px 4px !important;
+            font-size: 11px !important;
+            text-align: center;
+        }
+
+        .item-discount-ui label {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .btn-toggle {
+            padding: 2px 6px;
+            font-size: 10px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .btn-toggle.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         #checkoutModal .modal {
             max-width: 600px;
             width: 95%;
@@ -245,33 +293,6 @@
                 padding: 8px 4px;
             }
         }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .total-row.grand {
-            margin-top: 8px;
-            padding-top: 12px;
-            border-top: 2px solid var(--border);
-            font-size: 20px;
-            color: var(--primary);
-            font-weight: 800;
-        }
-        
-        .profit-row {
-            font-size: 12px;
-            color: var(--success);
-            font-weight: 700;
-            padding: 2px 0;
-            display: flex;
-            justify-content: space-between;
-        }
     </style>
 </head>
 
@@ -300,6 +321,10 @@
         </nav>
 
         <div class="sidebar-footer">
+            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
+                <i class="fas fa-sun theme-toggle-icon"></i>
+                <span>Theme Mode</span>
+            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -323,9 +348,6 @@
                     <input type="text" id="p-search" placeholder="Search products..." style="padding: 8px 14px;">
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
-                        <i class="fas fa-sun theme-toggle-icon"></i>
-                    </button>
                     <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
                             class="fas fa-sign-in-alt"></i> Login</a>
                     <button onclick="DB.logout()" class="btn btn-secondary"
@@ -398,11 +420,6 @@
                     <div class="total-row">
                         <span>Subtotal</span>
                         <span id="sub-total">Rs. 0.00</span>
-                    </div>
-
-                    <div class="profit-row">
-                        <span>Est. Profit</span>
-                        <span id="profit-total">Rs. 0.00</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin: 8px 0;">
@@ -559,7 +576,11 @@
             document.getElementById('order-id-display').innerHTML = `EDITING ORDER: #${order.orderId || order.id} <span class="badge badge-warning" style="font-size:10px;">EDIT MODE</span>`;
 
             // Load items
-            cart = [...order.items];
+            cart = order.items.map(item => ({
+                ...item,
+                discount: item.discount || 0,
+                discountType: item.discountType || 'percent'
+            }));
 
             // Load Customer Info
             document.getElementById('cust-name').value = order.customer;
@@ -586,7 +607,11 @@
             document.getElementById('order-id-display').innerHTML = `EDITING SALE: #SL-${sale.id} <span class="badge badge-warning" style="font-size:10px;">EDIT MODE</span>`;
 
             // Load items
-            cart = [...sale.items];
+            cart = sale.items.map(item => ({
+                ...item,
+                discount: item.discount || 0,
+                discountType: item.discountType || 'percent'
+            }));
 
             // Load Customer Info
             document.getElementById('cust-name').value = sale.customer || 'Guest';
@@ -756,58 +781,61 @@
                 return;
             }
 
-            const existing = cart.find(i => i.id === product.id);
-            if (existing) {
+            const existingIndex = cart.findIndex(i => i.id === product.id);
+            if (existingIndex !== -1) {
+                const existing = cart[existingIndex];
                 if (existing.qty < product.stock) {
                     existing.qty++;
+                    // Keep the item in its current position or move to bottom
+                    // Moving to bottom ensures user 'sees it' as the last added
+                    cart.splice(existingIndex, 1);
+                    cart.push(existing);
                 } else {
                     alert('Insufficient stock!');
                 }
             } else {
-                cart.push({ ...product, qty: 1 });
+                // Add new item to the bottom
+                cart.push({ ...product, qty: 1, discount: 0, discountType: 'percent' });
             }
             updateCartUI();
+            
+            // Auto-scroll to bottom of cart
+            const container = document.getElementById('cartItems');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 50);
         }
 
         function updateCartUI() {
             const container = document.getElementById('cartItems');
-            const subTotalSpan = document.getElementById('sub-total');
-            const grandTotalSpan = document.getElementById('grand-total');
-            const profitTotalSpan = document.getElementById('profit-total');
-            const payBtn = document.getElementById('pay-btn');
-
-            const discountPercent = parseFloat(document.getElementById('order-discount').value) || 0;
-            const deliveryCharge = parseFloat(document.getElementById('order-delivery').value) || 0;
-
             if (cart.length === 0) {
                 container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-dim);"><i class="fas fa-shopping-basket" style="font-size: 32px; margin-bottom: 12px;"></i><p>Cart is empty</p></div>';
-                subTotalSpan.textContent = 'Rs. 0.00';
-                grandTotalSpan.textContent = 'Rs. 0.00';
-                if (profitTotalSpan) profitTotalSpan.textContent = 'Rs. 0.00';
-                payBtn.disabled = true;
+                updateTotalsUI();
                 return;
             }
 
             container.innerHTML = '';
-            let subtotal = 0;
-            let totalBuy = 0;
-
             cart.forEach((item, index) => {
-                const itemTotal = item.sellPrice * item.qty;
-                subtotal += itemTotal;
-                totalBuy += (item.buyPrice || 0) * item.qty;
+                const linePrice = item.sellPrice * item.qty;
+                let lineDiscount = 0;
+                if (item.discountType === 'percent') {
+                     lineDiscount = linePrice * (parseFloat(item.discount || 0) / 100);
+                } else {
+                     lineDiscount = parseFloat(item.discount || 0);
+                }
+                const itemTotal = linePrice - lineDiscount;
 
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
                     <div class="cart-item-info">
                         <h4>${item.name}</h4>
-                        <div style="display:flex; align-items:center; gap:5px; margin-top: 2px;">
-                            <span style="font-size:12px; color:var(--text-muted);">Rs.</span>
-                            <input type="number" step="0.01" value="${item.sellPrice}" 
-                                onchange="updateItemPrice(${index}, this.value)" 
-                                style="width: 85px; padding: 2px 5px; border: 1px dashed var(--primary); border-radius: 4px; background: rgba(190, 24, 93, 0.05); color: var(--primary); font-weight: 700; outline: none; font-size: 14px;">
-                            <span style="font-size:13px; font-weight:700; color:var(--text-muted);">x ${item.qty}</span>
+                        <p>Rs. ${parseFloat(item.sellPrice).toLocaleString()} x ${item.qty} = <b id="item-total-${index}">Rs. ${itemTotal.toLocaleString()}</b></p>
+                        <div class="item-discount-ui">
+                            <label>Disc:</label>
+                            <input type="number" value="${item.discount || 0}" min="0" oninput="updateItemDiscount(${index}, this.value)">
+                            <button class="btn-toggle ${item.discountType === 'percent' ? 'active' : ''}" onclick="toggleDiscountType(${index}, 'percent')">%</button>
+                            <button class="btn-toggle ${item.discountType === 'amount' ? 'active' : ''}" onclick="toggleDiscountType(${index}, 'amount')">Rs</button>
                         </div>
                     </div>
                     <div style="display:flex; gap:8px; align-items:center;">
@@ -819,33 +847,49 @@
                 `;
                 container.appendChild(div);
             });
+            updateTotalsUI();
+        }
 
+        function updateTotalsUI() {
+            const subTotalSpan = document.getElementById('sub-total');
+            const grandTotalSpan = document.getElementById('grand-total');
+            const payBtn = document.getElementById('pay-btn');
+
+            const subtotal = calculateDiscountedSubtotal();
+            const discountPercentOrder = parseFloat(document.getElementById('order-discount').value) || 0;
+            const deliveryCharge = parseFloat(document.getElementById('order-delivery').value) || 0;
             const loyaltyAppliedCash = parseFloat(document.getElementById('loyalty-applied-cash').value) || 0;
 
-            const discountAmount = subtotal * (discountPercent / 100);
-            const total = (subtotal - discountAmount - loyaltyAppliedCash) + deliveryCharge;
-            
-            // Profit calculation: (Subtotal - Discount - Loyalty) - BuyTotal
-            const profit = (subtotal - discountAmount - loyaltyAppliedCash) - totalBuy;
+            const discountAmountOrder = subtotal * (discountPercentOrder / 100);
+            const total = (subtotal - discountAmountOrder - loyaltyAppliedCash) + deliveryCharge;
 
             subTotalSpan.textContent = `Rs. ${subtotal.toLocaleString()}`;
             grandTotalSpan.textContent = `Rs. ${total.toLocaleString()}`;
-            if (profitTotalSpan) {
-                profitTotalSpan.textContent = `Rs. ${profit.toLocaleString()}`;
-                profitTotalSpan.parentElement.style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
-            }
-            payBtn.disabled = false;
+            payBtn.disabled = cart.length === 0;
         }
 
-        function updateItemPrice(index, newPrice) {
-            newPrice = parseFloat(newPrice);
-            if (isNaN(newPrice) || newPrice < 0) {
-                alert('Please enter a valid price!');
-                updateCartUI();
-                return;
+        function updateItemDiscount(index, val) {
+            cart[index].discount = parseFloat(val) || 0;
+            
+            // Update line total display without re-rendering everything
+            const item = cart[index];
+            const linePrice = item.sellPrice * item.qty;
+            let lineDiscount = 0;
+            if (item.discountType === 'percent') {
+                 lineDiscount = linePrice * (item.discount / 100);
+            } else {
+                 lineDiscount = item.discount;
             }
-            cart[index].sellPrice = newPrice;
-            updateCartUI();
+            const itemTotal = linePrice - lineDiscount;
+            const totalEl = document.getElementById(`item-total-${index}`);
+            if (totalEl) totalEl.textContent = `Rs. ${itemTotal.toLocaleString()}`;
+
+            updateTotalsUI();
+        }
+
+        function toggleDiscountType(index, type) {
+            cart[index].discountType = type;
+            updateCartUI(); // Re-render to update the active button class
         }
 
         function changeQty(index, delta) {
@@ -881,7 +925,7 @@
         }
 
         function openCheckout() {
-            const subtotal = cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0);
+            const subtotal = calculateDiscountedSubtotal();
             const discountPercent = parseFloat(document.getElementById('order-discount').value) || 0;
             const deliveryCharge = parseFloat(document.getElementById('order-delivery').value) || 0;
             const loyaltyAppliedCash = parseFloat(document.getElementById('loyalty-applied-cash').value) || 0;
@@ -893,10 +937,23 @@
             document.getElementById('amt-change').value = 'Rs. 0.00';
         }
 
+        function calculateDiscountedSubtotal() {
+            return cart.reduce((sum, item) => {
+                const linePrice = item.sellPrice * item.qty;
+                let lineDiscount = 0;
+                if (item.discountType === 'percent') {
+                     lineDiscount = linePrice * (parseFloat(item.discount || 0) / 100);
+                } else {
+                     lineDiscount = parseFloat(item.discount || 0);
+                }
+                return sum + (linePrice - lineDiscount);
+            }, 0);
+        }
+
         async function saveDraftOrder() {
             if (cart.length === 0) return alert('Cart is empty!');
 
-            const subtotal = cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0);
+            const subtotal = calculateDiscountedSubtotal();
             const discount = parseFloat(document.getElementById('order-discount').value) || 0;
             const delivery = parseFloat(document.getElementById('order-delivery').value) || 0;
             const loyaltyAppliedCash = parseFloat(document.getElementById('loyalty-applied-cash').value) || 0;
@@ -922,7 +979,7 @@
         }
 
         function calcChange() {
-            const subtotal = cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0);
+            const subtotal = calculateDiscountedSubtotal();
             const discountPercent = parseFloat(document.getElementById('order-discount').value) || 0;
             const deliveryCharge = parseFloat(document.getElementById('order-delivery').value) || 0;
             const loyaltyAppliedCash = parseFloat(document.getElementById('loyalty-applied-cash').value) || 0;
@@ -946,7 +1003,7 @@
         }
 
         async function finalizeSale(type) {
-            const subtotal = cart.reduce((sum, i) => sum + (i.sellPrice * i.qty), 0);
+            const subtotal = calculateDiscountedSubtotal();
             const discountPercent = parseFloat(document.getElementById('order-discount').value) || 0;
             const deliveryCharge = parseFloat(document.getElementById('order-delivery').value) || 0;
             const loyaltyAppliedCash = parseFloat(document.getElementById('loyalty-applied-cash').value) || 0;

@@ -1,0 +1,16 @@
+{
+  "name": "ruhira-pos-online",
+  "version": "1.0.0",
+  "description": "Ruhira POS Online System",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}
