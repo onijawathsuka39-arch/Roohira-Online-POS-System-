@@ -95,6 +95,8 @@ aside.sidebar {
     left: -260px; /* Hide by default */
     z-index: 1000;
     transition: var(--transition);
+    overflow-y: auto;
+    scrollbar-width: thin;
 }
 
 aside.sidebar.show {

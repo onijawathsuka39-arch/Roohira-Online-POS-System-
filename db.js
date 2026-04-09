@@ -10,7 +10,8 @@ db.version(8).stores({
     notes: '++id, title, content, date',
     settings: 'key, value',
     backups: '++id, date, name, size',
-    users: 'username, role, password'
+    users: 'username, role, password',
+    expenses: '++id, reason, amount, date'
 });
 
 // Helper functions for DB access
@@ -162,19 +163,24 @@ const DB = {
         const sales = await db.sales.toArray();
         const inventory = await db.inventory.toArray();
         const customers = await db.customers.toArray();
+        const expenses = await db.expenses.toArray();
 
         const totalRevenue = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
-        const totalProfit = sales.reduce((sum, s) => {
+        const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        const grossProfit = sales.reduce((sum, s) => {
             const revenue = Number(s.total) || 0;
             const cost = Number(s.buyTotal) || 0;
             return sum + (revenue - cost);
         }, 0);
+        const netProfit = grossProfit - totalExpenses;
+
         const lowStockCount = inventory.filter(i => (Number(i.stock) || 0) <= 5).length;
         const totalOrders = sales.length;
 
         return { 
             totalRevenue: Number(totalRevenue.toFixed(2)), 
-            totalProfit: Number(totalProfit.toFixed(2)), 
+            totalExpenses: Number(totalExpenses.toFixed(2)),
+            totalProfit: Number(netProfit.toFixed(2)), 
             totalOrders, 
             totalCustomers: customers.length, 
             lowStockCount 
@@ -217,6 +223,7 @@ const DB = {
                 inventory: await db.inventory.toArray(),
                 sales: await db.sales.toArray(),
                 orders: await db.orders.toArray(),
+                expenses: await db.expenses.toArray(),
                 customers: await db.customers.toArray(),
                 categories: await db.categories.toArray(),
                 notes: await db.notes.toArray(),
@@ -257,6 +264,7 @@ const DB = {
                 db.inventory.clear(),
                 db.sales.clear(),
                 db.orders.clear(),
+                db.expenses.clear(),
                 db.customers.clear(),
                 db.categories.clear(),
                 db.notes.clear(),
@@ -271,6 +279,7 @@ const DB = {
             if (data.customers && data.customers.length) await db.customers.bulkPut(data.customers);
             if (data.categories && data.categories.length) await db.categories.bulkPut(data.categories);
             if (data.notes && data.notes.length) await db.notes.bulkPut(data.notes);
+            if (data.expenses && data.expenses.length) await db.expenses.bulkPut(data.expenses);
             if (data.settings && data.settings.length) await db.settings.bulkPut(data.settings);
             if (data.backups && data.backups.length) await db.backups.bulkPut(data.backups);
 
@@ -338,5 +347,10 @@ const DB = {
     getCurrentUser: () => {
         const user = sessionStorage.getItem('ruhira_user');
         return user ? JSON.parse(user) : null;
-    }
+    },
+
+    // Expenses
+    getAllExpenses: async () => await db.expenses.orderBy('date').reverse().toArray(),
+    addExpense: async (expense) => await db.expenses.add({ ...expense, date: new Date().toISOString() }),
+    deleteExpense: async (id) => await db.expenses.delete(id)
 };

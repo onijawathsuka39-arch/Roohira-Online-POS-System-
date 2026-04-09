@@ -64,6 +64,10 @@
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
             </a>
+            <a href="expenses.html" class="nav-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </a>
             <a href="customers.html" class="nav-item">
                 <i class="fas fa-users"></i>
                 <span>Customers</span>
@@ -169,6 +173,17 @@
 
             <div class="stat-card">
                 <div class="icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="value" id="expenses-stat">Rs. 0.00</div>
+                <div class="label">Total Expenses</div>
+                <div class="trend down">
+                    <i class="fas fa-arrow-down"></i> overhead costs
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="value" id="low-stock-stat">0</div>
@@ -324,6 +339,7 @@
             const allTimeStats = await DB.getDashboardStats();
             document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('orders-stat').textContent = allTimeStats.totalOrders;
             document.getElementById('low-stock-stat').textContent = allTimeStats.lowStockCount;
 
