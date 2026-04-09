@@ -76,6 +76,7 @@ const DB = {
                 customer: order.customer,
                 customerId: order.customerId || 'Guest',
                 customerPhone: order.phone || 'N/A',
+                orderId: order.orderId || order.id,
                 paymentMethod: 'cash'
             }, true); // SKIP stock update because it was already deducted on order creation
             await db.orders.update(id, { paymentStatus: 'paid', status: 'Paid' });

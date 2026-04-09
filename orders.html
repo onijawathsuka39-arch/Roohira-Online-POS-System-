@@ -463,7 +463,7 @@
             const o = orders.find(x => x.id === id);
             if (!o) return;
 
-            const itemsPerPage = 8;
+            const itemsPerPage = 22;
             const itemChunks = [];
             for (let i = 0; i < o.items.length; i += itemsPerPage) {
                 itemChunks.push(o.items.slice(i, i + itemsPerPage));
@@ -478,26 +478,31 @@
                 const pageDiv = document.createElement('div');
                 pageDiv.className = 'receipt-page';
                 pageDiv.style.cssText = `
-                    width: 148mm; height: 210mm; padding: 10mm; padding-top: 5mm; 
+                    width: 148mm; min-height: 210mm; padding: 10mm; padding-top: 5mm; 
                     position: relative; box-sizing: border-box; background: white; 
                     page-break-after: always; color: black; font-family: 'Inter', sans-serif;
                 `;
 
                 const headerHtml = `
-                    <div style="text-align: left; margin-bottom: 2px;">
-                        <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: 1px; color: #000; text-transform: uppercase;">
-                            Roohira Collection
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 2px;">
+                        <img src="https://i.ibb.co/nsNtMvd8/Roohira-Batch.png" style="height: 45px; width: auto; object-fit: contain;">
+                        <div>
+                            <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: 1px; color: #000; text-transform: uppercase;">
+                                Roohira Collection
+                            </div>
+                            <div style="font-size: 10px; color: #444; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px;">
+                                by Roohira Online | <i class="fas fa-phone-alt" style="font-size:8px;"></i> 0720898640 / 0714433279
+                            </div>
                         </div>
-                        <div style="font-size: 10px; color: #444; font-weight: 600; margin-top: 6px; letter-spacing: 0.5px;">
-                            by Roohira Online | <i class="fas fa-phone-alt" style="font-size:8px;"></i> 0720898640 / 0714433279
-                        </div>
-                        <div style="height: 2px; background: #000; margin-top: 5px; width: 100%;"></div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px; padding-bottom: 8px; border-bottom: 1px solid #ccc;">
-                        <img src="https://i.ibb.co/nsNtMvd8/Roohira-Batch.png" style="height: 40px; width: auto; object-fit: contain;">
+                    <div style="border-bottom: 2.5px solid #000; margin-top: 5px; width: 100%; -webkit-print-color-adjust: exact;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; padding-bottom: 8px; border-bottom: 1px solid #ccc;">
+                        <div style="text-align: left;">
+                            <h1 style="font-size: 20px; font-weight: 300; margin: 0; color: #000; letter-spacing: 6px; text-transform: uppercase;">ORDER</h1>
+                        </div>
                         <div style="text-align: right;">
-                            <h1 style="font-size: 20px; font-weight: 300; margin: 0; color: #000; letter-spacing: 6px; text-transform: uppercase;">INVOICE</h1>
-                            <p style="font-size: 10px; color: #555; margin: 2px 0 0 0;">Page ${index + 1} of ${itemChunks.length}</p>
+                            <p style="font-size: 10px; color: #555; margin: 0;">Page ${index + 1} of ${itemChunks.length}</p>
                         </div>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 10px;">
@@ -505,6 +510,7 @@
                             <h3 style="font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 4px 0;">ORDER DETAILS</h3>
                             <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">${o.customer || 'Guest Customer'}</p>
                             <p style="font-size: 11px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${o.phone || 'N/A'}</p>
+                            <p style="font-size: 11px; margin: 2px 0 0 0; font-weight: 600; color: #111;">Method: ${o.deliveryMethod || 'Store Pickup'}</p>
                         </div>
                         <div style="text-align: right;">
                             <p style="font-weight: 800; font-size: 11px; margin: 0; color: #000;">Order: #${o.orderId || o.id}</p>
@@ -577,18 +583,43 @@
                                 <span>TOTAL:</span>
                                 <span>Rs. ${o.total.toLocaleString()}</span>
                             </div>
+                            <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 9px; color: #444; margin-top: 6px; border-top: 1px solid #eee;">
+                                <span style="font-weight: 500;">Pay Method:</span>
+                                <span style="font-weight: 700; text-transform: uppercase;">${o.paymentMethod || 'Cash'}</span>
+                            </div>
+                            ${o.received > 0 ? `
+                            <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 9px; color: #444;">
+                                <span style="font-weight: 500;">Received:</span>
+                                <span style="font-weight: 700;">Rs. ${o.received.toLocaleString()}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 9px; color: #444;">
+                                <span style="font-weight: 500;">Balance:</span>
+                                <span style="font-weight: 700;">Rs. ${o.balance.toLocaleString()}</span>
+                            </div>` : ''}
                         </div>
                     `;
 
                     const footerHtml = `
                         <div style="position: absolute; bottom: 5mm; left: 10mm; right: 10mm; border-top: 1px dashed #bbb; padding-top: 5px;">
-                            <div style="font-size: 9.5px; color: #000; line-height: 1.2;">
-                                <p style="margin: 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #555; margin-bottom: 2px;">Bank Transfer Details:</p>
-                                <div style="display: grid; grid-template-columns: 55px 1fr; gap: 1px;">
-                                    <span style="font-weight: 600;">Bank:</span> <span>People's Bank</span>
-                                    <span style="font-weight: 600;">Name:</span> <span>Onija Wathsuka Kodithuwakku</span>
-                                    <span style="font-weight: 600;">Acc.No:</span> <span style="font-weight: 800;">217-200-4500-29209</span>
-                                    <span style="font-weight: 600;">Branch:</span> <span>Mahara</span>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-size: 9.5px; color: #000; line-height: 1.2;">
+                                    <p style="margin: 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #555; margin-bottom: 2px;">Bank Transfer Details:</p>
+                                    <div style="display: grid; grid-template-columns: 55px 1fr; gap: 1px;">
+                                        <span style="font-weight: 600;">Bank:</span> <span>People's Bank</span>
+                                        <span style="font-weight: 600;">Name:</span> <span>Onija Wathsuka Kodithuwakku</span>
+                                        <span style="font-weight: 600;">Acc.No:</span> <span style="font-weight: 800;">217-200-4500-29209</span>
+                                        <span style="font-weight: 600;">Branch:</span> <span>Mahara</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <div style="text-align: center;">
+                                        <img src="https://i.ibb.co/sdr25nQc/FB-Page.jpg" style="height: 45px; width: 45px; object-fit: contain;">
+                                        <p style="font-size: 7px; font-weight: 800; margin: 2px 0 0 0; color: #555;">FB PAGE</p>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <img src="https://i.ibb.co/ccT7rrCx/Web-site.jpg" style="height: 45px; width: 45px; object-fit: contain;">
+                                        <p style="font-size: 7px; font-weight: 800; margin: 2px 0 0 0; color: #555;">WEBSITE</p>
+                                    </div>
                                 </div>
                             </div>
                             <p style="font-size: 11px; font-weight: 900; color: #000; text-align: center; margin-top: 5px; font-family: 'Outfit';">Thank You! Come Again.</p>
