@@ -433,7 +433,12 @@
                         <span id="sub-total">Rs. 0.00</span>
                     </div>
 
-                    <div class="profit-row">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px; cursor: pointer;">
+                        <input type="checkbox" id="toggle-profit" onchange="toggleProfitDisplay()" style="width: 14px; height: 14px; cursor: pointer;">
+                        <label for="toggle-profit" style="font-size: 11px; color: var(--text-dim); cursor: pointer; user-select: none;">Show Profit Margin</label>
+                    </div>
+
+                    <div class="profit-row" id="profit-display-row" style="display: none;">
                         <span>Est. Profit</span>
                         <span id="profit-total">Rs. 0.00</span>
                     </div>
@@ -600,7 +605,18 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await initPOS();
             checkEditMode();
+            
+            // Initialization for Profit Toggle
+            const showProfit = localStorage.getItem('show_pos_profit') === 'true';
+            document.getElementById('toggle-profit').checked = showProfit;
+            toggleProfitDisplay();
         });
+
+        function toggleProfitDisplay() {
+            const isChecked = document.getElementById('toggle-profit').checked;
+            document.getElementById('profit-display-row').style.display = isChecked ? 'flex' : 'none';
+            localStorage.setItem('show_pos_profit', isChecked);
+        }
 
         function checkEditMode() {
             const urlParams = new URLSearchParams(window.location.search);
