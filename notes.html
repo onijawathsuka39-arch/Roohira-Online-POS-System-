@@ -87,10 +87,6 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -109,8 +105,13 @@
                     <p>Keep track of shop tasks, ideas, and reminders</p>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="openModal('noteModal')"><i class="fas fa-plus"></i> New
-                Note</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-primary" onclick="openModal('noteModal')"><i class="fas fa-plus"></i> New
+                    Note</button>
+            </div>
         </header>
 
         <div class="notes-grid" id="notesList">

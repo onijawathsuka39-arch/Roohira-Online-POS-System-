@@ -101,10 +101,6 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -123,8 +119,13 @@
                     <p>Manage your client relationships and blacklist</p>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="openAddCustModal()"><i class="fas fa-user-plus"></i> New
-                Customer</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-primary" onclick="openAddCustModal()"><i class="fas fa-user-plus"></i> New
+                    Customer</button>
+            </div>
         </header>
 
         <div class="customer-stats">

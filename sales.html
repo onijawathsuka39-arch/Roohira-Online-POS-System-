@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="theme.js"></script>
     <style>
         .view-btn {
@@ -67,6 +68,31 @@
             padding-top: 12px;
             margin-top: 12px;
         }
+
+        @media print {
+            @page {
+                size: A5;
+                margin: 0;
+            }
+
+            body>*:not(#printableReceipt) {
+                display: none !important;
+            }
+
+            #printableReceipt {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 148mm;
+                height: 210mm;
+                padding: 10mm;
+                padding-top: 2mm; /* Start higher */
+                background: white;
+                color: black;
+                font-family: 'Inter', Arial, sans-serif;
+            }
+        }
     </style>
 </head>
 
@@ -91,10 +117,6 @@
             <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
         </nav>
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;"><i
                     class="fas fa-sign-out-alt"></i><span>Logout</span></div>
         </div>
@@ -112,6 +134,10 @@
                 </div>
             </div>
             <div class="header-actions" style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
                 <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
                         class="fas fa-sign-in-alt"></i> Login</a>
                 <button onclick="DB.logout()" class="btn btn-secondary"
@@ -160,17 +186,25 @@
             <div id="saleDetailsContent">
                 <!-- Receipt logic injected here -->
             </div>
-            <div style="margin-top: 20px; display: flex; gap: 10px;" id="modalActions">
-                <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="window.print()">
-                    <i class="fas fa-print"></i> PRINT
+            <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" id="modalActions">
+                <button class="btn btn-primary" style="justify-content:center;" onclick="window.print()">
+                    <i class="fas fa-print"></i> ADMIN PRINT
+                </button>
+                <button class="btn btn-success" style="justify-content:center; background: #10b981; color: white;"
+                    id="btn-customer-bill">
+                    <i class="fas fa-file-invoice"></i> CUSTOMER BILL (A5)
+                </button>
+                <button class="btn btn-secondary" style="justify-content:center; color:#6366f1; border-color:#6366f1;"
+                    id="btn-download-html">
+                    <i class="fas fa-file-code"></i> SAVE AS HTML
                 </button>
                 <button class="btn btn-secondary"
-                    style="flex:1; justify-content:center; color:var(--primary); border-color:var(--primary);"
+                    style="justify-content:center; color:var(--primary); border-color:var(--primary);"
                     id="btn-edit-sale">
                     <i class="fas fa-edit"></i> EDIT
                 </button>
                 <button class="btn btn-secondary"
-                    style="flex:1; justify-content:center; color:var(--danger); border-color:var(--danger);"
+                    style="justify-content:center; color:var(--danger); border-color:var(--danger);"
                     id="btn-delete-sale">
                     <i class="fas fa-trash"></i> DELETE
                 </button>
@@ -245,13 +279,27 @@
             if (!sale) return;
 
             const content = document.getElementById('saleDetailsContent');
-            const itemsHtml = sale.items.map(i => `
-                <tr>
-                    <td>${i.name} ${i.size ? `<small>(${i.size})</small>` : ''}</td>
-                    <td style="text-align:center;">${i.qty}</td>
-                    <td style="text-align:right;">Rs. ${(i.sellPrice * i.qty).toLocaleString()}</td>
-                </tr>
-            `).join('');
+            const itemsHtml = sale.items.map(i => {
+                const originalPrice = i.originalPrice || i.sellPrice;
+                const priceDiff = i.sellPrice - originalPrice;
+                let indicator = '';
+                if (priceDiff < 0) {
+                    indicator = `<span style="color:var(--danger); font-size:9px; font-weight:800; display:block;">[REDUCED from Rs. ${originalPrice.toLocaleString()}]</span>`;
+                } else if (priceDiff > 0) {
+                    indicator = `<span style="color:var(--warning); font-size:9px; font-weight:800; display:block;">[INCREASED from Rs. ${originalPrice.toLocaleString()}]</span>`;
+                }
+
+                return `
+                    <tr>
+                        <td style="padding:8px 0;">
+                            <div style="font-weight:600;">${i.name} ${i.size ? `<small>(${i.size})</small>` : ''}</div>
+                            ${indicator}
+                        </td>
+                        <td style="text-align:center;">${i.qty}</td>
+                        <td style="text-align:right;">Rs. ${(i.sellPrice * i.qty).toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
 
             const profit = sale.total - (sale.buyTotal || 0);
             const subtotal = sale.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
@@ -339,7 +387,6 @@
                     </div>
                 </div>
             `;
-            document.getElementById('btn-edit-sale').onclick = () => window.location.href = `pos.html?editSale=${sale.id}`;
             document.getElementById('btn-delete-sale').onclick = async () => {
                 if (confirm('Permanently delete this sale record?')) {
                     await DB.deleteSale(sale.id);
@@ -347,13 +394,204 @@
                     refreshSales();
                 }
             };
+            document.getElementById('btn-edit-sale').onclick = () => window.location.href = 'pos.html?editSale=' + sale.id;
+            document.getElementById('btn-customer-bill').onclick = () => printCustomerBill(sale.id);
+            document.getElementById('btn-download-html').onclick = () => {
+                printCustomerBill(sale.id, false); // Populate without printing
+                setTimeout(() => downloadHTMLBill(`Bill_SL_${sale.id}`), 100);
+            };
             document.getElementById('saleDetailModal').style.display = 'flex';
+        }
+
+        async function printCustomerBill(id, triggerPrint = true) {
+            const sales = await DB.getAllSales();
+            const sale = sales.find(s => s.id === id);
+            if (!sale) return;
+
+            const itemsPerPage = 8;
+            const itemChunks = [];
+            for (let i = 0; i < sale.items.length; i += itemsPerPage) {
+                itemChunks.push(sale.items.slice(i, i + itemsPerPage));
+            }
+
+            const printContainer = document.getElementById('printableReceipt');
+            printContainer.innerHTML = '';
+            printContainer.style.display = 'block';
+
+            itemChunks.forEach((chunk, index) => {
+                const isLastPage = index === itemChunks.length - 1;
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'receipt-page';
+                pageDiv.style.cssText = `
+                    width: 148mm; height: 210mm; padding: 10mm; padding-top: 5mm; 
+                    position: relative; box-sizing: border-box; background: white; 
+                    page-break-after: always; color: black; font-family: 'Inter', sans-serif;
+                `;
+
+                const headerHtml = `
+                    <div style="text-align: left; margin-bottom: 2px;">
+                        <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 20px; letter-spacing: 1px; color: #000; text-transform: uppercase;">
+                            Roohira Collection
+                        </div>
+                        <div style="font-size: 11px; color: #444; font-weight: 600; margin-top: 2px; letter-spacing: 0.5px;">
+                            by Roohira Online | <i class="fas fa-phone-alt" style="font-size:9px;"></i> 0720898640 / 0714433279
+                        </div>
+                        <div style="height: 3px; background: #000; margin-top: 6px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 15px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+                        <img src="https://i.ibb.co/nsNtMvd8/Roohira-Batch.png" style="height: 50px; width: auto; object-fit: contain;">
+                        <div style="text-align: right;">
+                            <h1 style="font-size: 28px; font-weight: 300; margin: 0; color: #000; letter-spacing: 8px; text-transform: uppercase;">INVOICE</h1>
+                            <p style="font-size: 12px; color: #555; margin: 3px 0 0 0;">Page ${index + 1} of ${itemChunks.length}</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                        <div style="flex: 1;">
+                            <h3 style="font-size: 11px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 5px 0;">CUSTOMER DETAILS</h3>
+                            <p style="font-weight: 800; font-size: 16px; margin: 0; color: #000;">${sale.customer || 'Guest Customer'}</p>
+                            <p style="font-size: 13px; margin: 2px 0 0 0; font-weight: 500; color: #333;">${sale.customerPhone || 'N/A'}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">Invoice: #SL-${sale.id}</p>
+                            <p style="font-size: 13px; color: #444; margin: 5px 0 0 0; font-weight: 500;">Date: ${new Date(sale.date).toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                `;
+
+                let tableRows = chunk.map(item => {
+                    const originalPrice = item.originalPrice || item.sellPrice;
+                    const priceDiff = item.sellPrice - originalPrice;
+                    let priceDetails = `Rs. ${item.sellPrice.toLocaleString()}`;
+                    if (priceDiff !== 0) {
+                        priceDetails += `<br><span style="font-size:9px; color:#777;">(Orig: Rs. ${originalPrice.toLocaleString()})</span>`;
+                    }
+                    return `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding:10px 0; text-align: left; font-weight: 500;">
+                                ${item.name}
+                                ${item.size ? `<div style="font-size:10px; color:#666;">Size: ${item.size}</div>` : ''}
+                            </td>
+                            <td style="padding:10px 0; text-align:center;">${item.qty}</td>
+                            <td style="padding:10px 0; text-align:right;">${priceDetails}</td>
+                            <td style="padding:10px 0; text-align:right; font-weight:600;">Rs. ${(item.sellPrice * item.qty).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                const tableHtml = `
+                    <div style="margin-top: 15px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #000;">
+                                    <th style="padding: 10px 0; text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase;">Item Descriptions</th>
+                                    <th style="padding: 10px 0; text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; width: 50px;">Qty</th>
+                                    <th style="padding: 10px 0; text-align: right; font-size: 11px; font-weight: 800; text-transform: uppercase; width: 90px;">Price</th>
+                                    <th style="padding: 10px 0; text-align: right; font-size: 11px; font-weight: 800; text-transform: uppercase; width: 90px;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 12px;">
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                pageDiv.innerHTML = headerHtml + tableHtml;
+
+                if (isLastPage) {
+                    const subtotal = sale.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
+                    const discVal = (subtotal * (sale.discount || 0)) / 100;
+                    
+                    const totalsHtml = `
+                        <div style="margin-top: 20px; margin-left: auto; width: 250px;">
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px;">
+                                <span style="font-weight: 600; color: #555;">Subtotal:</span>
+                                <span style="font-weight: 700;">Rs. ${subtotal.toLocaleString()}</span>
+                            </div>
+                            ${sale.discount > 0 ? `
+                            <div style="display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; color: #a00;">
+                                <span style="font-weight: 600;">Discount:</span>
+                                <span style="font-weight: 700;">- Rs. ${discVal.toLocaleString()}</span>
+                            </div>` : ''}
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0 5px; border-top: 2.5px solid #000; margin-top: 5px; font-size: 18px; font-weight: 900; color: #000;">
+                                <span>TOTAL:</span>
+                                <span>Rs. ${sale.total.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    const footerHtml = `
+                        <div style="position: absolute; bottom: 8mm; left: 10mm; right: 10mm; text-align: center; border-top: 1px dashed #bbb; padding-top: 12px;">
+                            <p style="font-size: 13px; font-weight: 800; color: #000; margin: 0; letter-spacing: 0.5px;">Roohira Collection by Roohira Online</p>
+                            <p style="font-size: 10px; color: #666; margin-top: 3px;">This is a computer generated invoice.</p>
+                        </div>
+                    `;
+                    pageDiv.innerHTML += totalsHtml + footerHtml;
+                }
+
+                printContainer.appendChild(pageDiv);
+            });
+
+            if (triggerPrint) {
+                setTimeout(() => {
+                    window.print();
+                    printContainer.style.display = 'none';
+                }, 500);
+            }
+        }
+
+        function downloadHTMLBill(filename) {
+            const billContent = document.getElementById('printableReceipt').innerHTML;
+            const fullHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${filename}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; padding: 20px; background: #f4f7f6; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; }
+        .receipt-page { background: white; width: 148mm; min-height: 210mm; padding: 10mm; padding-top: 5mm; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; margin-bottom: 20px; }
+        @media print {
+            body { padding: 0; background: white; }
+            .receipt-page { box-shadow: none; margin: 0; width: 148mm; height: 210mm; padding-top: 2mm !important; page-break-after: always; }
+            .no-print { display: none !important; }
+            @page { size: A5; margin: 0; }
+        }
+        .no-print { margin-bottom: 20px; text-align: center; width: 100%; max-width: 148mm; }
+        .btn { padding: 12px 25px; background: #be185d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:hover { background: #9d174d; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button class="btn" onclick="window.print()">PRINT THIS BILL (A5)</button>
+        <p style="font-size: 13px; color: #666; margin-top: 10px; font-weight: 500;">Roohira Collection - Customer Invoice File</p>
+    </div>
+    ${billContent}
+</body>
+</html>`;
+
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename + ".html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function closeModal(id) {
             document.getElementById(id).style.display = 'none';
         }
     </script>
+
+    <!-- Printable Container (Handles multiple A5 pages) -->
+    <div id="printableReceipt" style="display:none; position: absolute; left: 0; top: 0;"></div>
 </body>
 
 </html>
