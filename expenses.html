@@ -150,11 +150,11 @@
 
         <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
             <div class="total-expense-card" style="margin-bottom: 0;">
-                <h2>Monthly Total Expenses</h2>
+                <h2>All Time Total Expenses</h2>
                 <div class="amount" id="grand-total-expense">Rs. 0.00</div>
             </div>
-            <div class="total-expense-card" style="margin-bottom: 0; background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
-                <h2>Monthly Net Profit (After Expenses)</h2>
+            <div id="net-profit-card" class="total-expense-card" style="margin-bottom: 0; background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+                <h2 id="net-profit-title">Revenue Left (After Expenses)</h2>
                 <div class="amount" id="net-profit-val">Rs. 0.00</div>
             </div>
         </div>
@@ -258,24 +258,28 @@
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-dim);">No expenses recorded for this month.</td></tr>`;
             }
 
-            document.getElementById('grand-total-expense').textContent = `Rs. ${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            // Get All-Time Stats
+            const allTimeStats = await DB.getDashboardStats();
 
-            // Calculate Net Profit
-            const sales = await DB.getAllSales();
-            const monthlySales = sales.filter(s => {
-                const d = new Date(s.date);
-                return d.getFullYear() === fYear && d.getMonth() + 1 === fMonth;
-            });
-            const monthlyGrossProfit = monthlySales.reduce((sum, s) => sum + ((Number(s.total) || 0) - (Number(s.buyTotal) || 0)), 0);
-            const monthlyNetProfit = monthlyGrossProfit - total;
+            document.getElementById('grand-total-expense').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
             const netProfitEl = document.getElementById('net-profit-val');
-            if (netProfitEl) {
-                netProfitEl.textContent = `Rs. ${monthlyNetProfit.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-                if (monthlyNetProfit < 0) {
-                    netProfitEl.style.color = '#f87171'; // Red for negative net profit
+            const netProfitTitle = document.getElementById('net-profit-title');
+            const netProfitCard = document.getElementById('net-profit-card');
+
+            if (netProfitEl && netProfitTitle && netProfitCard) {
+                const pureBalance = allTimeStats.totalRevenue - allTimeStats.totalExpenses;
+
+                if (pureBalance < 0) {
+                    netProfitTitle.textContent = "Revenue Needed to Recover Expenses";
+                    netProfitEl.textContent = `Rs. ${Math.abs(pureBalance).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                    netProfitCard.style.background = 'linear-gradient(135deg, #f43f5e, #be123c)';
+                    netProfitCard.style.boxShadow = '0 10px 20px rgba(244, 63, 94, 0.2)';
                 } else {
-                    netProfitEl.style.color = 'white';
+                    netProfitTitle.textContent = "Revenue Left (After Expenses)";
+                    netProfitEl.textContent = `Rs. ${pureBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                    netProfitCard.style.background = 'linear-gradient(135deg, #10b981, #047857)';
+                    netProfitCard.style.boxShadow = '0 10px 20px rgba(16, 185, 129, 0.2)';
                 }
             }
         }
