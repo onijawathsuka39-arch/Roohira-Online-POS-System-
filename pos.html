@@ -1325,13 +1325,14 @@
                         <div style="flex: 1;">
                             <h3 style="font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 4px 0;">CUSTOMER DETAILS</h3>
                             <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">${record.customer || 'Guest Customer'}</p>
+                            ${record.customerId && record.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${record.customerId}</p>` : ''}
                             <p style="font-size: 11px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${(record.customerPhone || record.phone) || 'N/A'}</p>
-                            <p style="font-size: 11px; margin: 2px 0 0 0; font-weight: 600; color: #111;">Method: ${record.deliveryMethod || 'Store Pickup'}</p>
                         </div>
                         <div style="text-align: right;">
                             <p style="font-weight: 800; font-size: 11px; margin: 0; color: #000;">${type === 'sale' ? 'Invoice: #SL-' + record.id : 'Order Ref: #' + (record.orderId || record.id)}</p>
                             ${(type === 'sale' && record.orderId) ? `<p style="font-weight: 800; font-size: 11px; margin: 3px 0 0 0; color: #444;">Order Ref: #${record.orderId}</p>` : ''}
                             <p style="font-size: 11px; color: #444; margin: 3px 0 0 0; font-weight: 500;">Date: ${new Date(record.date).toLocaleDateString()}</p>
+                            ${record.deliveryMethod ? `<p style="font-size: 11px; margin: 3px 0 0 0; font-weight: 600; color: #111;">Method: ${record.deliveryMethod}</p>` : `<p style="font-size: 11px; margin: 3px 0 0 0; font-weight: 600; color: #111;">Method: Store Pickup</p>`}
                         </div>
                     </div>
                 `;
@@ -1420,7 +1421,7 @@
                     `;
 
                     const footerHtml = `
-                        <div style="position: absolute; bottom: 5mm; left: 10mm; right: 10mm; border-top: 1px dashed #bbb; padding-top: 5px;">
+                        <div style="position: absolute; bottom: 5mm; left: 10mm; right: 10mm; border-top: 1.5px solid #000; padding-top: 8px;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                 <div style="font-size: 9.5px; color: #000; line-height: 1.2;">
                                     <p style="margin: 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #555; margin-bottom: 2px;">Bank Transfer Details:</p>
