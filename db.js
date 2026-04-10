@@ -181,6 +181,7 @@ const DB = {
         return { 
             totalRevenue: Number(totalRevenue.toFixed(2)), 
             totalExpenses: Number(totalExpenses.toFixed(2)),
+            grossProfit: Number(grossProfit.toFixed(2)),
             totalProfit: Number(netProfit.toFixed(2)), 
             totalOrders, 
             totalCustomers: customers.length, 

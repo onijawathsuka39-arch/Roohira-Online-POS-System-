@@ -338,7 +338,7 @@
             // Update Statistics - Set to ALL TIME (as requested)
             const allTimeStats = await DB.getDashboardStats();
             document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.grossProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('orders-stat').textContent = allTimeStats.totalOrders;
             document.getElementById('low-stock-stat').textContent = allTimeStats.lowStockCount;
