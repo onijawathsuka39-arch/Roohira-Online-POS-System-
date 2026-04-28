@@ -1,0 +1,2982 @@
+{
+  "inventory": [
+    {
+      "name": "Handloom Bedsheet",
+      "category": "Handloom Bedsheet",
+      "size": "60 * 90",
+      "stock": 2,
+      "buyPrice": 962,
+      "sellPrice": 1200,
+      "type": "regular",
+      "id": 1
+    },
+    {
+      "name": "Towel",
+      "category": "Towel ",
+      "size": "30 * 54",
+      "stock": 0,
+      "buyPrice": 1050,
+      "sellPrice": 1350,
+      "type": "regular",
+      "id": 3
+    },
+    {
+      "name": "Pillow Covers",
+      "category": "Pillow Covers",
+      "size": "",
+      "stock": 1,
+      "buyPrice": 225,
+      "sellPrice": 250,
+      "type": "regular",
+      "id": 4
+    },
+    {
+      "name": "80% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "110 * 90",
+      "stock": 23,
+      "buyPrice": 1220,
+      "sellPrice": 1500,
+      "type": "regular",
+      "id": 5
+    },
+    {
+      "name": "Pillow",
+      "category": "Pillow",
+      "size": "18 * 27",
+      "stock": 6,
+      "buyPrice": 900,
+      "sellPrice": 1200,
+      "type": "regular",
+      "id": 14
+    },
+    {
+      "name": "Egyptian Cotton",
+      "category": "Egyptian Cotton",
+      "size": "90 *100",
+      "stock": 1,
+      "buyPrice": 2800,
+      "sellPrice": 3400,
+      "type": "regular",
+      "id": 15
+    },
+    {
+      "name": "Egyptian Cotton",
+      "category": "Egyptian Cotton",
+      "size": "90 * 90",
+      "stock": 0,
+      "buyPrice": 2650,
+      "sellPrice": 3150,
+      "type": "regular",
+      "id": 16
+    },
+    {
+      "name": "220 GSM T-Shirt",
+      "category": "220 GSM T Shirts",
+      "size": "S,M,L,XL",
+      "stock": 24,
+      "buyPrice": 795,
+      "sellPrice": 1300,
+      "type": "regular",
+      "id": 17
+    },
+    {
+      "name": "Cotton සරම්",
+      "category": "Cotton සරම්",
+      "size": "Large",
+      "stock": 4,
+      "buyPrice": 750,
+      "sellPrice": 1100,
+      "type": "regular",
+      "id": 21
+    },
+    {
+      "name": "Kids Two Tone T Shirt",
+      "category": "K Two Tone",
+      "size": "S,M,L,XL",
+      "stock": 13,
+      "buyPrice": 600,
+      "sellPrice": 900,
+      "type": "regular",
+      "id": 22
+    },
+    {
+      "name": "190 Gsm T shirt (2XL)",
+      "category": "190 GSM Kids",
+      "size": "2XL",
+      "stock": 2,
+      "buyPrice": 475,
+      "sellPrice": 700,
+      "type": "regular",
+      "id": 24
+    },
+    {
+      "name": "Kids T Shirt 190gsm (L)",
+      "category": "190 GSM Kids",
+      "size": "L",
+      "stock": 5,
+      "buyPrice": 300,
+      "sellPrice": 550,
+      "type": "regular",
+      "id": 25
+    },
+    {
+      "name": "Kids T-Shirt 190gsm (M)",
+      "category": "190 GSM Kids",
+      "size": "M",
+      "stock": 6,
+      "buyPrice": 275,
+      "sellPrice": 450,
+      "type": "regular",
+      "id": 26
+    },
+    {
+      "name": "Kids 220gsm t-shirt (XL)",
+      "category": "220 GSM Kids",
+      "size": "XL",
+      "stock": 2,
+      "buyPrice": 450,
+      "sellPrice": 780,
+      "type": "regular",
+      "id": 27
+    },
+    {
+      "name": " 190gsm t shirt (L)",
+      "category": "190 GSM Kids",
+      "size": "L",
+      "stock": 4,
+      "buyPrice": 400,
+      "sellPrice": 600,
+      "type": "regular",
+      "id": 28
+    },
+    {
+      "name": "Kids 220gsm t shirt (S)",
+      "category": "220 GSM Kids",
+      "size": "S",
+      "stock": 8,
+      "buyPrice": 350,
+      "sellPrice": 600,
+      "type": "regular",
+      "id": 29
+    },
+    {
+      "name": "Kids 220gsm t shirt (M)",
+      "category": "220 GSM Kids",
+      "size": "M",
+      "stock": 5,
+      "buyPrice": 380,
+      "sellPrice": 650,
+      "type": "regular",
+      "id": 30
+    },
+    {
+      "name": "Kids 220gsm t shirt (L)",
+      "category": "220 GSM Kids",
+      "size": "L",
+      "stock": 7,
+      "buyPrice": 400,
+      "sellPrice": 700,
+      "type": "regular",
+      "id": 31
+    },
+    {
+      "name": "Cotton Sarong Printed",
+      "category": "Cotton සරම්",
+      "size": "",
+      "stock": 3,
+      "buyPrice": 1100,
+      "sellPrice": 1500,
+      "type": "regular",
+      "id": 33
+    },
+    {
+      "name": "Elephant Pant",
+      "category": "Elephant pant",
+      "size": "",
+      "stock": 3,
+      "buyPrice": 900,
+      "sellPrice": 1200,
+      "type": "regular",
+      "id": 37
+    },
+    {
+      "name": "80% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "72 * 90",
+      "stock": 10,
+      "buyPrice": 1000,
+      "sellPrice": 1300,
+      "type": "regular",
+      "id": 38
+    },
+    {
+      "name": "100% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "100 * 90",
+      "stock": 3,
+      "buyPrice": 1290,
+      "sellPrice": 1600,
+      "type": "regular",
+      "id": 39
+    },
+    {
+      "name": "100% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "72 * 90",
+      "stock": 0,
+      "buyPrice": 1190,
+      "sellPrice": 1400,
+      "type": "regular",
+      "id": 40
+    },
+    {
+      "name": "80% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "90 * 90",
+      "stock": 1,
+      "buyPrice": 900,
+      "sellPrice": 1100,
+      "type": "regular",
+      "id": 41
+    },
+    {
+      "name": "80% Cotton Bedsheet",
+      "category": "Design Bedsheets",
+      "size": "60 * 90",
+      "stock": 1,
+      "buyPrice": 800,
+      "sellPrice": 1000,
+      "type": "regular",
+      "id": 42
+    },
+    {
+      "name": "Green Cinnamon T shirt",
+      "category": "Korean T shirt",
+      "size": "S",
+      "stock": 5,
+      "buyPrice": 500,
+      "sellPrice": 900,
+      "type": "regular",
+      "id": 43
+    },
+    {
+      "name": "Blue FRANCE Tshirt",
+      "category": "Korean T shirt",
+      "size": "XL",
+      "stock": 5,
+      "buyPrice": 500,
+      "sellPrice": 800,
+      "type": "regular",
+      "id": 44
+    },
+    {
+      "name": "Blue FRANCE Tshirt",
+      "category": "Korean T shirt",
+      "size": "M",
+      "stock": 4,
+      "buyPrice": 500,
+      "sellPrice": 750,
+      "type": "regular",
+      "id": 45
+    },
+    {
+      "name": "Black FRANCE T shirt",
+      "category": "Korean T shirt",
+      "size": "M",
+      "stock": 5,
+      "buyPrice": 500,
+      "sellPrice": 750,
+      "type": "regular",
+      "id": 46
+    },
+    {
+      "name": "Black & White FRANCE T shirt",
+      "category": "Korean T shirt",
+      "size": "m",
+      "stock": 3,
+      "buyPrice": 500,
+      "sellPrice": 800,
+      "type": "regular",
+      "id": 47
+    },
+    {
+      "name": "DTF Stickers ",
+      "category": "Stikers",
+      "size": "XS",
+      "stock": 97,
+      "buyPrice": 37.5,
+      "sellPrice": 50,
+      "type": "regular",
+      "id": 48
+    },
+    {
+      "name": "DTF Stickers ",
+      "category": "Stikers",
+      "size": "S",
+      "stock": 98,
+      "buyPrice": 37.5,
+      "sellPrice": 80,
+      "type": "regular",
+      "id": 49
+    },
+    {
+      "name": "DTF Stickers",
+      "category": "Stikers",
+      "size": "M",
+      "stock": 96,
+      "buyPrice": 37.5,
+      "sellPrice": 100,
+      "type": "regular",
+      "id": 50
+    },
+    {
+      "name": "DTF Stickers ",
+      "category": "Stikers",
+      "size": "L",
+      "stock": 100,
+      "buyPrice": 37.5,
+      "sellPrice": 150,
+      "type": "regular",
+      "id": 51
+    },
+    {
+      "name": "DTF Stickers ",
+      "category": "Stikers",
+      "size": "A4",
+      "stock": 97,
+      "buyPrice": 37.5,
+      "sellPrice": 200,
+      "type": "regular",
+      "id": 52
+    },
+    {
+      "name": "DTF Stickers",
+      "category": "Stikers",
+      "size": "A3",
+      "stock": 100,
+      "buyPrice": 100,
+      "sellPrice": 300,
+      "type": "regular",
+      "id": 53
+    },
+    {
+      "name": "190 GSM Kids Plane T- Shirt",
+      "category": "190 GSM Kids",
+      "size": "S",
+      "stock": 2,
+      "buyPrice": 575,
+      "sellPrice": 780,
+      "type": "regular",
+      "id": 54
+    },
+    {
+      "name": "190 GSM Kids Plane T- Shirt",
+      "category": "190 GSM Kids",
+      "size": "M",
+      "stock": 0,
+      "buyPrice": 575,
+      "sellPrice": 780,
+      "type": "regular",
+      "id": 55
+    },
+    {
+      "name": "Raglan O/Z T Shirts",
+      "category": "Ranglan O/Z T Shirts",
+      "size": "S/M/L/XL",
+      "stock": 14,
+      "buyPrice": 790,
+      "sellPrice": 1350,
+      "type": "regular",
+      "id": 56
+    },
+    {
+      "name": "220 GSM Rangle (Printed)",
+      "category": "220 GSM T Shirts",
+      "size": "XL",
+      "stock": 1,
+      "buyPrice": 875,
+      "sellPrice": 1350,
+      "type": "regular",
+      "id": 57
+    },
+    {
+      "name": "Waffle 240GSM (O/Z) T Shirts",
+      "category": "240 GSM T Shirts",
+      "size": "M/XL",
+      "stock": 2,
+      "buyPrice": 915,
+      "sellPrice": 1400,
+      "type": "regular",
+      "id": 58
+    },
+    {
+      "name": "190 GSM  T- Shirt",
+      "category": "190 GSM T Shirts",
+      "size": "S/M/L",
+      "stock": 15,
+      "buyPrice": 675,
+      "sellPrice": 1150,
+      "type": "regular",
+      "id": 59
+    },
+    {
+      "name": "220 GSM T - shirt",
+      "category": "T-Shirt (220 gsm)",
+      "size": "S/M/L/XL",
+      "stock": 20,
+      "buyPrice": 850,
+      "sellPrice": 1300,
+      "type": "regular",
+      "id": 60
+    },
+    {
+      "name": "220 GSM O/Z T Shirts",
+      "category": "T-Shirt (220 gsm)",
+      "size": "M/L",
+      "stock": 4,
+      "buyPrice": 875,
+      "sellPrice": 1400,
+      "type": "regular",
+      "id": 61
+    },
+    {
+      "name": "190GSM O/Z T Shirts",
+      "category": "190 GSM T Shirts",
+      "size": "S/M/L/XL",
+      "stock": 14,
+      "buyPrice": 700,
+      "sellPrice": 1250,
+      "type": "regular",
+      "id": 62
+    },
+    {
+      "name": "220 GSM O/Z T Shirts",
+      "category": "220 GSM T Shirts",
+      "size": "M/L",
+      "stock": 5,
+      "buyPrice": 800,
+      "sellPrice": 1400,
+      "type": "regular",
+      "id": 63
+    },
+    {
+      "name": "RR Printed T shirts O/Z",
+      "category": "RR Printed T Shirts",
+      "size": "L/XL",
+      "stock": 2,
+      "buyPrice": 790,
+      "sellPrice": 1400,
+      "type": "regular",
+      "id": 64
+    }
+  ],
+  "sales": [
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 3,
+          "buyPrice": 712,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        }
+      ],
+      "total": 900,
+      "buyTotal": 712,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:06:15.081Z",
+      "customer": "Sameera",
+      "customerId": "CUS-101",
+      "customerPhone": "070000000",
+      "paymentMethod": "cash",
+      "id": 6
+    },
+    {
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "54 * 80",
+          "stock": 4,
+          "buyPrice": 722,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 2,
+          "qty": 3
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 8,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 2
+        },
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 4
+        }
+      ],
+      "total": 5900,
+      "buyTotal": 4990,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:17:20.880Z",
+      "customer": "Yasadi Nandha",
+      "customerId": "CUS-105",
+      "customerPhone": "0700000",
+      "paymentMethod": "cash",
+      "id": 8
+    },
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 2,
+          "buyPrice": 712,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "54 * 80",
+          "stock": 1,
+          "buyPrice": 722,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 2,
+          "qty": 1
+        }
+      ],
+      "total": 1800,
+      "buyTotal": 1434,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-04T18:18:11.689Z",
+      "customer": "Achchi",
+      "customerId": "CUS-103",
+      "customerPhone": "0710664973",
+      "paymentMethod": "cash",
+      "id": 9
+    },
+    {
+      "items": [
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 2
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1600,
+      "buyTotal": 1412,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-08T15:31:48.011Z",
+      "customer": "Achchi",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 13
+    },
+    {
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        },
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 1
+        }
+      ],
+      "total": 1400,
+      "buyTotal": 1187,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-08T15:31:49.249Z",
+      "customer": "Chandharathana mama",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 14
+    },
+    {
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1200,
+      "buyTotal": 962,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-08T15:31:50.504Z",
+      "customer": "Mallika Miss",
+      "customerId": "CUS-104",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 15
+    },
+    {
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 3,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1200,
+      "buyTotal": 962,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-08T15:46:00.833Z",
+      "customer": "Achchi",
+      "customerId": "CUS-103",
+      "customerPhone": "0710664973",
+      "paymentMethod": "cash",
+      "id": 16
+    },
+    {
+      "items": [
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 10,
+          "buyPrice": 1100,
+          "sellPrice": 1400,
+          "type": "regular",
+          "id": 33,
+          "qty": 1
+        }
+      ],
+      "total": 1400,
+      "buyTotal": 1100,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T04:25:27.969Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 17
+    },
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 6,
+          "buyPrice": 1050,
+          "sellPrice": 1300,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        }
+      ],
+      "total": 1300,
+      "buyTotal": 1050,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T05:07:27.969Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 18
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 54,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 1
+        }
+      ],
+      "total": 1100,
+      "buyTotal": 795,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T05:08:14.916Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 19
+    },
+    {
+      "items": [
+        {
+          "name": "For Little Baby",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 2,
+          "buyPrice": 1220,
+          "sellPrice": 1700,
+          "type": "regular",
+          "id": 11,
+          "qty": 1
+        }
+      ],
+      "total": 1700,
+      "buyTotal": 1220,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T05:18:55.236Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 20
+    },
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 5,
+          "buyPrice": 1050,
+          "sellPrice": 1300,
+          "type": "regular",
+          "id": 3,
+          "qty": 1
+        }
+      ],
+      "total": 1300,
+      "buyTotal": 1050,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T05:39:21.948Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 21
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 53,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 1
+        }
+      ],
+      "total": 1100,
+      "buyTotal": 795,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T05:39:43.045Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 22
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 52,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 1
+        }
+      ],
+      "total": 1100,
+      "buyTotal": 795,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T06:39:52.587Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 23
+    },
+    {
+      "items": [
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 9,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1100,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T06:45:06.016Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "bank",
+      "id": 24
+    },
+    {
+      "items": [
+        {
+          "name": "190 Gsm T shirt",
+          "category": "Kids 190GSM T-Shirt",
+          "size": "2XL",
+          "stock": 4,
+          "buyPrice": 475,
+          "sellPrice": 700,
+          "type": "regular",
+          "id": 24,
+          "qty": 2
+        }
+      ],
+      "total": 1400,
+      "buyTotal": 950,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T06:57:18.275Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 25
+    },
+    {
+      "items": [
+        {
+          "name": " 190gsm t shirt",
+          "category": "Kids 190GSM T-Shirt",
+          "size": "L",
+          "stock": 6,
+          "buyPrice": 400,
+          "sellPrice": 600,
+          "type": "regular",
+          "id": 28,
+          "qty": 1
+        }
+      ],
+      "total": 600,
+      "buyTotal": 400,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T06:58:09.015Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 26
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 51,
+          "buyPrice": 795,
+          "sellPrice": 1000,
+          "type": "regular",
+          "id": 17,
+          "qty": 3
+        }
+      ],
+      "total": 3000,
+      "buyTotal": 2385,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T07:25:39.661Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 27
+    },
+    {
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 20,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1
+        }
+      ],
+      "total": 900,
+      "buyTotal": 600,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T07:25:57.080Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 28
+    },
+    {
+      "items": [
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 8,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1100,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T07:57:00.833Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 29
+    },
+    {
+      "items": [
+        {
+          "name": "Kids 220gsm t-shirt",
+          "category": "Kids 220GSM T-Shirt",
+          "size": "XL",
+          "stock": 3,
+          "buyPrice": 450,
+          "sellPrice": 750,
+          "type": "regular",
+          "id": 27,
+          "qty": 1
+        }
+      ],
+      "total": 750,
+      "buyTotal": 450,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T08:08:43.067Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 30
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 48,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 1
+        },
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 19,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1
+        }
+      ],
+      "total": 2000,
+      "buyTotal": 1395,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T08:36:45.494Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 31
+    },
+    {
+      "items": [
+        {
+          "name": "Stickers ",
+          "category": "Stikers",
+          "size": "",
+          "stock": 150,
+          "buyPrice": 37.5,
+          "sellPrice": 150,
+          "type": "regular",
+          "id": 34,
+          "qty": 1
+        }
+      ],
+      "total": 150,
+      "buyTotal": 37.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T08:37:01.566Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 32
+    },
+    {
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 18,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1
+        }
+      ],
+      "total": 900,
+      "buyTotal": 600,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T09:23:47.506Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 33
+    },
+    {
+      "items": [
+        {
+          "name": " 190gsm t shirt",
+          "category": "Kids 190GSM T-Shirt",
+          "size": "L",
+          "stock": 5,
+          "buyPrice": 400,
+          "sellPrice": 600,
+          "type": "regular",
+          "id": 28,
+          "qty": 1
+        }
+      ],
+      "total": 600,
+      "buyTotal": 400,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T09:25:04.449Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 34
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 47,
+          "buyPrice": 795,
+          "sellPrice": 1000,
+          "type": "regular",
+          "id": 17,
+          "qty": 1
+        }
+      ],
+      "total": 1000,
+      "buyTotal": 795,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T09:38:55.608Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 35
+    },
+    {
+      "items": [
+        {
+          "name": "Towel",
+          "category": "Towel ",
+          "size": "30 * 54",
+          "stock": 4,
+          "buyPrice": 1050,
+          "sellPrice": 1300,
+          "type": "regular",
+          "id": 3,
+          "qty": 4
+        }
+      ],
+      "total": 5200,
+      "buyTotal": 4200,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T10:44:34.560Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 36
+    },
+    {
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 17,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 2
+        },
+        {
+          "name": "Stickers ",
+          "category": "Stikers",
+          "size": "",
+          "stock": 149,
+          "buyPrice": 37.5,
+          "sellPrice": 100,
+          "type": "regular",
+          "id": 34,
+          "qty": 2
+        }
+      ],
+      "total": 2000,
+      "buyTotal": 1275,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-30T12:26:36.399Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 37
+    },
+    {
+      "items": [
+        {
+          "name": "Egyptian Cotton",
+          "category": "Egyptian Cotton",
+          "size": "90 *100",
+          "stock": 2,
+          "buyPrice": 2800,
+          "sellPrice": 3400,
+          "type": "regular",
+          "id": 15,
+          "qty": 1,
+          "discount": 50,
+          "discountType": "amount"
+        }
+      ],
+      "total": 3350,
+      "buyTotal": 2800,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T04:54:44.771Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 38
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 46,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 50,
+          "discountType": "amount"
+        }
+      ],
+      "total": 2250,
+      "buyTotal": 1590,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T05:43:08.388Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 39
+    },
+    {
+      "items": [
+        {
+          "name": "Cotton සරම්",
+          "category": "Cotton සරම්",
+          "size": "Large",
+          "stock": 6,
+          "buyPrice": 750,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 21,
+          "qty": 1,
+          "discount": 100,
+          "discountType": "amount"
+        }
+      ],
+      "total": 1000,
+      "buyTotal": 750,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T06:24:28.993Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 40
+    },
+    {
+      "items": [
+        {
+          "name": "Elephant Pant",
+          "category": "Elephant pant",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 900,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 37,
+          "qty": 2,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 2400,
+      "buyTotal": 1800,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T06:37:47.697Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 41
+    },
+    {
+      "items": [
+        {
+          "name": "Egyptian Cotton",
+          "category": "Egyptian Cotton",
+          "size": "90 * 90",
+          "stock": 3,
+          "buyPrice": 2650,
+          "sellPrice": 3150,
+          "type": "regular",
+          "id": 16,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3150,
+      "buyTotal": 2650,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T08:00:14.416Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 42
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 44,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Dtf Stiker ",
+          "category": "Stikers",
+          "size": "S",
+          "stock": 50,
+          "buyPrice": 37.5,
+          "sellPrice": 50,
+          "type": "regular",
+          "id": 35,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 2250,
+      "buyTotal": 1627.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:09:31.626Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 43
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 42,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        }
+      ],
+      "total": 2200,
+      "buyTotal": 1590,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:11:28.255Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 44
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 40,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 7,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3700,
+      "buyTotal": 2690,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:12:00.848Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 45
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 38,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3700,
+      "buyTotal": 2690,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:12:25.294Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 46
+    },
+    {
+      "items": [
+        {
+          "name": "Egyptian Cotton",
+          "category": "Egyptian Cotton",
+          "size": "90 * 90",
+          "stock": 2,
+          "buyPrice": 2650,
+          "sellPrice": 3150,
+          "type": "regular",
+          "id": 16,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 36,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 1,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Kids 220gsm t shirt",
+          "category": "Kids 220GSM T-Shirt",
+          "size": "L",
+          "stock": 8,
+          "buyPrice": 400,
+          "sellPrice": 700,
+          "type": "regular",
+          "id": 31,
+          "qty": 1,
+          "discount": 100,
+          "discountType": "amount"
+        }
+      ],
+      "total": 4800,
+      "buyTotal": 3845,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:17:55.633Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 47
+    },
+    {
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 15,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 900,
+      "buyTotal": 600,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:27:46.276Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 48
+    },
+    {
+      "items": [
+        {
+          "name": "Cotton සරම්",
+          "category": "Cotton සරම්",
+          "size": "Large",
+          "stock": 5,
+          "buyPrice": 750,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 21,
+          "qty": 1,
+          "discount": 200,
+          "discountType": "amount"
+        }
+      ],
+      "total": 900,
+      "buyTotal": 750,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T09:37:55.933Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 50
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 35,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 1,
+          "discount": 50,
+          "discountType": "amount"
+        },
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 5,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 2,
+          "discount": 200,
+          "discountType": "amount"
+        },
+        {
+          "name": "Stickers ",
+          "category": "Stikers",
+          "size": "L",
+          "stock": 147,
+          "buyPrice": 37.5,
+          "sellPrice": 100,
+          "type": "regular",
+          "id": 34,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 4000,
+      "buyTotal": 3032.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-03-31T10:44:49.035Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 51
+    },
+    {
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 28,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1220,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-05T09:43:57.692Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 52
+    },
+    {
+      "items": [
+        {
+          "name": "Egyptian Cotton",
+          "category": "Egyptian Cotton",
+          "size": "90 * 90",
+          "stock": 1,
+          "buyPrice": 2650,
+          "sellPrice": 3150,
+          "type": "regular",
+          "id": 16,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3150,
+      "buyTotal": 2650,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-08T00:18:29.021Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 53
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 34,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "Black & White Korean T shirt",
+          "category": "Korean T shirt",
+          "size": "m",
+          "stock": 4,
+          "buyPrice": 500,
+          "sellPrice": 750,
+          "type": "regular",
+          "id": 47,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "Stickers ",
+          "category": "Stikers",
+          "size": "",
+          "stock": 300,
+          "buyPrice": 37.5,
+          "sellPrice": 250,
+          "type": "regular",
+          "id": 34,
+          "qty": 1,
+          "discount": 170,
+          "discountType": "amount"
+        }
+      ],
+      "total": 3030,
+      "buyTotal": 2127.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-08T15:43:48.293Z",
+      "customer": "Anurada Hettige",
+      "customerId": "CUS-106",
+      "customerPhone": "0773678225",
+      "paymentMethod": "cash",
+      "id": 54
+    },
+    {
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 35,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 3,
+          "discount": 600,
+          "discountType": "amount"
+        },
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "72 * 90",
+          "stock": 12,
+          "buyPrice": 1000,
+          "sellPrice": 1300,
+          "type": "regular",
+          "id": 38,
+          "qty": 2,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "100% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "72 * 90",
+          "stock": 3,
+          "buyPrice": 1190,
+          "sellPrice": 1400,
+          "type": "regular",
+          "id": 40,
+          "qty": 1,
+          "discount": 100,
+          "discountType": "amount"
+        }
+      ],
+      "total": 7800,
+      "buyTotal": 6850,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-08T15:57:26.104Z",
+      "customer": "Achchi",
+      "customerId": "CUS-103",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 55
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 28,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 3,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "DTF Stickers ",
+          "category": "Stikers",
+          "size": "A4",
+          "stock": 100,
+          "buyPrice": 37.5,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 52,
+          "qty": 3,
+          "originalPrice": 200
+        }
+      ],
+      "total": 3900,
+      "buyTotal": 2497.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-08T16:03:11.208Z",
+      "customer": "Mr.Wathugala",
+      "customerId": "CUS-108",
+      "customerPhone": "0714433083",
+      "paymentMethod": "cash",
+      "id": 56
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 25,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "Stickers ",
+          "category": "Stikers",
+          "size": "XS",
+          "stock": 100,
+          "buyPrice": 37.5,
+          "sellPrice": 50,
+          "type": "regular",
+          "id": 48,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 1150,
+      "buyTotal": 832.5,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-09T07:15:36.716Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "id": 57
+    },
+    {
+      "items": [
+        {
+          "name": "190 GSM Kids Plane T- Shirt",
+          "category": "190 GSM Kids",
+          "size": "M",
+          "stock": 2,
+          "buyPrice": 575,
+          "sellPrice": 780,
+          "type": "regular",
+          "id": 55,
+          "qty": 2,
+          "originalPrice": 780
+        },
+        {
+          "name": "DTF Stickers ",
+          "category": "Stikers",
+          "size": "S",
+          "stock": 100,
+          "buyPrice": 37.5,
+          "sellPrice": 80,
+          "type": "regular",
+          "id": 49,
+          "qty": 2,
+          "originalPrice": 80
+        }
+      ],
+      "total": 1720,
+      "buyTotal": 1225,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-09T14:49:48.295Z",
+      "customer": "Mrs.Hemamali",
+      "customerId": "CUS-109",
+      "customerPhone": "0712875639",
+      "paymentMethod": "cash",
+      "id": 59
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 38,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3700,
+      "buyTotal": 2690,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-10T10:59:57.645Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "orderId": "ORD-1809",
+      "paymentMethod": "cash",
+      "id": 63
+    },
+    {
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 32,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 4,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "DTF Stickers",
+          "category": "Stikers",
+          "size": "M",
+          "stock": 100,
+          "buyPrice": 37.5,
+          "sellPrice": 100,
+          "type": "regular",
+          "id": 50,
+          "qty": 4,
+          "originalPrice": 100
+        }
+      ],
+      "total": 4800,
+      "buyTotal": 3330,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-10T11:00:04.356Z",
+      "customer": "Mrs. Rohini",
+      "customerId": "CUS-107",
+      "customerPhone": "N/A",
+      "orderId": "ORD-4369",
+      "paymentMethod": "cash",
+      "id": 64
+    },
+    {
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 14,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1,
+          "originalPrice": 900
+        },
+        {
+          "name": "DTF Stickers ",
+          "category": "Stikers",
+          "size": "XS",
+          "stock": 99,
+          "buyPrice": 37.5,
+          "sellPrice": 50,
+          "type": "regular",
+          "id": 48,
+          "qty": 2,
+          "originalPrice": 50
+        }
+      ],
+      "total": 1000,
+      "buyTotal": 675,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-10T11:00:10.196Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "orderId": "ORD-7282",
+      "paymentMethod": "cash",
+      "id": 65
+    },
+    {
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 27,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 2,
+          "originalPrice": 1500
+        }
+      ],
+      "total": 3000,
+      "buyTotal": 2440,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-11T04:37:27.226Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "received": 0,
+      "balance": -3000,
+      "deliveryMethod": "Store Pickup",
+      "id": 66
+    },
+    {
+      "items": [
+        {
+          "name": "Elephant Pant",
+          "category": "Elephant pant",
+          "size": "",
+          "stock": 4,
+          "buyPrice": 900,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 37,
+          "qty": 1,
+          "originalPrice": 1200
+        }
+      ],
+      "total": 1100,
+      "buyTotal": 900,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-11T06:15:56.938Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "received": 0,
+      "balance": -1100,
+      "deliveryMethod": "Store Pickup",
+      "id": 67
+    },
+    {
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 25,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 1,
+          "originalPrice": 1500
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1220,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-11T06:16:04.819Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "received": 0,
+      "balance": -1500,
+      "deliveryMethod": "Store Pickup",
+      "id": 68
+    },
+    {
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 24,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 1,
+          "originalPrice": 1500
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1220,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "date": "2026-04-11T07:34:15.754Z",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "customerPhone": "N/A",
+      "paymentMethod": "cash",
+      "received": 0,
+      "balance": -1500,
+      "deliveryMethod": "Store Pickup",
+      "id": 69
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "ORD-9951",
+      "customer": "Mallika Miss",
+      "customerId": "CUS-104",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1200,
+      "buyTotal": 962,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "deliveryMethod": "COD",
+      "date": "2026-03-04T18:22:51.509Z",
+      "id": 1
+    },
+    {
+      "orderId": "ORD-6824",
+      "customer": "Chandharathana mama",
+      "items": [
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        },
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 1
+        }
+      ],
+      "total": 1400,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "date": "2026-03-04T18:23:12.399Z",
+      "id": 2
+    },
+    {
+      "orderId": "ORD-7435",
+      "customer": "Achchi",
+      "items": [
+        {
+          "name": "Pillow Covers",
+          "category": "Pillow Covers",
+          "size": "",
+          "stock": 2,
+          "buyPrice": 225,
+          "sellPrice": 200,
+          "type": "regular",
+          "id": 4,
+          "qty": 2
+        },
+        {
+          "name": "Handloom Bedsheet",
+          "category": "Handloom Bedsheet",
+          "size": "60 * 90",
+          "stock": 2,
+          "buyPrice": 962,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 1,
+          "qty": 1
+        }
+      ],
+      "total": 1600,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "date": "2026-03-04T18:25:03.377Z",
+      "id": 3
+    },
+    {
+      "orderId": "ORD-1809",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 38,
+          "buyPrice": 795,
+          "sellPrice": 1150,
+          "type": "regular",
+          "id": 17,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 3700,
+      "buyTotal": 2690,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "deliveryMethod": "COD",
+      "date": "2026-03-31T09:18:29.402Z",
+      "id": 4
+    },
+    {
+      "orderId": "ORD-9795",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "Cotton Sarong Printed",
+          "category": "Cotton සරම්",
+          "size": "",
+          "stock": 6,
+          "buyPrice": 1100,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 33,
+          "qty": 1,
+          "discount": 0,
+          "discountType": "percent"
+        }
+      ],
+      "total": 1500,
+      "buyTotal": 1100,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Pending",
+      "paymentStatus": "pending",
+      "deliveryMethod": "COD",
+      "date": "2026-03-31T09:31:16.141Z",
+      "id": 5
+    },
+    {
+      "orderId": "ORD-7842",
+      "customer": "Achchi",
+      "customerId": "CUS-103",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 35,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 3,
+          "discount": 600,
+          "discountType": "amount"
+        },
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "72 * 90",
+          "stock": 12,
+          "buyPrice": 1000,
+          "sellPrice": 1300,
+          "type": "regular",
+          "id": 38,
+          "qty": 2,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "100% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "72 * 90",
+          "stock": 3,
+          "buyPrice": 1190,
+          "sellPrice": 1400,
+          "type": "regular",
+          "id": 40,
+          "qty": 1,
+          "discount": 100,
+          "discountType": "amount"
+        }
+      ],
+      "total": 7800,
+      "buyTotal": 6850,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "deliveryMethod": "COD",
+      "date": "2026-04-04T05:54:49.620Z",
+      "id": 7
+    },
+    {
+      "orderId": "ORD-9918",
+      "customer": "Yasadi Nandha",
+      "customerId": "CUS-105",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "80% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "110 * 90",
+          "stock": 32,
+          "buyPrice": 1220,
+          "sellPrice": 1500,
+          "type": "regular",
+          "id": 5,
+          "qty": 4,
+          "discount": 800,
+          "discountType": "amount"
+        },
+        {
+          "name": "100% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "100 * 90",
+          "stock": 9,
+          "buyPrice": 1290,
+          "sellPrice": 1600,
+          "type": "regular",
+          "id": 39,
+          "qty": 6,
+          "discount": 1800,
+          "discountType": "amount"
+        },
+        {
+          "name": "100% Cotton Bedsheet",
+          "category": "Design Bedsheets",
+          "size": "72 * 90",
+          "stock": 2,
+          "buyPrice": 1190,
+          "sellPrice": 1400,
+          "type": "regular",
+          "id": 40,
+          "qty": 2,
+          "discount": 100,
+          "discountType": "amount"
+        },
+        {
+          "name": "Pillow",
+          "category": "Pillow",
+          "size": "18 * 27",
+          "stock": 10,
+          "buyPrice": 900,
+          "sellPrice": 1200,
+          "type": "regular",
+          "id": 14,
+          "qty": 4,
+          "discount": 400,
+          "discountType": "amount"
+        }
+      ],
+      "total": 20100,
+      "buyTotal": 18600,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Pending",
+      "paymentStatus": "pending",
+      "deliveryMethod": "COD",
+      "date": "2026-04-04T05:58:49.726Z",
+      "id": 8
+    },
+    {
+      "orderId": "ORD-4369",
+      "customer": "Mrs. Rohini",
+      "customerId": "CUS-107",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "T-Shirt",
+          "category": "T-Shirt (220 gsm)",
+          "size": "S,M,L,XL",
+          "stock": 32,
+          "buyPrice": 795,
+          "sellPrice": 1100,
+          "type": "regular",
+          "id": 17,
+          "qty": 4,
+          "discount": 0,
+          "discountType": "percent"
+        },
+        {
+          "name": "DTF Stickers",
+          "category": "Stikers",
+          "size": "M",
+          "stock": 100,
+          "buyPrice": 37.5,
+          "sellPrice": 100,
+          "type": "regular",
+          "id": 50,
+          "qty": 4,
+          "originalPrice": 100
+        }
+      ],
+      "total": 4800,
+      "buyTotal": 3330,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "deliveryMethod": "COD",
+      "date": "2026-04-09T13:59:01.005Z",
+      "id": 9
+    },
+    {
+      "orderId": "ORD-7282",
+      "customer": "Guest",
+      "customerId": "Guest",
+      "phone": "N/A",
+      "address": "N/A",
+      "items": [
+        {
+          "name": "Kids Two Tone T Shirt",
+          "category": "K Two Tone",
+          "size": "S,M,L,XL",
+          "stock": 14,
+          "buyPrice": 600,
+          "sellPrice": 900,
+          "type": "regular",
+          "id": 22,
+          "qty": 1,
+          "originalPrice": 900
+        },
+        {
+          "name": "DTF Stickers ",
+          "category": "Stikers",
+          "size": "XS",
+          "stock": 99,
+          "buyPrice": 37.5,
+          "sellPrice": 50,
+          "type": "regular",
+          "id": 48,
+          "qty": 2,
+          "originalPrice": 50
+        }
+      ],
+      "total": 1000,
+      "buyTotal": 675,
+      "discount": 0,
+      "delivery": 0,
+      "loyaltyDiscount": 0,
+      "status": "Paid",
+      "paymentStatus": "paid",
+      "deliveryMethod": "COD",
+      "date": "2026-04-09T15:20:57.191Z",
+      "id": 10
+    }
+  ],
+  "expenses": [
+    {
+      "reason": "Bedsheet cloths",
+      "amount": 60000,
+      "date": "2026-04-10T03:42:06.766Z",
+      "id": 1
+    },
+    {
+      "reason": "tshirt 24",
+      "amount": 18000,
+      "date": "2026-04-10T03:43:04.630Z",
+      "id": 2
+    },
+    {
+      "reason": "pamunuwa cloths",
+      "amount": 9250,
+      "date": "2026-04-10T03:43:24.645Z",
+      "id": 3
+    },
+    {
+      "reason": "pixel printmall tshirts",
+      "amount": 16625,
+      "date": "2026-04-10T03:44:42.309Z",
+      "id": 4
+    },
+    {
+      "reason": "pamunuwa tshirt",
+      "amount": 7750,
+      "date": "2026-04-10T03:45:16.757Z",
+      "id": 5
+    },
+    {
+      "reason": "pamunuwa elephent pant",
+      "amount": 5400,
+      "date": "2026-04-10T03:45:51.653Z",
+      "id": 6
+    },
+    {
+      "reason": "IDEAL ",
+      "amount": 13550,
+      "date": "2026-04-10T03:46:16.501Z",
+      "id": 7
+    },
+    {
+      "reason": "IDEAL",
+      "amount": 15300,
+      "date": "2026-04-10T03:46:31.013Z",
+      "id": 8
+    },
+    {
+      "reason": "pixel printmall t shirt",
+      "amount": 29850,
+      "date": "2026-04-10T03:47:08.581Z",
+      "id": 9
+    },
+    {
+      "reason": "DTF 1M",
+      "amount": 950,
+      "date": "2026-04-10T03:47:25.677Z",
+      "id": 10
+    },
+    {
+      "reason": "pixel printmall t shirt",
+      "amount": 6000,
+      "date": "2026-04-10T03:47:50.693Z",
+      "id": 11
+    },
+    {
+      "reason": "konika sarong",
+      "amount": 4500,
+      "date": "2026-04-10T03:48:31.229Z",
+      "id": 12
+    },
+    {
+      "reason": "DTF 7M",
+      "amount": 6650,
+      "date": "2026-04-10T03:48:55.453Z",
+      "id": 13
+    },
+    {
+      "reason": "GONAWALA SARONG",
+      "amount": 11000,
+      "date": "2026-04-10T03:49:57.733Z",
+      "id": 14
+    },
+    {
+      "reason": "pixel printmall tshirts",
+      "amount": 4250,
+      "date": "2026-04-10T03:50:42.981Z",
+      "id": 15
+    },
+    {
+      "reason": "pixel printmall t shirt",
+      "amount": 4850,
+      "date": "2026-04-10T03:51:21.957Z",
+      "id": 16
+    },
+    {
+      "reason": "Harsha T shirts",
+      "amount": 11500,
+      "date": "2026-04-10T03:51:47.581Z",
+      "id": 17
+    },
+    {
+      "reason": "DTF A3 X 2",
+      "amount": 400,
+      "date": "2026-04-10T03:52:35.109Z",
+      "id": 18
+    },
+    {
+      "reason": "DTF 8 M",
+      "amount": 7600,
+      "date": "2026-04-10T03:52:49.133Z",
+      "id": 19
+    },
+    {
+      "reason": "Gonawala T shirt bagy",
+      "amount": 12400,
+      "date": "2026-04-10T11:06:40.029Z",
+      "id": 20
+    },
+    {
+      "reason": "t shirts ",
+      "amount": 45000,
+      "date": "2026-04-11T06:17:02.879Z",
+      "id": 21
+    }
+  ],
+  "customers": [
+    {
+      "name": "Sameera",
+      "phone": "070000000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-101",
+      "totalOrders": 1,
+      "totalSpent": 900,
+      "loyaltyPoints": 0,
+      "id": 2
+    },
+    {
+      "name": "Achchi",
+      "phone": "0710664973",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-103",
+      "totalOrders": 4,
+      "totalSpent": 12400,
+      "loyaltyPoints": 80,
+      "id": 4
+    },
+    {
+      "name": "Yasadi Nandha",
+      "phone": "0700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-105",
+      "totalOrders": 1,
+      "totalSpent": 5900,
+      "loyaltyPoints": 130,
+      "id": 7
+    },
+    {
+      "name": "Mallika Miss",
+      "phone": "070700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-104",
+      "totalOrders": 1,
+      "totalSpent": 1200,
+      "loyaltyPoints": 0,
+      "id": 8
+    },
+    {
+      "name": "Chandharathana mama",
+      "phone": "077700000",
+      "address": "",
+      "isBlacklisted": false,
+      "custId": "CUS-105",
+      "totalOrders": 1,
+      "totalSpent": 1400,
+      "loyaltyPoints": 0,
+      "id": 9
+    },
+    {
+      "name": "Anurada Hettige",
+      "phone": "0773678225",
+      "address": "",
+      "isBlacklisted": false,
+      "profilePic": "",
+      "custId": "CUS-106",
+      "totalOrders": 1,
+      "totalSpent": 3030,
+      "loyaltyPoints": 10,
+      "id": 10
+    },
+    {
+      "name": "Mrs. Rohini",
+      "phone": "0718123974",
+      "address": "",
+      "isBlacklisted": false,
+      "profilePic": "",
+      "custId": "CUS-107",
+      "totalOrders": 1,
+      "totalSpent": 4800,
+      "loyaltyPoints": 40,
+      "id": 11
+    },
+    {
+      "name": "Mr.Wathugala",
+      "phone": "0714433083",
+      "address": "",
+      "isBlacklisted": false,
+      "profilePic": "",
+      "custId": "CUS-108",
+      "totalOrders": 0,
+      "totalSpent": 0,
+      "loyaltyPoints": 20,
+      "id": 12
+    },
+    {
+      "name": "Mrs.Hemamali",
+      "phone": "0712875639",
+      "address": "",
+      "isBlacklisted": false,
+      "profilePic": "",
+      "custId": "CUS-109",
+      "totalOrders": 1,
+      "totalSpent": 1720,
+      "loyaltyPoints": 0,
+      "id": 13
+    }
+  ],
+  "categories": [
+    {
+      "name": "Handloom Bedsheet",
+      "id": 1
+    },
+    {
+      "name": "Design Bedsheets",
+      "id": 2
+    },
+    {
+      "name": "Pillow Covers",
+      "id": 3
+    },
+    {
+      "name": "Towel ",
+      "id": 4
+    },
+    {
+      "name": "Pillow",
+      "id": 5
+    },
+    {
+      "name": "T-Shirt (220 gsm)",
+      "id": 6
+    },
+    {
+      "name": "Egyptian Cotton",
+      "id": 7
+    },
+    {
+      "name": "Cotton සරම්",
+      "id": 8
+    },
+    {
+      "name": "K Two Tone",
+      "id": 9
+    },
+    {
+      "name": "Package ",
+      "id": 10
+    },
+    {
+      "name": "Stikers",
+      "id": 13
+    },
+    {
+      "name": "Elephant pant",
+      "id": 14
+    },
+    {
+      "name": "Korean T shirt",
+      "id": 15
+    },
+    {
+      "name": "190 GSM Kids",
+      "id": 16
+    },
+    {
+      "name": "Ranglan O/Z T Shirts",
+      "id": 18
+    },
+    {
+      "name": "Waffile 240GSM O/Z T Shirts",
+      "id": 20
+    },
+    {
+      "name": "RR Printed T Shirts",
+      "id": 25
+    },
+    {
+      "name": "190 GSM O/Z T Shirts",
+      "id": 26
+    },
+    {
+      "name": "220 GSM T Shirts",
+      "id": 27
+    },
+    {
+      "name": "190 GSM T Shirts",
+      "id": 28
+    },
+    {
+      "name": "220 GSM Kids",
+      "id": 29
+    },
+    {
+      "name": "240 GSM T Shirts",
+      "id": 30
+    }
+  ],
+  "notes": [],
+  "settings": [],
+  "backups": [],
+  "version": 8,
+  "exportedAt": "2026-04-11T04:53:44.810Z"
+}
