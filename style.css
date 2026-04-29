@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-    --primary: #be185d;
-    --primary-hover: #9d174d;
-    --primary-light: #fce7f3;
-    --primary-glow: rgba(190, 24, 93, 0.3);
+    --primary: #ff4b7d;
+    --primary-hover: #e03e6d;
+    --primary-light: #ffeef2;
+    --primary-glow: rgba(255, 75, 125, 0.3);
 
     --bg-dark: #09090b;
     --bg-sidebar: #111114;
@@ -20,7 +20,7 @@
 
     --success: #10b981;
     --danger: #ef4444;
-    --warning: #f59e0b;
+    --warning: #ffd700;
     --info: #3b82f6;
 
     --radius-sm: 8px;
@@ -33,10 +33,10 @@
 }
 
 [data-theme='light'] {
-    --bg-dark: #f1f5f9;
+    --bg-dark: #f8f9fa;
     --bg-sidebar: #ffffff;
     --card-bg: #ffffff;
-    --card-hover: #f8fafc;
+    --card-hover: #fff5f7;
 
     --text-main: #0f172a;
     --text-muted: #475569;
