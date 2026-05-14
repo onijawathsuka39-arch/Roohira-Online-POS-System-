@@ -1464,21 +1464,12 @@
                 previewItems.innerHTML = '';
                 if (orderData.items && orderData.items.length > 0) {
                     orderData.items.forEach(item => {
-                        const originalPrice = item.originalPrice || item.price;
-                        const priceDiff = item.price - originalPrice;
-                        let priceDisplay = formatLKR(item.price);
-                        
-                        if (priceDiff !== 0) {
-                            priceDisplay = `<div style="font-weight:bold;">${formatLKR(item.price)}</div>
-                                           <div style="font-size:9px; color:#c00000; font-weight:bold;">(Was: ${formatLKR(originalPrice)})</div>`;
-                        }
-
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${item.name}</td>
                             <td>${item.size || 'N/A'}</td>
                             <td>${item.quantity}</td>
-                            <td>${priceDisplay}</td>
+                            <td>${formatLKR(item.price)}</td>
                             <td>${formatLKR(item.total)}</td>
                         `;
                         previewItems.appendChild(row);
@@ -1599,7 +1590,7 @@ async function generatePDF(orderData) {
             doc.text(`Invoice ID: ${orderData.orderId}`, textStartX, margin + 28);
 
             // Horizontal line below header
-            doc.setDrawColor(0, 0, 0);
+            doc.setDrawColor(200, 200, 200);
             doc.setLineWidth(0.3);
             doc.line(margin, margin + 35, pageWidth - margin, margin + 35);
 
@@ -1631,7 +1622,7 @@ doc.setTextColor(0, 0, 0);
 doc.text('Name:', margin, yPosition);
 
 doc.setFillColor(255, 255, 255);
-doc.setDrawColor(0, 0, 0);
+doc.setDrawColor(180, 180, 180);
 doc.setLineWidth(0.3);
 const nameBoxY = yPosition - boxHeight/2;
 doc.roundedRect(margin + labelWidth, nameBoxY, boxWidth, boxHeight, 1, 1, 'FD');
@@ -1817,26 +1808,14 @@ yPosition += addressBoxHeight + 8;
                     xPos += colWidths[2];
                     
                     // Price
-                    const originalPrice = item.originalPrice || item.price;
-                    const priceDiff = item.price - originalPrice;
-                    
                     doc.text(formatLKR(item.price), xPos + 2, yPosition + 4);
-                    
-                    if (priceDiff !== 0) {
-                        doc.setFontSize(7);
-                        doc.setTextColor(150, 0, 0); // Subtle red
-                        doc.text(`(Was: ${formatLKR(originalPrice)})`, xPos + 2, yPosition + 7.5);
-                        doc.setFontSize(10); // Reset
-                        doc.setTextColor(0, 0, 0); // Reset
-                    }
-                    
                     xPos += colWidths[3];
                     
                     // Total
                     doc.text(formatLKR(item.total), xPos + 2, yPosition + 4);
                     
                     // Row border
-                    doc.setDrawColor(0, 0, 0);
+                    doc.setDrawColor(200, 200, 200);
                     doc.setLineWidth(0.1);
                     doc.line(margin, yPosition + 8, margin + tableWidth, yPosition + 8);
                     
@@ -2044,12 +2023,10 @@ function fallbackFooter(doc, pageWidth, footerY) {
                 const sizeIn = row.querySelector('.item-size-input');
                 const qtyIn = row.querySelector('.item-qty-input');
                 const priceIn = row.querySelector('.item-price-input');
-                const originalPriceIn = row.querySelector('.item-original-price-hidden');
                 
                 if (nameIn && nameIn.value) {
                     const quantity = parseInt(qtyIn.value) || 1;
                     const price = parseFloat(priceIn.value) || 0;
-                    const originalPrice = parseFloat(originalPriceIn.value) || price;
                     const total = quantity * price;
                     
                     orderData.items.push({
@@ -2057,7 +2034,6 @@ function fallbackFooter(doc, pageWidth, footerY) {
                         size: sizeIn.value || 'N/A',
                         quantity: quantity,
                         price: price,
-                        originalPrice: originalPrice,
                         total: total
                     });
                 }
@@ -2100,7 +2076,6 @@ function fallbackFooter(doc, pageWidth, footerY) {
             
             const name = itemData ? itemData.name : '';
             const size = itemData ? (itemData.size || 'N/A') : 'N/A';
-            const originalPrice = itemData ? (itemData.sellPrice || 0) : 0;
             const price = itemData ? (itemData.sellPrice || 0) : 0;
             const itemId = itemData ? itemData.id : '';
 
@@ -2115,7 +2090,6 @@ function fallbackFooter(doc, pageWidth, footerY) {
                     <label class="label-small">Product Name</label>
                     <input type="text" class="item-name-input input-styled" value="${name}" placeholder="Item Name" style="font-weight: bold; color: var(--accent);">
                     <input type="hidden" class="item-id-hidden" value="${itemId}">
-                    <input type="hidden" class="item-original-price-hidden" value="${originalPrice}">
                 </div>
                 
                 <div class="card-grid-details">
@@ -2134,12 +2108,9 @@ function fallbackFooter(doc, pageWidth, footerY) {
                     <input type="number" class="item-price-input input-styled" min="0" step="0.01" value="${price}" placeholder="0.00">
                 </div>
                 
-                <div style="margin-top: 10px; padding-top: 10px; border-top: 2px dashed rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 4px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; color: var(--muted); font-weight: bold;">SUBTOTAL:</span>
-                        <span class="item-total-display" style="font-weight: 800; color: var(--success); font-size: 16px;">Rs. ${formatNumber(price)}</span>
-                    </div>
-                    <div class="price-diff-display" style="font-size: 10px; font-weight: 700; text-align: right; display: none;"></div>
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 2px dashed rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 11px; color: var(--muted); font-weight: bold;">SUBTOTAL:</span>
+                    <span class="item-total-display" style="font-weight: 800; color: var(--success); font-size: 16px;">Rs. ${formatNumber(price)}</span>
                 </div>
             `;
             
@@ -2153,30 +2124,9 @@ function fallbackFooter(doc, pageWidth, footerY) {
             const updateRow = () => {
                 const q = parseFloat(qtyIn.value) || 0;
                 const p = parseFloat(priceIn.value) || 0;
-                const originalP = parseFloat(row.querySelector('.item-original-price-hidden').value) || 0;
-                const priceDiffDisplay = row.querySelector('.price-diff-display');
-                
                 totalOut.textContent = `Rs. ${formatNumber(q * p)}`;
-                
-                if (originalP > 0 && p !== originalP) {
-                    const diff = p - originalP;
-                    priceDiffDisplay.style.display = 'block';
-                    if (diff < 0) {
-                        priceDiffDisplay.style.color = 'var(--danger)';
-                        priceDiffDisplay.textContent = `[Reduced from Rs. ${formatNumber(originalP)}]`;
-                    } else {
-                        priceDiffDisplay.style.color = 'var(--warning)';
-                        priceDiffDisplay.textContent = `[Increased from Rs. ${formatNumber(originalP)}]`;
-                    }
-                } else {
-                    priceDiffDisplay.style.display = 'none';
-                }
-                
                 updateBillSummary();
             };
-            
-            // Trigger initial calculation
-            updateRow();
             
             qtyIn.addEventListener('input', updateRow);
             priceIn.addEventListener('input', updateRow);

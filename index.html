@@ -7,7 +7,7 @@
     <title>Roohira POS | Premium Dashboard</title>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff4b7d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23be185d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
 
     <!-- Icons & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -64,10 +64,6 @@
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
             </a>
-            <a href="expenses.html" class="nav-item">
-                <i class="fas fa-money-bill-wave"></i>
-                <span>Expenses</span>
-            </a>
             <a href="customers.html" class="nav-item">
                 <i class="fas fa-users"></i>
                 <span>Customers</span>
@@ -88,14 +84,13 @@
                 <i class="fas fa-cog"></i>
                 <span>Settings</span>
             </a>
-            <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
-            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="nav-item" style="color: var(--primary); font-weight: 800;">
-                <i class="fas fa-external-link-alt"></i>
-                <span>Visit Website</span>
-            </a>
         </nav>
 
         <div class="sidebar-footer">
+            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
+                <i class="fas fa-sun theme-toggle-icon"></i>
+                <span>Theme Mode</span>
+            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -129,9 +124,6 @@
                     </div>
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
-                        <i class="fas fa-sun theme-toggle-icon"></i>
-                    </button>
                     <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
                             class="fas fa-sign-in-alt"></i> Login</a>
                     <button onclick="DB.logout()" class="btn btn-secondary"
@@ -178,17 +170,6 @@
 
             <div class="stat-card">
                 <div class="icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
-                    <i class="fas fa-money-bill-wave"></i>
-                </div>
-                <div class="value" id="expenses-stat">Rs. 0.00</div>
-                <div class="label">Total Expenses</div>
-                <div class="trend down">
-                    <i class="fas fa-arrow-down"></i> overhead costs
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="value" id="low-stock-stat">0</div>
@@ -227,9 +208,6 @@
                     </a>
                     <a href="customers.html" class="btn btn-secondary" style="justify-content: center; padding: 16px;">
                         <i class="fas fa-user-plus"></i> Add Customer
-                    </a>
-                    <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="btn btn-secondary" style="justify-content: center; padding: 16px; border-color: var(--primary); color: var(--primary); background: rgba(190, 24, 93, 0.05);">
-                        <i class="fas fa-globe"></i> Visit Online Store
                     </a>
                     <div
                         style="margin-top: 12px; padding: 16px; background: rgba(190, 24, 93, 0.05); border: 1px dashed var(--primary); border-radius: var(--radius-md); text-align: center;">
@@ -346,8 +324,7 @@
             // Update Statistics - Set to ALL TIME (as requested)
             const allTimeStats = await DB.getDashboardStats();
             document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.grossProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('orders-stat').textContent = allTimeStats.totalOrders;
             document.getElementById('low-stock-stat').textContent = allTimeStats.lowStockCount;
 
