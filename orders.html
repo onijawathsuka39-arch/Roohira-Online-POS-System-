@@ -41,9 +41,11 @@
                 size: A5;
                 margin: 0;
             }
-            body > *:not(#printableReceipt) {
+
+            body>*:not(#printableReceipt) {
                 display: none !important;
             }
+
             #printableReceipt {
                 display: block !important;
                 position: absolute;
@@ -90,7 +92,8 @@
             <a href="analysis.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Analysis</span></a>
             <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
-            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="nav-item" style="color: var(--primary); font-weight: 800;">
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
                 <span>Visit Website</span>
             </a>
@@ -116,11 +119,13 @@
                 </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
                 </button>
                 <div class="action-btns">
-                    <button class="btn btn-primary" onclick="window.location.href='pos.html'"><i class="fas fa-plus"></i>
+                    <button class="btn btn-primary" onclick="window.location.href='pos.html'"><i
+                            class="fas fa-plus"></i>
                         New Order</button>
                 </div>
             </div>
@@ -246,7 +251,9 @@
                     </div>
 
                     <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button class="btn btn-success" style="justify-content:center; background: #10b981; color: white;" id="btn-customer-order-bill">
+                        <button class="btn btn-success"
+                            style="justify-content:center; background: #10b981; color: white;"
+                            id="btn-customer-order-bill">
                             <i class="fas fa-file-invoice"></i> CUSTOMER BILL (A5)
                         </button>
                         <button class="btn btn-primary" style="justify-content:center;" onclick="window.print()">
@@ -381,7 +388,7 @@
                 const originalPrice = item.originalPrice || item.sellPrice;
                 const priceDiff = item.sellPrice - originalPrice;
                 let priceHtml = `<div>Rs. ${item.sellPrice.toLocaleString()}</div>`;
-                
+
                 if (priceDiff < 0) {
                     priceHtml = `
                         <div style="font-weight:700; color:var(--danger);">Rs. ${item.sellPrice.toLocaleString()}</div>
@@ -524,7 +531,7 @@
                         <div style="flex: 1;">
                             <h3 style="font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 4px 0;">ORDER DETAILS</h3>
                             <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">${o.customer || 'Guest Customer'}</p>
-                            ${o.customerId && o.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #ff4b7d;">ID: ${o.customerId}</p>` : ''}
+                            ${o.customerId && o.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${o.customerId}</p>` : ''}
                             <p style="font-size: 11px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${o.phone || 'N/A'}</p>
                         </div>
                         <div style="text-align: right;">
@@ -578,7 +585,7 @@
                 if (isLastPage) {
                     const subtotal = o.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
                     const discVal = (subtotal * (o.discount || 0)) / 100;
-                    
+
                     const totalsHtml = `
                         <div style="margin-top: 10px; margin-left: auto; width: 220px;">
                             <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px;">
@@ -676,7 +683,7 @@
             @page { size: A5; margin: 0; }
         }
         .no-print { margin-bottom: 20px; text-align: center; width: 100%; max-width: 148mm; }
-        .btn { padding: 12px 25px; background: #ff4b7d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn { padding: 12px 25px; background: #be185d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn:hover { background: #9d174d; transform: translateY(-2px); }
     </style>
 </head>
@@ -704,7 +711,7 @@
             document.getElementById(id).style.display = 'none';
         }
     </script>
-    
+
     <!-- Printable Container (Handles multiple A5 pages) -->
     <div id="printableReceipt" style="display:none; position: absolute; left: 0; top: 0;"></div>
 </body>

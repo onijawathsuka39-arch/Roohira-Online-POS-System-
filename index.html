@@ -89,7 +89,8 @@
                 <span>Settings</span>
             </a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
-            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="nav-item" style="color: var(--primary); font-weight: 800;">
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
                 <span>Visit Website</span>
             </a>
@@ -129,7 +130,8 @@
                     </div>
                 </div>
                 <div class="header-actions" style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                        style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                         <i class="fas fa-sun theme-toggle-icon"></i>
                     </button>
                     <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
@@ -204,7 +206,8 @@
             <div class="content-wrapper">
                 <div class="table-header">
                     <h2>Revenue Analysis</h2>
-                    <select id="revenue-range" class="btn btn-secondary" style="width: auto;" onchange="updateRevenueChart()">
+                    <select id="revenue-range" class="btn btn-secondary" style="width: auto;"
+                        onchange="updateRevenueChart()">
                         <option value="7">Last 7 Days</option>
                         <option value="30">Last 30 Days</option>
                         <option value="year">This Year</option>
@@ -228,11 +231,13 @@
                     <a href="customers.html" class="btn btn-secondary" style="justify-content: center; padding: 16px;">
                         <i class="fas fa-user-plus"></i> Add Customer
                     </a>
-                    <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="btn btn-secondary" style="justify-content: center; padding: 16px; border-color: var(--primary); color: var(--primary); background: rgba(255, 75, 125, 0.05);">
+                    <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                        class="btn btn-secondary"
+                        style="justify-content: center; padding: 16px; border-color: var(--primary); color: var(--primary); background: rgba(190, 24, 93, 0.05);">
                         <i class="fas fa-globe"></i> Visit Online Store
                     </a>
                     <div
-                        style="margin-top: 12px; padding: 16px; background: rgba(255, 75, 125, 0.05); border: 1px dashed var(--primary); border-radius: var(--radius-md); text-align: center;">
+                        style="margin-top: 12px; padding: 16px; background: rgba(190, 24, 93, 0.05); border: 1px dashed var(--primary); border-radius: var(--radius-md); text-align: center;">
                         <p style="font-size: 13px; color: var(--text-muted);">Next backup scheduled in</p>
                         <h3 style="color: var(--primary);">02:45:10</h3>
                     </div>
@@ -298,7 +303,7 @@
             const rangeInput = document.getElementById('revenue-range');
             const range = rangeInput ? rangeInput.value : '7';
             const salesData = await DB.getAllSales();
-            
+
             let labels = [];
             let dataValues = [];
             const revenueMap = {};
@@ -307,7 +312,7 @@
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                 labels = months;
                 labels.forEach(m => revenueMap[m] = 0);
-                
+
                 const currentYear = new Date().getFullYear();
                 salesData.forEach(sale => {
                     const d = new Date(sale.date);
@@ -345,14 +350,14 @@
 
             // Update Statistics - Set to ALL TIME (as requested)
             const allTimeStats = await DB.getDashboardStats();
-            document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.grossProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.grossProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('orders-stat').textContent = allTimeStats.totalOrders;
             document.getElementById('low-stock-stat').textContent = allTimeStats.lowStockCount;
 
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            
+
             if (revenueChart) {
                 revenueChart.data.labels = labels;
                 revenueChart.data.datasets[0].data = dataValues;
@@ -365,12 +370,12 @@
                         datasets: [{
                             label: 'Revenue (Rs)',
                             data: dataValues,
-                            borderColor: '#ff4b7d',
-                            backgroundColor: 'rgba(255, 75, 125, 0.1)',
+                            borderColor: '#be185d',
+                            backgroundColor: 'rgba(190, 24, 93, 0.1)',
                             fill: true,
                             tension: 0.4,
                             borderWidth: 3,
-                            pointBackgroundColor: '#ff4b7d',
+                            pointBackgroundColor: '#be185d',
                             pointBorderColor: '#fff',
                             pointHoverRadius: 6
                         }]
@@ -382,9 +387,9 @@
                             legend: { display: false },
                             tooltip: {
                                 backgroundColor: '#18191c',
-                                titleColor: '#ff4b7d',
+                                titleColor: '#be185d',
                                 bodyColor: '#fff',
-                                borderColor: '#ff4b7d',
+                                borderColor: '#be185d',
                                 borderWidth: 1,
                                 padding: 12,
                                 displayColors: false,
@@ -433,7 +438,7 @@
                     rows.push({
                         date: s.date, type: 'sale', ref: '#SL-' + s.id,
                         customer: s.customer || 'Guest', amount: rev,
-                        badge: `<span class="badge badge-success">Profit: Rs. ${(rev - cost).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`
+                        badge: `<span class="badge badge-success">Profit: Rs. ${(rev - cost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`
                     });
                 });
             }
@@ -460,7 +465,7 @@
                 <td><span class="badge ${r.type === 'sale' ? 'badge-primary' : 'badge-warning'}" style="${r.type === 'sale' ? 'background:rgba(190,24,93,0.15); color:var(--primary);' : ''}">${r.type.toUpperCase()}</span></td>
                 <td style="font-weight:700;">${r.ref}</td>
                 <td>${r.customer}</td>
-                <td style="font-weight:700;">Rs. ${r.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td style="font-weight:700;">Rs. ${r.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td>${r.badge}</td>
             </tr>`).join('');
         }

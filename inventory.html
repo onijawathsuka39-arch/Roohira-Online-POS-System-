@@ -97,7 +97,8 @@
             </a>
             <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
-            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="nav-item" style="color: var(--primary); font-weight: 800;">
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
                 <span>Visit Website</span>
             </a>
@@ -123,7 +124,8 @@
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 16px;">
-                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
                 </button>
                 <div class="page-actions" style="margin-bottom: 0;">
@@ -407,41 +409,13 @@
 
         async function deleteCategory(id) {
             if (confirm('Delete this category?')) {
-                await DB.deleteCategory(id);
+                await db.categories.delete(id);
                 refreshCategories();
             }
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    </script>
-    <script>
-        // One-time initialization script for new products
-        (async () => {
-            const newCategory = 'Oversize';
-            const categories = await DB.getAllCategories();
-            if (!categories.some(c => c.name === newCategory)) {
-                await DB.addCategory({ name: newCategory });
-            }
-
-            const newProducts = [
-                { name: 'Raglan Oversized T-Shirt (Yellow/Brown)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' },
-                { name: 'Raglan Oversized T-Shirt (White/Black)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' },
-                { name: 'Raglan Oversized T-Shirt (Teal/Navy)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' }
-            ];
-
-            const existingInventory = await DB.getAllInventory();
-            for (const prod of newProducts) {
-                if (!existingInventory.some(i => i.name === prod.name)) {
-                    await DB.addInventory(prod);
-                    console.log(`Added new product: ${prod.name}`);
-                }
-            }
-            
-            // Refresh display if on inventory page
-            if (typeof refreshInventory === 'function') refreshInventory();
-            if (typeof refreshCategories === 'function') refreshCategories();
-        })();
     </script>
 </body>
 

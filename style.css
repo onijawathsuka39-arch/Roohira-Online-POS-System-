@@ -92,7 +92,8 @@ aside.sidebar {
     display: flex;
     flex-direction: column;
     position: fixed;
-    left: -260px; /* Hide by default */
+    left: -260px;
+    /* Hide by default */
     z-index: 1000;
     transition: var(--transition);
     overflow-y: auto;
@@ -174,7 +175,8 @@ aside.sidebar.show {
 
 /* Main Content Area */
 main.main-content {
-    margin-left: 0; /* Full width by default */
+    margin-left: 0;
+    /* Full width by default */
     flex: 1;
     padding: 24px;
     min-width: 0;

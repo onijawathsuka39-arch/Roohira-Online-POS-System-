@@ -120,7 +120,8 @@
                 </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
                 </button>
                 <button class="btn btn-primary" onclick="openAddCustModal()"><i class="fas fa-user-plus"></i> New
@@ -521,7 +522,8 @@
             };
 
             if (id) {
-                await DB.updateCustomer(parseInt(id), data);
+                const customer = await db.customers.get(parseInt(id));
+                await db.customers.update(parseInt(id), { ...customer, ...data });
             } else {
                 await DB.addCustomer(data);
             }

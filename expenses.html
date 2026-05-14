@@ -40,7 +40,7 @@
             padding: 30px;
             border-radius: var(--radius-lg);
             text-align: center;
-            box-shadow: 0 10px 20px rgba(255, 75, 125, 0.2);
+            box-shadow: 0 10px 20px rgba(190, 24, 93, 0.2);
             margin-bottom: 24px;
         }
 
@@ -135,7 +135,8 @@
                 </div>
             </div>
             <div style="display: flex; align-items: center; gap: 16px;">
-                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
                 </button>
                 <div class="header-actions" style="display: flex; gap: 10px;">
@@ -153,7 +154,8 @@
                 <h2>All Time Total Expenses</h2>
                 <div class="amount" id="grand-total-expense">Rs. 0.00</div>
             </div>
-            <div id="net-profit-card" class="total-expense-card" style="margin-bottom: 0; background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+            <div id="net-profit-card" class="total-expense-card"
+                style="margin-bottom: 0; background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
                 <h2 id="net-profit-title">Revenue Left (After Expenses)</h2>
                 <div class="amount" id="net-profit-val">Rs. 0.00</div>
             </div>
@@ -172,7 +174,8 @@
                         <label>Amount (Rs)</label>
                         <input type="number" id="expenseAmount" step="0.01" placeholder="0.00" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px;">
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; justify-content: center; padding: 14px;">
                         <i class="fas fa-plus"></i> ADD EXPENSE
                     </button>
                 </form>
@@ -182,8 +185,8 @@
             <div class="expense-table-container">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="font-size: 18px;">Expense History</h3>
-                    <input type="month" id="filter-month" onchange="loadExpenses()" 
-                           style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-color);">
+                    <input type="month" id="filter-month" onchange="loadExpenses()"
+                        style="padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-color);">
                 </div>
                 <div class="table-container">
                     <table>
@@ -227,7 +230,7 @@
         async function loadExpenses() {
             const filterMonth = document.getElementById('filter-month').value;
             const [fYear, fMonth] = filterMonth.split('-').map(Number);
-            
+
             const expenses = await DB.getAllExpenses();
             const filtered = expenses.filter(ex => {
                 const d = new Date(ex.date);
@@ -244,7 +247,7 @@
                 row.innerHTML = `
                     <td style="font-size: 13px; color: var(--text-dim);">${new Date(ex.date).toLocaleDateString()}</td>
                     <td style="font-weight: 600;">${ex.reason}</td>
-                    <td style="text-align: right; font-weight: 700; color: var(--danger);">Rs. ${ex.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td style="text-align: right; font-weight: 700; color: var(--danger);">Rs. ${ex.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     <td style="text-align: center;">
                         <button class="btn btn-secondary btn-sm" onclick="removeExpense(${ex.id})" style="padding: 5px 10px;">
                             <i class="fas fa-trash text-danger"></i>
@@ -261,7 +264,7 @@
             // Get All-Time Stats
             const allTimeStats = await DB.getDashboardStats();
 
-            document.getElementById('grand-total-expense').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('grand-total-expense').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
             const netProfitEl = document.getElementById('net-profit-val');
             const netProfitTitle = document.getElementById('net-profit-title');
@@ -272,12 +275,12 @@
 
                 if (pureBalance < 0) {
                     netProfitTitle.textContent = "Revenue Needed to Recover Expenses";
-                    netProfitEl.textContent = `Rs. ${Math.abs(pureBalance).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                    netProfitEl.textContent = `Rs. ${Math.abs(pureBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
                     netProfitCard.style.background = 'linear-gradient(135deg, #f43f5e, #be123c)';
                     netProfitCard.style.boxShadow = '0 10px 20px rgba(244, 63, 94, 0.2)';
                 } else {
                     netProfitTitle.textContent = "Revenue Left (After Expenses)";
-                    netProfitEl.textContent = `Rs. ${pureBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                    netProfitEl.textContent = `Rs. ${pureBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
                     netProfitCard.style.background = 'linear-gradient(135deg, #10b981, #047857)';
                     netProfitCard.style.boxShadow = '0 10px 20px rgba(16, 185, 129, 0.2)';
                 }

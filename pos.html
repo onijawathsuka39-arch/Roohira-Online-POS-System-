@@ -340,7 +340,8 @@
             <a href="analysis.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Analysis</span></a>
             <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
-            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank" class="nav-item" style="color: var(--primary); font-weight: 800;">
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
                 <span>Visit Website</span>
             </a>
@@ -425,7 +426,8 @@
                         <div style="display:flex; gap:8px;">
                             <input type="text" id="cust-name" list="cust-list" placeholder="Customer Name / ID"
                                 style="flex:1; padding: 10px; font-weight: 600; border-color: var(--primary);">
-                            <button class="btn btn-primary" onclick="openCustSelectionModal()" style="padding: 0 15px; border-radius: 10px; height: 44px;">
+                            <button class="btn btn-primary" onclick="openCustSelectionModal()"
+                                style="padding: 0 15px; border-radius: 10px; height: 44px;">
                                 <i class="fas fa-users"></i>
                             </button>
                             <button class="btn btn-secondary" id="loyalty-tag"
@@ -451,8 +453,11 @@
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px; cursor: pointer;">
-                        <input type="checkbox" id="toggle-profit" onchange="toggleProfitDisplay()" style="width: 14px; height: 14px; cursor: pointer;">
-                        <label for="toggle-profit" style="font-size: 11px; color: var(--text-dim); cursor: pointer; user-select: none;">Show Profit Margin</label>
+                        <input type="checkbox" id="toggle-profit" onchange="toggleProfitDisplay()"
+                            style="width: 14px; height: 14px; cursor: pointer;">
+                        <label for="toggle-profit"
+                            style="font-size: 11px; color: var(--text-dim); cursor: pointer; user-select: none;">Show
+                            Profit Margin</label>
                     </div>
 
                     <div class="profit-row" id="profit-display-row" style="display: none;">
@@ -460,7 +465,8 @@
                         <span id="profit-total">Rs. 0.00</span>
                     </div>
 
-                    <div style="display: none; justify-content: space-between; padding: 4px 0; font-size: 13px; color: #b45309;" id="ui-loyalty-row">
+                    <div style="display: none; justify-content: space-between; padding: 4px 0; font-size: 13px; color: #b45309;"
+                        id="ui-loyalty-row">
                         <span style="font-weight: 600;">Loyalty Applied:</span>
                         <span style="font-weight: 700;" id="ui-loyalty-val">- Rs. 0.00</span>
                     </div>
@@ -622,9 +628,12 @@
                 <button class="btn btn-secondary" onclick="closeModal('custSelectionModal')">×</button>
             </div>
             <div class="input-group" style="margin-top: 15px;">
-                <input type="text" id="cust-search-box" placeholder="Search by name, ID or phone..." oninput="filterCustListModal()" style="padding: 12px; border-radius: 12px; border: 2px solid var(--primary-glow); width: 100%; box-sizing: border-box;">
+                <input type="text" id="cust-search-box" placeholder="Search by name, ID or phone..."
+                    oninput="filterCustListModal()"
+                    style="padding: 12px; border-radius: 12px; border: 2px solid var(--primary-glow); width: 100%; box-sizing: border-box;">
             </div>
-            <div id="modal-cust-list" style="max-height: 400px; overflow-y: auto; margin-top: 10px; display: grid; gap: 8px;">
+            <div id="modal-cust-list"
+                style="max-height: 400px; overflow-y: auto; margin-top: 10px; display: grid; gap: 8px;">
                 <!-- Customers will be listed here -->
             </div>
         </div>
@@ -643,7 +652,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await initPOS();
             checkEditMode();
-            
+
             // Initialization for Profit Toggle
             const showProfit = localStorage.getItem('show_pos_profit') === 'true';
             document.getElementById('toggle-profit').checked = showProfit;
@@ -671,8 +680,7 @@
         }
 
         async function loadOrder(id) {
-            const orders = await DB.getAllOrders();
-            const order = orders.find(o => o.id == id);
+            const order = await db.orders.get(id);
             if (!order) return;
 
             editingOrderId = id;
@@ -700,8 +708,7 @@
         }
 
         async function loadSale(id) {
-            const sales = await DB.getAllSales();
-            const sale = sales.find(s => s.id == id);
+            const sale = await db.sales.get(id);
             if (!sale) return;
 
             editingSaleId = id;
@@ -734,43 +741,21 @@
         }
 
         async function initPOS() {
-            try {
-                console.log("Initializing POS...");
-                allProducts = await DB.getAllInventory();
-                console.log("Loaded products:", allProducts.length);
-                
-                const categories = await DB.getAllCategories();
-                console.log("Loaded categories:", categories.length);
-                
-                const customers = await DB.getAllCustomers();
-                console.log("Loaded customers:", customers.length);
+            allProducts = await DB.getAllInventory();
+            const categories = await DB.getAllCategories();
+            const customers = await DB.getAllCustomers();
 
-                renderCategories(categories);
-                if (typeof renderCustomerPills === 'function') renderCustomerPills(customers);
-                renderProducts(allProducts);
+            renderCategories(categories);
+            renderCustomerPills(customers);
+            renderProducts(allProducts);
 
-                const datalist = document.getElementById('cust-list');
-                if (datalist) {
-                    datalist.innerHTML = '';
-                    customers.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c.name;
-                        opt.textContent = `${c.custId} | ${c.phone}`;
-                        datalist.appendChild(opt);
-                    });
-                }
-            } catch (err) {
-                console.error("POS Initialization failed:", err);
-                const grid = document.getElementById('productGrid');
-                if (grid) {
-                    grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--danger);">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 16px;"></i>
-                        <p>Failed to load products: ${err.message}</p>
-                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">Retry</button>
-                    </div>`;
-                }
-            }
-        }
+            const datalist = document.getElementById('cust-list');
+            customers.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = `${c.custId} | ${c.phone}`;
+                datalist.appendChild(opt);
+            });
 
             document.getElementById('p-search').addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
@@ -866,30 +851,26 @@
 
         function renderProducts(products) {
             const grid = document.getElementById('productGrid');
-            
-            if (!products || products.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--text-dim);"><i class="fas fa-search" style="font-size: 40px; margin-bottom: 16px;"></i><p>No products found. Add some in the Inventory page.</p></div>';
+            // Filter products to only show items with stock > 0
+            const availableProducts = products.filter(p => p.stock > 0);
+
+            if (availableProducts.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--text-dim);"><i class="fas fa-search" style="font-size: 40px; margin-bottom: 16px;"></i><p>No products with stock available.</p></div>';
                 return;
             }
 
             grid.innerHTML = '';
-            products.forEach(p => {
-                const isOutOfStock = (p.stock || 0) <= 0;
+            availableProducts.forEach(p => {
                 const card = document.createElement('div');
-                card.className = `product-card ${isOutOfStock ? 'out-of-stock' : ''}`;
-                card.style.opacity = isOutOfStock ? '0.5' : '1';
-                card.style.pointerEvents = isOutOfStock ? 'none' : 'auto';
-                
+                card.className = 'product-card';
                 card.innerHTML = `
                     <div class="img-placeholder"><i class="fas fa-box"></i></div>
                     <div class="p-name" title="${p.name}">${p.name}</div>
                     ${p.size ? `<div class="p-size">${p.size}</div>` : ''}
-                    <div class="p-price">Rs. ${parseFloat(p.sellPrice || 0).toLocaleString()}</div>
-                    <div class="p-stock" style="font-size: 10px; color: ${isOutOfStock ? 'var(--danger)' : 'var(--text-dim)'}; font-weight: 700;">
-                        ${isOutOfStock ? 'OUT OF STOCK' : `Stock: ${p.stock}`}
-                    </div>
+                    <div class="p-price">Rs. ${parseFloat(p.sellPrice).toLocaleString()}</div>
+                    <div class="p-stock">Stock: ${p.stock}</div>
                 `;
-                if (!isOutOfStock) card.onclick = () => addToCart(p);
+                card.onclick = () => addToCart(p);
                 grid.appendChild(card);
             });
         }
@@ -947,7 +928,7 @@
 
                 const div = document.createElement('div');
                 const priceDiff = item.sellPrice - (item.originalPrice || item.sellPrice);
-                let priceStyle = 'border: 1px dashed var(--primary); background: rgba(255, 75, 125, 0.05); color: var(--primary);';
+                let priceStyle = 'border: 1px dashed var(--primary); background: rgba(190, 24, 93, 0.05); color: var(--primary);';
                 let priceIndicator = '';
 
                 if (priceDiff < 0) {
@@ -1090,12 +1071,12 @@
             if (editingOrderId) {
                 // Stock Reconciliation for Draft Update
                 for (const item of originalCart) {
-                    const dbItem = await DB.getItem(item.id || item.itemId);
-                    if (dbItem) await DB.updateItem(dbItem.id, { stock: dbItem.stock + item.qty });
+                    const dbItem = await db.inventory.get(item.id || item.itemId);
+                    if (dbItem) await db.inventory.update(dbItem.id, { stock: dbItem.stock + item.qty });
                 }
                 for (const item of cart) {
-                    const dbItem = await DB.getItem(item.id || item.itemId);
-                    if (dbItem) await DB.updateItem(dbItem.id, { stock: dbItem.stock - item.qty });
+                    const dbItem = await db.inventory.get(item.id || item.itemId);
+                    if (dbItem) await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
                 }
 
                 await DB.updateOrder(editingOrderId, orderData);
@@ -1182,16 +1163,16 @@
             if (editingSaleId || editingOrderId) {
                 // Return original stock to database first
                 for (const item of originalCart) {
-                    const dbItem = await DB.getItem(item.id || item.itemId);
+                    const dbItem = await db.inventory.get(item.id || item.itemId);
                     if (dbItem) {
-                        await DB.updateItem(dbItem.id, { stock: dbItem.stock + item.qty });
+                        await db.inventory.update(dbItem.id, { stock: dbItem.stock + item.qty });
                     }
                 }
                 // Deduct new items from stock in database (Update calls don't handle this)
                 for (const item of cart) {
-                    const dbItem = await DB.getItem(item.id || item.itemId);
+                    const dbItem = await db.inventory.get(item.id || item.itemId);
                     if (dbItem) {
-                        await DB.updateItem(dbItem.id, { stock: dbItem.stock - item.qty });
+                        await db.inventory.update(dbItem.id, { stock: dbItem.stock - item.qty });
                     }
                 }
             }
@@ -1361,7 +1342,7 @@
                         <div style="flex: 1;">
                             <h3 style="font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 4px 0;">CUSTOMER DETAILS</h3>
                             <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">${record.customer || 'Guest Customer'}</p>
-                            ${record.customerId && record.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #ff4b7d;">ID: ${record.customerId}</p>` : ''}
+                            ${record.customerId && record.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${record.customerId}</p>` : ''}
                             <p style="font-size: 11px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${(record.customerPhone || record.phone) || 'N/A'}</p>
                         </div>
                         <div style="text-align: right;">
@@ -1419,7 +1400,7 @@
                 if (isLastPage) {
                     const subtotal = record.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
                     const discVal = (subtotal * (record.discount || 0)) / 100;
-                    
+
                     const totalsHtml = `
                         <div style="margin-top: 10px; margin-left: auto; width: 220px;">
                             <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px;">
@@ -1517,7 +1498,7 @@
             @page { size: A5; margin: 0; }
         }
         .no-print { margin-bottom: 20px; text-align: center; width: 100%; max-width: 148mm; }
-        .btn { padding: 12px 25px; background: #ff4b7d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn { padding: 12px 25px; background: #be185d; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn:hover { background: #9d174d; transform: translateY(-2px); }
     </style>
 </head>
@@ -1552,11 +1533,11 @@
 
         function renderCustomerPills(customers) {
             const container = document.getElementById('customerPills');
-            if(!container) return;
+            if (!container) return;
             container.innerHTML = `<button class="category-pill active" onclick="selectQuickCustomer('Guest', this)" style="white-space:nowrap;">Guest</button>`;
-            
+
             // Show recent or alphabetical customers
-            customers.sort((a,b) => a.name.localeCompare(b.name)).slice(0, 15).forEach(c => {
+            customers.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 15).forEach(c => {
                 const btn = document.createElement('button');
                 btn.className = 'category-pill';
                 btn.style.whiteSpace = 'nowrap';
@@ -1570,7 +1551,7 @@
             const pills = document.querySelectorAll('#customerPills .category-pill');
             pills.forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
-            
+
             document.getElementById('cust-name').value = name === 'Guest' ? '' : name;
             document.getElementById('cust-name').dispatchEvent(new Event('input'));
         }
@@ -1579,8 +1560,8 @@
             const customers = await DB.getAllCustomers();
             const listDiv = document.getElementById('modal-cust-list');
             listDiv.innerHTML = '';
-            
-            customers.sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
+
+            customers.sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
                 const card = document.createElement('div');
                 card.className = 'cust-selection-card';
                 card.style.cssText = `
@@ -1595,7 +1576,7 @@
                     transition: all 0.2s;
                 `;
                 card.onclick = () => selectCustomer(c.name);
-                
+
                 card.innerHTML = `
                     <div>
                         <div style="font-weight: 700; color: var(--text-main); font-size: 14px;">${c.name}</div>
@@ -1606,7 +1587,7 @@
                         <i class="fas fa-chevron-right" style="color: var(--primary); font-size: 12px; margin-left: 10px;"></i>
                     </div>
                 `;
-                
+
                 card.onmouseover = () => {
                     card.style.background = 'var(--primary-glow)';
                     card.style.borderColor = 'var(--primary)';
@@ -1617,10 +1598,10 @@
                     card.style.borderColor = 'rgba(0,0,0,0.05)';
                     card.style.transform = 'translateX(0)';
                 };
-                
+
                 listDiv.appendChild(card);
             });
-            
+
             openModal('custSelectionModal');
             document.getElementById('cust-search-box').value = '';
             document.getElementById('cust-search-box').focus();
@@ -1630,7 +1611,7 @@
             const term = document.getElementById('cust-search-box').value.toLowerCase();
             const listDiv = document.getElementById('modal-cust-list');
             const cards = listDiv.getElementsByClassName('cust-selection-card');
-            
+
             Array.from(cards).forEach(card => {
                 const text = card.innerText.toLowerCase();
                 card.style.display = text.includes(term) ? 'flex' : 'none';
@@ -1654,37 +1635,6 @@
 
     <!-- Printable Container (Handles multiple A5 pages) -->
     <div id="printableReceipt" style="display:none; position: absolute; left: 0; top: 0;"></div>
-    <script>
-        // One-time initialization script for new products
-        (async () => {
-            try {
-                const newCategory = 'Oversize';
-                const categories = await DB.getAllCategories();
-                if (!categories.some(c => c.name === newCategory)) {
-                    await DB.addCategory({ name: newCategory });
-                }
-
-                const newProducts = [
-                    { name: 'Raglan Oversized T-Shirt (Yellow/Brown)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' },
-                    { name: 'Raglan Oversized T-Shirt (White/Black)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' },
-                    { name: 'Raglan Oversized T-Shirt (Teal/Navy)', category: newCategory, size: 'S/M/L/XL', stock: 10, buyPrice: 1000, sellPrice: 1350, type: 'regular' }
-                ];
-
-                const existingInventory = await DB.getAllInventory();
-                for (const prod of newProducts) {
-                    if (!existingInventory.some(i => i.name === prod.name)) {
-                        await DB.addInventory(prod);
-                        console.log(`Added new product: ${prod.name}`);
-                    }
-                }
-            } catch (e) {
-                console.warn("Auto-init products failed:", e);
-            }
-            
-            // Refresh grid if on POS page
-            // if (typeof initPOS === 'function') initPOS(); // Removed redundant call
-        })();
-    </script>
 </body>
 
 </html>

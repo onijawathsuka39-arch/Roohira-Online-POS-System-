@@ -50,7 +50,7 @@ const themeManager = {
     initSidebar() {
         const toggle = document.getElementById('sidebarToggle');
         const sidebar = document.querySelector('.sidebar');
-        
+
         if (toggle && sidebar) {
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
