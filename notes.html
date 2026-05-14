@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notes & Tasks | Ruhira POS</title>
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23be185d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff4b7d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -78,6 +78,7 @@
             <a href="sales.html" class="nav-item"><i class="fas fa-history"></i><span>Sales History</span></a>
             <a href="orders.html" class="nav-item"><i class="fas fa-file-invoice"></i><span>Orders</span></a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventory</span></a>
+            <a href="tags.html" class="nav-item"><i class="fas fa-barcode"></i><span>Item Tags</span></a>
             <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>Customers</span></a>
             <a href="notes.html" class="nav-item active"><i class="fas fa-sticky-note"></i><span>Notes &
                     Tasks</span></a>
@@ -87,10 +88,6 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
             <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
@@ -109,8 +106,13 @@
                     <p>Keep track of shop tasks, ideas, and reminders</p>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="openModal('noteModal')"><i class="fas fa-plus"></i> New
-                Note</button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-primary" onclick="openModal('noteModal')"><i class="fas fa-plus"></i> New
+                    Note</button>
+            </div>
         </header>
 
         <div class="notes-grid" id="notesList">

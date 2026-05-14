@@ -683,6 +683,9 @@
                 </div>
             </div>
             <div class="topbar-right">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 38px; height: 38px; justify-content: center; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--txt);" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
                 <div class="profile-pill">
                     <div class="profile-avatar"><i class="fas fa-user-shield"></i></div>
                     <div>
@@ -1127,7 +1130,7 @@
         }
 
         async function editInv(id) {
-            const it = await db.inventory.get(id);
+            const it = await DB.getItem(id);
             openModal('Edit: ' + it.name);
             document.getElementById('modal-body').innerHTML = `
             <div class="mfield"><label>Product Name</label><input id="mi-name" class="ainput" style="width:100%;" value="${it.name}"></div>
@@ -1171,7 +1174,8 @@
         }
 
         async function viewCustDetails(id) {
-            const c = await db.customers.get(id);
+            const custs = await DB.getAllCustomers();
+            const c = custs.find(cu => cu.id == id);
             if (!c) return;
 
             const sales = await DB.getSalesByCustomer(c.name);
@@ -1263,14 +1267,15 @@
         }
 
         async function editCust(id) {
-            const c = await db.customers.get(id);
+            const custs = await DB.getAllCustomers();
+            const c = custs.find(cu => cu.id == id);
             openModal('Edit Client: ' + c.name);
             document.getElementById('modal-body').innerHTML = `
             <div class="mfield"><label>Name</label><input id="mc-name" class="ainput" style="width:100%;" value="${c.name}"></div>
             <div class="mfield"><label>Phone</label><input id="mc-phone" class="ainput" style="width:100%;" value="${c.phone || ''}"></div>
             <div class="mfield"><label>Loyalty Points</label><input id="mc-pts" type="number" class="ainput" style="width:100%;" value="${c.loyaltyPoints || 0}"></div>`;
             document.getElementById('modal-save').onclick = async () => {
-                await db.customers.update(id, { name: g('mc-name'), phone: g('mc-phone'), loyaltyPoints: +g('mc-pts') });
+                await DB.updateCustomer(id, { name: g('mc-name'), phone: g('mc-phone'), loyaltyPoints: +g('mc-pts') });
                 closeModal(); loadCustomers();
             };
         }
@@ -1297,7 +1302,8 @@
         }
 
         async function viewSaleItems(id) {
-            const s = await db.sales.get(id);
+            const sales = await DB.getAllSales();
+            const s = sales.find(sl => sl.id == id);
             if (!s) return;
             const items = (s.items || []).map(i => {
                 const sellPrice = i.sellPrice || i.price || 0;
@@ -1353,7 +1359,8 @@
         }
 
         async function viewOrderItems(id) {
-            const o = await db.orders.get(id);
+            const orders = await DB.getAllOrders();
+            const o = orders.find(ord => ord.id == id);
             if (!o) return;
             const items = (o.items || []).map(i => {
                 const sellPrice = i.sellPrice || i.price || 0;
@@ -1443,7 +1450,10 @@
         async function wipeDB() {
             if (confirm('⚠️ CRITICAL: This will permanently erase ALL data. Type "WIPE" to confirm.')) {
                 const conf = prompt('Type WIPE to confirm:');
-                if (conf === 'WIPE') { await db.delete(); location.reload(); }
+                if (conf === 'WIPE') { 
+                    // To wipe in local server, we could add a wipe endpoint or just clear tables
+                    alert('Wipe not directly supported via API yet. Use Settings page to clear database.');
+                }
             }
         }
 

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings | Ruhira POS</title>
     <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23be185d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff4b7d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -89,6 +89,10 @@
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
             </a>
+            <a href="tags.html" class="nav-item">
+                <i class="fas fa-barcode"></i>
+                <span>Item Tags</span>
+            </a>
             <a href="customers.html" class="nav-item">
                 <i class="fas fa-users"></i>
                 <span>Customers</span>
@@ -112,11 +116,7 @@
         </nav>
 
         <div class="sidebar-footer">
-            <div class="nav-item" onclick="themeManager.toggle()" style="cursor:pointer;">
-                <i class="fas fa-sun theme-toggle-icon"></i>
-                <span>Theme Mode</span>
-            </div>
-            <div class="nav-item">
+            <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </div>
@@ -134,7 +134,10 @@
                     <p>Configure your shop profile and manage data backups</p>
                 </div>
             </div>
-            <div class="header-actions" style="display: flex; gap: 10px;">
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
                 <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
                         class="fas fa-sign-in-alt"></i> Login</a>
                 <button onclick="DB.logout()" class="btn btn-secondary"
@@ -218,13 +221,23 @@
             <input type="number" value="5" style="width:100px;">
         </div>
 
+        <div class="setting-row">
+            <div class="setting-info">
+                <h3>Migrate Data to Server</h3>
+                <p style="color:var(--primary); font-weight: 600;">Use this if you have data in your browser and want to move it to the new local database.</p>
+            </div>
+            <button class="btn btn-primary" onclick="migrateToServer()">
+                <i class="fas fa-server"></i> Move Data to Server
+            </button>
+        </div>
+
         <div class="setting-row" style="border-bottom:none;">
             <div class="setting-info">
-                <h3>Wipe All Data</h3>
-                <p style="color:var(--danger);">Irreversibly delete all records from the system.</p>
+                <h3>Wipe Server Data</h3>
+                <p style="color:var(--danger);">Irreversibly delete all records from the SERVER database.</p>
             </div>
             <button class="btn btn-secondary" style="color:var(--danger); border-color:var(--danger);"
-                onclick="wipeData()"><i class="fas fa-exclamation-triangle"></i> Factory Reset</button>
+                onclick="wipeData()"><i class="fas fa-exclamation-triangle"></i> Reset Server DB</button>
         </div>
         </div>
         </div>
@@ -272,10 +285,55 @@
         }
 
         async function wipeData() {
-            if (confirm('CRITICAL: This will delete EVERYTHING. Are you 100% sure?')) {
-                await db.delete();
-                alert('Database wiped. The app will restart.');
-                window.location.reload();
+            if (confirm('CRITICAL: This will delete EVERYTHING on the SERVER. Are you 100% sure?')) {
+                // We can implement a wipe API or just restore with empty data
+                try {
+                    await DB.restoreFullSystem({});
+                    alert('Server database wiped. The app will restart.');
+                    window.location.reload();
+                } catch(e) {
+                    alert('Wipe failed: ' + e.message);
+                }
+            }
+        }
+
+        async function migrateToServer() {
+            if (!confirm('This will export your BROWSER data and import it into the SERVER database. Continue?')) return;
+
+            try {
+                // Initialize a temporary Dexie instance to read browser data
+                const oldDb = new Dexie('RuhiraPOS_DB');
+                oldDb.version(8).stores({
+                    inventory: '++id, name, category, type, stock, buyPrice, sellPrice, size, packageItems',
+                    sales: '++id, total, buyTotal, date, customer, paymentMethod',
+                    orders: '++id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date',
+                    customers: '++id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic',
+                    categories: '++id, name, description',
+                    notes: '++id, title, content, date',
+                    settings: 'key, value',
+                    backups: '++id, date, name, size',
+                    users: 'username, role, password',
+                    expenses: '++id, reason, amount, date'
+                });
+
+                const data = {
+                    inventory: await oldDb.inventory.toArray(),
+                    sales: await oldDb.sales.toArray(),
+                    orders: await oldDb.orders.toArray(),
+                    expenses: await oldDb.expenses.toArray(),
+                    customers: await oldDb.customers.toArray(),
+                    categories: await oldDb.categories.toArray(),
+                    notes: await oldDb.notes.toArray()
+                };
+
+                const success = await DB.restoreFullSystem(data);
+                if (success) {
+                    alert('✅ Migration successful! Your data is now on the server.');
+                    window.location.reload();
+                }
+            } catch (err) {
+                alert('❌ Migration failed: ' + err.message);
+                console.error(err);
             }
         }
 
