@@ -1026,6 +1026,9 @@
                         <div class="pdf-title"> ORDER INVOICE</div>
                         <div>Date: <span id="previewDate">--/--/----</span></div>
                     </div>
+                    <a href="https://ibb.co/67dSn5n1" target="_blank">
+                        <img src="https://i.ibb.co/MxXH2L2G/logo.png" alt="logo" border="0" style="width: 60px; height: 60px; object-fit: contain; margin-left: 15px;" id="brandLogoImg" crossorigin="anonymous">
+                    </a>
                 </div>
 
                 <div class="pdf-section">
@@ -1614,6 +1617,27 @@
                     doc.setFontSize(10);
                     doc.setTextColor(100, 100, 100);
                     doc.text('YOUR TRUSTED ONLINE FASHION PARTNER', textStartX, margin + 15);
+
+                    // Add the brand logo to the top right corner
+                    try {
+                        const brandLogo = document.getElementById('brandLogoImg');
+                        if (brandLogo && brandLogo.complete && brandLogo.naturalWidth !== 0) {
+                            const brandLogoSize = 25;
+                            const brandLogoX = pageWidth - margin - brandLogoSize;
+                            const brandLogoY = margin;
+                            
+                            const canvas = document.createElement('canvas');
+                            canvas.width = brandLogo.naturalWidth;
+                            canvas.height = brandLogo.naturalHeight;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(brandLogo, 0, 0);
+                            const brandLogoData = canvas.toDataURL('image/png');
+                            
+                            doc.addImage(brandLogoData, 'PNG', brandLogoX, brandLogoY, brandLogoSize, brandLogoSize);
+                        }
+                    } catch (e) {
+                        console.log('Could not add brand logo to PDF header', e);
+                    }
 
                     // INVOICE title
                     doc.setFontSize(16);
