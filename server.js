@@ -1648,19 +1648,23 @@ app.get('/mobile', (req, res) => {
     res.sendFile(path.join(__dirname, 'mobile.html'));
 });
 
-// Start Server
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running locally at http://localhost:${PORT}`);
-    
-    const os = require('os');
-    const networkInterfaces = os.networkInterfaces();
-    for (const interfaceName in networkInterfaces) {
-        const interfaces = networkInterfaces[interfaceName];
-        for (const iface of interfaces) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                console.log(`Access from PC/Browser: http://${iface.address}:${PORT}`);
-                console.log(`📱 Access Mobile App from Phone: http://${iface.address}:${PORT}/mobile.html`);
+// Start Server if run directly
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running locally at http://localhost:${PORT}`);
+        
+        const os = require('os');
+        const networkInterfaces = os.networkInterfaces();
+        for (const interfaceName in networkInterfaces) {
+            const interfaces = networkInterfaces[interfaceName];
+            for (const iface of interfaces) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                    console.log(`Access from PC/Browser: http://${iface.address}:${PORT}`);
+                    console.log(`📱 Access Mobile App from Phone: http://${iface.address}:${PORT}/mobile.html`);
+                }
             }
         }
-    }
-});
+    });
+}
+
+module.exports = app;
