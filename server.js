@@ -23,34 +23,8 @@ app.use((req, res, next) => {
 // Serve static files from the project root
 app.use(express.static(__dirname));
 
-// Initialize Firebase Admin SDK if service account exists or env var is set
-let admin = null;
-let firestoreDb = null;
-const firebaseKeyPath = path.join(__dirname, 'firebase-service-account.json');
-
-try {
-    let serviceAccount = null;
-    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    } else if (fs.existsSync(firebaseKeyPath)) {
-        serviceAccount = require(firebaseKeyPath);
-    } else if (fs.existsSync(path.join(__dirname, 'firebase-service-account.json.json'))) {
-        serviceAccount = require(path.join(__dirname, 'firebase-service-account.json.json'));
-    }
-
-    if (serviceAccount) {
-        admin = require('firebase-admin');
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        firestoreDb = admin.firestore();
-        console.log('Connected to Firebase Firestore successfully!');
-    } else {
-        console.log('Firebase service account not found. Running with local SQLite database.');
-    }
-} catch (err) {
-    console.error('Failed to initialize Firebase Admin SDK:', err);
-}
+// Running with local SQLite database
+console.log('Running with local SQLite database (database.db)');
 
 // Open SQLite database (always initialized as fallback or main db)
 const dbPath = path.join(__dirname, 'database.db');
@@ -319,79 +293,7 @@ function seedSQLite(backupData) {
     });
 }
 
-// Auto-seed Firebase if it's connected and empty
-if (firestoreDb) {
-    firestoreDb.collection('inventory').limit(1).get().then(snapshot => {
-        if (snapshot.empty) {
-            const backupFile = path.join(__dirname, 'RuhiraPOS_FULL_Backup_2026-05-14.json');
-            if (fs.existsSync(backupFile)) {
-                console.log("Empty Firebase Firestore detected. Seeding data from backup file:", backupFile);
-                try {
-                    const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
-                    seedFirebase(backupData);
-                } catch (parseErr) {
-                    console.error("Failed to parse backup file for Firebase seeding:", parseErr);
-                }
-            } else {
-                // Seed default users anyway
-                seedFirebaseUsers();
-            }
-        }
-    }).catch(err => {
-        console.error("Error checking Firebase data for seeding:", err);
-    });
-}
 
-async function seedFirebaseUsers() {
-    try {
-        const usersRef = firestoreDb.collection('users');
-        const adminDoc = await usersRef.doc('admin').get();
-        if (!adminDoc.exists) {
-            await usersRef.doc('admin').set({ username: 'admin', password: '123', role: 'admin', name: 'Master Admin' });
-        }
-        const staffDoc = await usersRef.doc('staff').get();
-        if (!staffDoc.exists) {
-            await usersRef.doc('staff').set({ username: 'staff', password: '123', role: 'staff', name: 'Roohira Staff' });
-        }
-        console.log("Firebase default users seeded successfully.");
-    } catch (err) {
-        console.error("Error seeding Firebase default users:", err);
-    }
-}
-
-async function seedFirebase(backupData) {
-    try {
-        // Seed Users
-        await seedFirebaseUsers();
-
-        // Helper to write batch
-        const writeBatch = async (collectionName, items, idKey = 'id') => {
-            if (!items || !items.length) return;
-            const batch = firestoreDb.batch();
-            items.forEach(item => {
-                const docId = String(item[idKey]);
-                const docRef = firestoreDb.collection(collectionName).doc(docId);
-                const data = { ...item };
-                delete data[idKey];
-                batch.set(docRef, data);
-            });
-            await batch.commit();
-            console.log(`Seeded ${items.length} documents into Firebase collection: ${collectionName}`);
-        };
-
-        if (backupData.inventory) await writeBatch('inventory', backupData.inventory, 'id');
-        if (backupData.sales) await writeBatch('sales', backupData.sales, 'id');
-        if (backupData.orders) await writeBatch('orders', backupData.orders, 'id');
-        if (backupData.customers) await writeBatch('customers', backupData.customers, 'id');
-        if (backupData.categories) await writeBatch('categories', backupData.categories, 'id');
-        if (backupData.notes) await writeBatch('notes', backupData.notes, 'id');
-        if (backupData.expenses) await writeBatch('expenses', backupData.expenses, 'id');
-
-        console.log("Firebase seeding completed successfully!");
-    } catch (err) {
-        console.error("Failed to seed Firebase Firestore:", err);
-    }
-}
 
 // Helper functions for SQLite queries to support promises
 const runQuery = (sql, params = []) => {
@@ -504,7 +406,7 @@ function broadcastRealtimeEvent(event, data = {}) {
 
 // Database Abstraction Layer (DB Service)
 const dbService = {
-    isFirebase: () => firestoreDb !== null,
+    isFirebase: () => false,
 
     // Notes
     getNotes: async () => {
