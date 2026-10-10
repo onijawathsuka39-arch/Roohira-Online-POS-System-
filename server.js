@@ -10,10 +10,49 @@ const PORT = process.env.PORT || 3005;
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
+// Set permissive headers for mobile & ngrok access
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning');
+    res.setHeader('ngrok-skip-browser-warning', 'true');
+    if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
 // Serve static files from the project root
 app.use(express.static(__dirname));
 
-// Open SQLite database
+// Initialize Firebase Admin SDK if service account exists or env var is set
+let admin = null;
+let firestoreDb = null;
+const firebaseKeyPath = path.join(__dirname, 'firebase-service-account.json');
+
+try {
+    let serviceAccount = null;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } else if (fs.existsSync(firebaseKeyPath)) {
+        serviceAccount = require(firebaseKeyPath);
+    } else if (fs.existsSync(path.join(__dirname, 'firebase-service-account.json.json'))) {
+        serviceAccount = require(path.join(__dirname, 'firebase-service-account.json.json'));
+    }
+
+    if (serviceAccount) {
+        admin = require('firebase-admin');
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        firestoreDb = admin.firestore();
+        console.log('Connected to Firebase Firestore successfully!');
+    } else {
+        console.log('Firebase service account not found. Running with local SQLite database.');
+    }
+} catch (err) {
+    console.error('Failed to initialize Firebase Admin SDK:', err);
+}
+
+// Open SQLite database (always initialized as fallback or main db)
 const dbPath = path.join(__dirname, 'database.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -23,7 +62,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// Initialize database tables
+// Initialize SQLite database tables
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
@@ -44,6 +83,13 @@ db.serialize(() => {
         packageItems TEXT
     )`);
 
+    const inventoryExtraCols = [
+        "ALTER TABLE inventory ADD COLUMN barcode TEXT",
+        "ALTER TABLE inventory ADD COLUMN colour TEXT",
+        "ALTER TABLE inventory ADD COLUMN color TEXT"
+    ];
+    inventoryExtraCols.forEach(sql => db.run(sql, [], () => {}));
+
     db.run(`CREATE TABLE IF NOT EXISTS sales (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         total REAL,
@@ -59,6 +105,22 @@ db.serialize(() => {
         customerPhone TEXT,
         orderId TEXT
     )`);
+
+    const salesExtraCols = [
+        "ALTER TABLE sales ADD COLUMN weight TEXT",
+        "ALTER TABLE sales ADD COLUMN trackingNo TEXT",
+        "ALTER TABLE sales ADD COLUMN deliveryMethod TEXT",
+        "ALTER TABLE sales ADD COLUMN address TEXT",
+        "ALTER TABLE sales ADD COLUMN city TEXT",
+        "ALTER TABLE sales ADD COLUMN received REAL",
+        "ALTER TABLE sales ADD COLUMN balance REAL",
+        "ALTER TABLE sales ADD COLUMN cardDiscount REAL",
+        "ALTER TABLE sales ADD COLUMN advancePaid REAL",
+        "ALTER TABLE sales ADD COLUMN balanceDue REAL",
+        "ALTER TABLE sales ADD COLUMN pointsEarned REAL",
+        "ALTER TABLE sales ADD COLUMN totalPoints REAL"
+    ];
+    salesExtraCols.forEach(sql => db.run(sql, [], () => {}));
 
     db.run(`CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,8 +139,25 @@ db.serialize(() => {
         discount REAL,
         delivery REAL,
         loyaltyDiscount REAL,
-        customerId TEXT
+        customerId TEXT,
+        cardDiscount REAL,
+        paymentMethod TEXT
     )`);
+
+    const ordersExtraCols = [
+        "ALTER TABLE orders ADD COLUMN weight TEXT",
+        "ALTER TABLE orders ADD COLUMN trackingNo TEXT",
+        "ALTER TABLE orders ADD COLUMN city TEXT",
+        "ALTER TABLE orders ADD COLUMN cardDiscount REAL",
+        "ALTER TABLE orders ADD COLUMN paymentMethod TEXT",
+        "ALTER TABLE orders ADD COLUMN advancePaid REAL",
+        "ALTER TABLE orders ADD COLUMN balanceDue REAL",
+        "ALTER TABLE orders ADD COLUMN received REAL",
+        "ALTER TABLE orders ADD COLUMN balance REAL",
+        "ALTER TABLE orders ADD COLUMN pointsEarned REAL",
+        "ALTER TABLE orders ADD COLUMN totalPoints REAL"
+    ];
+    ordersExtraCols.forEach(sql => db.run(sql, [], () => {}));
 
     db.run(`CREATE TABLE IF NOT EXISTS customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,6 +197,32 @@ db.serialize(() => {
         date TEXT
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS waybills (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        orderId TEXT,
+        trackingNo TEXT,
+        date TEXT,
+        senderName TEXT,
+        senderAddress TEXT,
+        senderPhone1 TEXT,
+        senderPhone2 TEXT,
+        senderPostcode TEXT,
+        recipientName TEXT,
+        recipientPhone1 TEXT,
+        recipientPhone2 TEXT,
+        recipientAddress TEXT,
+        recipientCity TEXT,
+        weight TEXT,
+        courier TEXT,
+        specialNotice TEXT,
+        paymentMethod TEXT,
+        totalAmount REAL,
+        advancePaid REAL,
+        amountToCollect REAL,
+        items TEXT,
+        status TEXT
+    )`);
+
     // Insert default admin and staff users if they don't exist
     db.get("SELECT username FROM users WHERE username = 'admin'", (err, row) => {
         if (!row) {
@@ -131,88 +236,164 @@ db.serialize(() => {
         }
     });
 
-    // Auto-seed from backup file if database is empty
+    // Auto-seed SQLite from backup file if database is empty
     db.get("SELECT COUNT(*) as count FROM inventory", (err, row) => {
         if (err) return console.error("Error checking inventory count for seeding:", err);
         if (row && row.count === 0) {
             const backupFile = path.join(__dirname, 'RuhiraPOS_FULL_Backup_2026-05-14.json');
             if (fs.existsSync(backupFile)) {
-                console.log("Empty database detected. Seeding data from backup file:", backupFile);
+                console.log("Empty SQLite database detected. Seeding data from backup file:", backupFile);
                 try {
                     const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
-                    
-                    db.serialize(() => {
-                        db.run("BEGIN TRANSACTION");
-                        try {
-                            if (backupData.inventory && backupData.inventory.length) {
-                                const stmt = db.prepare("INSERT INTO inventory (id, name, category, type, stock, buyPrice, sellPrice, size, packageItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                                backupData.inventory.forEach(item => {
-                                    stmt.run([item.id, item.name, item.category, item.type, item.stock, item.buyPrice, item.sellPrice, item.size, JSON.stringify(item.packageItems || null)]);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.sales && backupData.sales.length) {
-                                const stmt = db.prepare("INSERT INTO sales (id, total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, customerId, customerPhone, orderId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                                backupData.sales.forEach(s => {
-                                    stmt.run([s.id, s.total, s.buyTotal, s.date, s.customer, s.paymentMethod, JSON.stringify(s.items || []), s.discount || 0, s.delivery || 0, s.loyaltyDiscount || 0, s.customerId || 'Guest', s.customerPhone || 'N/A', s.orderId]);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.orders && backupData.orders.length) {
-                                const stmt = db.prepare("INSERT INTO orders (id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date, buyTotal, discount, delivery, loyaltyDiscount, customerId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                                backupData.orders.forEach(o => {
-                                    stmt.run([o.id, o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total, o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.date, o.buyTotal || 0, o.discount || 0, o.delivery || 0, o.loyaltyDiscount || 0, o.customerId || 'Guest']);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.customers && backupData.customers.length) {
-                                const stmt = db.prepare("INSERT INTO customers (id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                                backupData.customers.forEach(c => {
-                                    stmt.run([c.id, c.custId, c.name, c.phone, c.address, c.totalOrders || 0, c.totalSpent || 0, c.isBlacklisted ? 1 : 0, c.loyaltyPoints || 0, c.profilePic]);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.categories && backupData.categories.length) {
-                                const stmt = db.prepare("INSERT INTO categories (id, name, description) VALUES (?, ?, ?)");
-                                backupData.categories.forEach(c => {
-                                    stmt.run([c.id, c.name, c.description]);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.notes && backupData.notes.length) {
-                                const stmt = db.prepare("INSERT INTO notes (id, title, content, date) VALUES (?, ?, ?, ?)");
-                                backupData.notes.forEach(n => {
-                                    stmt.run([n.id, n.title, n.content, n.date]);
-                                });
-                                stmt.finalize();
-                            }
-                            if (backupData.expenses && backupData.expenses.length) {
-                                const stmt = db.prepare("INSERT INTO expenses (id, reason, amount, date) VALUES (?, ?, ?, ?)");
-                                backupData.expenses.forEach(e => {
-                                    stmt.run([e.id, e.reason, e.amount, e.date]);
-                                });
-                                stmt.finalize();
-                            }
-                            db.run("COMMIT", (commitErr) => {
-                                if (commitErr) console.error("Commit error during seeding:", commitErr);
-                                else console.log("Seeding complete! Database successfully populated from backup file.");
-                            });
-                        } catch (txErr) {
-                            db.run("ROLLBACK");
-                            console.error("Failed to seed database transaction:", txErr);
-                        }
-                    });
+                    seedSQLite(backupData);
                 } catch (parseErr) {
-                    console.error("Failed to parse backup file for seeding:", parseErr);
+                    console.error("Failed to parse backup file for SQLite seeding:", parseErr);
                 }
-            } else {
-                console.log("No backup file found - starting with clean database.");
             }
         }
     });
 });
 
-// Helper functions for DB queries to support promises
+// Helper function to seed SQLite
+function seedSQLite(backupData) {
+    db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+        try {
+            if (backupData.inventory && backupData.inventory.length) {
+                const stmt = db.prepare("INSERT INTO inventory (id, name, category, type, stock, buyPrice, sellPrice, size, packageItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                backupData.inventory.forEach(item => {
+                    stmt.run([item.id, item.name, item.category, item.type, item.stock, item.buyPrice, item.sellPrice, item.size, JSON.stringify(item.packageItems || null)]);
+                });
+                stmt.finalize();
+            }
+            if (backupData.sales && backupData.sales.length) {
+                const stmt = db.prepare("INSERT INTO sales (id, total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                backupData.sales.forEach(s => {
+                    stmt.run([s.id, s.total, s.buyTotal, s.date, s.customer, s.paymentMethod, JSON.stringify(s.items || []), s.discount || 0, s.delivery || 0, s.loyaltyDiscount || 0, s.customerId || 'Guest', s.customerPhone || 'N/A', s.orderId, s.weight || '', s.trackingNo || '', s.deliveryMethod || '', s.address || '', s.city || '', s.received || 0, s.balance || 0]);
+                });
+                stmt.finalize();
+            }
+            if (backupData.orders && backupData.orders.length) {
+                const stmt = db.prepare("INSERT INTO orders (id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date, buyTotal, discount, delivery, loyaltyDiscount, customerId, weight, trackingNo, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                backupData.orders.forEach(o => {
+                    stmt.run([o.id, o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total, o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.date, o.buyTotal || 0, o.discount || 0, o.delivery || 0, o.loyaltyDiscount || 0, o.customerId || 'Guest', o.weight || '', o.trackingNo || '', o.city || '']);
+                });
+                stmt.finalize();
+            }
+            if (backupData.customers && backupData.customers.length) {
+                const stmt = db.prepare("INSERT INTO customers (id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                backupData.customers.forEach(c => {
+                    stmt.run([c.id, c.custId, c.name, c.phone, c.address, c.totalOrders || 0, c.totalSpent || 0, c.isBlacklisted ? 1 : 0, c.loyaltyPoints || 0, c.profilePic]);
+                });
+                stmt.finalize();
+            }
+            if (backupData.categories && backupData.categories.length) {
+                const stmt = db.prepare("INSERT INTO categories (id, name, description) VALUES (?, ?, ?)");
+                backupData.categories.forEach(c => {
+                    stmt.run([c.id, c.name, c.description]);
+                });
+                stmt.finalize();
+            }
+            if (backupData.notes && backupData.notes.length) {
+                const stmt = db.prepare("INSERT INTO notes (id, title, content, date) VALUES (?, ?, ?, ?)");
+                backupData.notes.forEach(n => {
+                    stmt.run([n.id, n.title, n.content, n.date]);
+                });
+                stmt.finalize();
+            }
+            if (backupData.expenses && backupData.expenses.length) {
+                const stmt = db.prepare("INSERT INTO expenses (id, reason, amount, date) VALUES (?, ?, ?, ?)");
+                backupData.expenses.forEach(e => {
+                    stmt.run([e.id, e.reason, e.amount, e.date]);
+                });
+                stmt.finalize();
+            }
+            db.run("COMMIT", (commitErr) => {
+                if (commitErr) console.error("Commit error during SQLite seeding:", commitErr);
+                else console.log("SQLite Seeding complete!");
+            });
+        } catch (txErr) {
+            db.run("ROLLBACK");
+            console.error("Failed to seed SQLite database transaction:", txErr);
+        }
+    });
+}
+
+// Auto-seed Firebase if it's connected and empty
+if (firestoreDb) {
+    firestoreDb.collection('inventory').limit(1).get().then(snapshot => {
+        if (snapshot.empty) {
+            const backupFile = path.join(__dirname, 'RuhiraPOS_FULL_Backup_2026-05-14.json');
+            if (fs.existsSync(backupFile)) {
+                console.log("Empty Firebase Firestore detected. Seeding data from backup file:", backupFile);
+                try {
+                    const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
+                    seedFirebase(backupData);
+                } catch (parseErr) {
+                    console.error("Failed to parse backup file for Firebase seeding:", parseErr);
+                }
+            } else {
+                // Seed default users anyway
+                seedFirebaseUsers();
+            }
+        }
+    }).catch(err => {
+        console.error("Error checking Firebase data for seeding:", err);
+    });
+}
+
+async function seedFirebaseUsers() {
+    try {
+        const usersRef = firestoreDb.collection('users');
+        const adminDoc = await usersRef.doc('admin').get();
+        if (!adminDoc.exists) {
+            await usersRef.doc('admin').set({ username: 'admin', password: '123', role: 'admin', name: 'Master Admin' });
+        }
+        const staffDoc = await usersRef.doc('staff').get();
+        if (!staffDoc.exists) {
+            await usersRef.doc('staff').set({ username: 'staff', password: '123', role: 'staff', name: 'Roohira Staff' });
+        }
+        console.log("Firebase default users seeded successfully.");
+    } catch (err) {
+        console.error("Error seeding Firebase default users:", err);
+    }
+}
+
+async function seedFirebase(backupData) {
+    try {
+        // Seed Users
+        await seedFirebaseUsers();
+
+        // Helper to write batch
+        const writeBatch = async (collectionName, items, idKey = 'id') => {
+            if (!items || !items.length) return;
+            const batch = firestoreDb.batch();
+            items.forEach(item => {
+                const docId = String(item[idKey]);
+                const docRef = firestoreDb.collection(collectionName).doc(docId);
+                const data = { ...item };
+                delete data[idKey];
+                batch.set(docRef, data);
+            });
+            await batch.commit();
+            console.log(`Seeded ${items.length} documents into Firebase collection: ${collectionName}`);
+        };
+
+        if (backupData.inventory) await writeBatch('inventory', backupData.inventory, 'id');
+        if (backupData.sales) await writeBatch('sales', backupData.sales, 'id');
+        if (backupData.orders) await writeBatch('orders', backupData.orders, 'id');
+        if (backupData.customers) await writeBatch('customers', backupData.customers, 'id');
+        if (backupData.categories) await writeBatch('categories', backupData.categories, 'id');
+        if (backupData.notes) await writeBatch('notes', backupData.notes, 'id');
+        if (backupData.expenses) await writeBatch('expenses', backupData.expenses, 'id');
+
+        console.log("Firebase seeding completed successfully!");
+    } catch (err) {
+        console.error("Failed to seed Firebase Firestore:", err);
+    }
+}
+
+// Helper functions for SQLite queries to support promises
 const runQuery = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.run(sql, params, function(err) {
@@ -240,12 +421,770 @@ const allQuery = (sql, params = []) => {
     });
 };
 
+// --- WIRELESS PHONE BARCODE SCANNER REAL-TIME ENDPOINTS ---
+const os = require('os');
+
+function getLocalIpAddress() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+}
+
+let scannerSSEClients = [];
+
+app.get('/api/network-ip', (req, res) => {
+    const ip = getLocalIpAddress();
+    const port = PORT;
+    res.json({ ip, port, scannerUrl: `http://${ip}:${port}/scanner.html` });
+});
+
+app.get('/api/scanner/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    scannerSSEClients.push(res);
+    console.log(`[Scanner SSE] PC POS Client connected. Active clients: ${scannerSSEClients.length}`);
+
+    req.on('close', () => {
+        scannerSSEClients = scannerSSEClients.filter(client => client !== res);
+        console.log(`[Scanner SSE] PC POS Client disconnected. Active clients: ${scannerSSEClients.length}`);
+    });
+});
+
+app.post('/api/scanner/scan', (req, res) => {
+    const { barcode } = req.body;
+    if (!barcode) {
+        return res.status(400).json({ error: 'Barcode is required' });
+    }
+
+    const cleanBarcode = String(barcode).trim();
+    console.log(`[Scanner API] Received barcode from phone: "${cleanBarcode}"`);
+
+    const payload = JSON.stringify({ barcode: cleanBarcode, timestamp: Date.now() });
+    scannerSSEClients.forEach(client => {
+        try {
+            client.write(`data: ${payload}\n\n`);
+        } catch(e) {}
+    });
+
+    res.json({ success: true, barcode: cleanBarcode, clientsNotified: scannerSSEClients.length });
+});
+
+let realtimeSSEClients = [];
+
+app.get('/api/realtime/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    realtimeSSEClients.push(res);
+
+    req.on('close', () => {
+        realtimeSSEClients = realtimeSSEClients.filter(client => client !== res);
+    });
+});
+
+function broadcastRealtimeEvent(event, data = {}) {
+    const payload = JSON.stringify({ event, data, timestamp: Date.now() });
+    realtimeSSEClients.forEach(client => {
+        try {
+            client.write(`data: ${payload}\n\n`);
+        } catch(e) {}
+    });
+}
+
+// Database Abstraction Layer (DB Service)
+const dbService = {
+    isFirebase: () => firestoreDb !== null,
+
+    // Notes
+    getNotes: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('notes').orderBy('date', 'desc').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            return await allQuery("SELECT * FROM notes ORDER BY date DESC");
+        }
+    },
+    addNote: async (note) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                title: note.title,
+                content: note.content,
+                date: note.date || new Date().toISOString()
+            };
+            const docRef = await firestoreDb.collection('notes').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                "INSERT INTO notes (title, content, date) VALUES (?, ?, ?)",
+                [note.title, note.content, note.date || new Date().toISOString()]
+            );
+            return { id: result.lastID };
+        }
+    },
+    deleteNote: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('notes').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM notes WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Orders
+    getOrders: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('orders').orderBy('date', 'desc').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            const rows = await allQuery("SELECT * FROM orders ORDER BY date DESC");
+            return rows.map(r => {
+                let parsedItems = [];
+                if (r.items) {
+                    if (typeof r.items === 'string') {
+                        try { parsedItems = JSON.parse(r.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(r.items)) {
+                        parsedItems = r.items;
+                    }
+                }
+                return {
+                    ...r,
+                    items: parsedItems
+                };
+            });
+        }
+    },
+    getOrder: async (id) => {
+        if (dbService.isFirebase()) {
+            const doc = await firestoreDb.collection('orders').doc(String(id)).get();
+            return doc.exists ? { id: doc.id, ...doc.data() } : null;
+        } else {
+            const row = await getQuery("SELECT * FROM orders WHERE id = ?", [id]);
+            if (row) {
+                let parsedItems = [];
+                if (row.items) {
+                    if (typeof row.items === 'string') {
+                        try { parsedItems = JSON.parse(row.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(row.items)) {
+                        parsedItems = row.items;
+                    }
+                }
+                row.items = parsedItems;
+            }
+            return row || null;
+        }
+    },
+    addOrder: async (o) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                orderId: o.orderId || '',
+                customer: o.customer || '',
+                phone: o.phone || '',
+                address: o.address || '',
+                items: o.items || [],
+                total: Number(o.total) || 0,
+                status: o.status || 'Pending',
+                deliveryStatus: o.deliveryStatus || 'Pending',
+                deliveryMethod: o.deliveryMethod || '',
+                paymentStatus: o.paymentStatus || 'unpaid',
+                paymentMethod: o.paymentMethod || 'cash',
+                date: o.date || new Date().toISOString(),
+                buyTotal: Number(o.buyTotal) || 0,
+                discount: Number(o.discount) || 0,
+                delivery: Number(o.delivery) || 0,
+                loyaltyDiscount: Number(o.loyaltyDiscount) || 0,
+                cardDiscount: Number(o.cardDiscount) || 0,
+                customerId: o.customerId || 'Guest',
+                weight: o.weight || '',
+                trackingNo: o.trackingNo || '',
+                city: o.city || '',
+                advancePaid: Number(o.advancePaid) || 0,
+                balanceDue: Number(o.balanceDue) || 0,
+                received: Number(o.received) || 0,
+                balance: Number(o.balance) || 0,
+                pointsEarned: Number(o.pointsEarned) || 0,
+                totalPoints: Number(o.totalPoints) || 0
+            };
+            const docRef = await firestoreDb.collection('orders').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                `INSERT INTO orders (orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, paymentMethod, date, buyTotal, discount, delivery, loyaltyDiscount, cardDiscount, customerId, weight, trackingNo, city, advancePaid, balanceDue, received, balance, pointsEarned, totalPoints)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total,
+                    o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.paymentMethod || 'cash', o.date || new Date().toISOString(),
+                    o.buyTotal, o.discount, o.delivery, o.loyaltyDiscount, o.cardDiscount || 0, o.customerId, o.weight || '', o.trackingNo || '', o.city || '',
+                    Number(o.advancePaid) || 0, Number(o.balanceDue) || 0, Number(o.received) || 0, Number(o.balance) || 0,
+                    Number(o.pointsEarned) || 0, Number(o.totalPoints) || 0
+                ]
+            );
+            return { id: result.lastID };
+        }
+    },
+    updateOrder: async (id, o) => {
+        if (dbService.isFirebase()) {
+            const cleanData = {};
+            const VALID_COLS = ['orderId','customer','phone','address','items','total','status','deliveryStatus','deliveryMethod','paymentStatus','paymentMethod','date','buyTotal','discount','delivery','loyaltyDiscount','cardDiscount','customerId','weight','trackingNo','city','advancePaid','balanceDue','received','balance','pointsEarned','totalPoints'];
+            for (const [key, val] of Object.entries(o)) {
+                if (VALID_COLS.includes(key)) {
+                    cleanData[key] = val;
+                }
+            }
+            await firestoreDb.collection('orders').doc(String(id)).update(cleanData);
+            return { success: true };
+        } else {
+            const VALID_COLS = ['orderId','customer','phone','address','items','total','status','deliveryStatus','deliveryMethod','paymentStatus','paymentMethod','date','buyTotal','discount','delivery','loyaltyDiscount','cardDiscount','customerId','weight','trackingNo','city','advancePaid','balanceDue','received','balance','pointsEarned','totalPoints'];
+            const updates = [];
+            const params = [];
+            for (const [key, val] of Object.entries(o)) {
+                if (key === 'id' || !VALID_COLS.includes(key)) continue;
+                updates.push(`${key} = ?`);
+                params.push(key === 'items' ? JSON.stringify(val) : val);
+            }
+            params.push(id);
+            if (updates.length > 0) {
+                params.push(id);
+                await runQuery(`UPDATE orders SET ${updates.join(', ')} WHERE id = ? OR orderId = ?`, params);
+            }
+            return { success: true };
+        }
+    },
+    deleteOrder: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('orders').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM orders WHERE id = ? OR orderId = ?", [id, id]);
+            return { success: true };
+        }
+    },
+
+    // Settings
+    getSetting: async (key) => {
+        if (dbService.isFirebase()) {
+            const doc = await firestoreDb.collection('settings').doc(key).get();
+            return doc.exists ? doc.data().value : null;
+        } else {
+            const row = await getQuery("SELECT value FROM settings WHERE key = ?", [key]);
+            return row ? row.value : null;
+        }
+    },
+    setSetting: async (key, value) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('settings').doc(key).set({ value });
+            return { success: true };
+        } else {
+            await runQuery("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, value]);
+            return { success: true };
+        }
+    },
+
+    // Inventory
+    getInventory: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('inventory').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            const rows = await allQuery("SELECT * FROM inventory");
+            return rows.map(r => ({
+                ...r,
+                packageItems: r.packageItems ? JSON.parse(r.packageItems) : null
+            }));
+        }
+    },
+    getItem: async (id) => {
+        if (dbService.isFirebase()) {
+            const doc = await firestoreDb.collection('inventory').doc(String(id)).get();
+            return doc.exists ? { id: doc.id, ...doc.data() } : null;
+        } else {
+            const row = await getQuery("SELECT * FROM inventory WHERE id = ?", [id]);
+            if (row) {
+                row.packageItems = row.packageItems ? JSON.parse(row.packageItems) : null;
+            }
+            return row || null;
+        }
+    },
+    addItem: async (i) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                name: i.name || '',
+                category: i.category || '',
+                type: i.type || '',
+                stock: Number(i.stock) || 0,
+                buyPrice: Number(i.buyPrice) || 0,
+                sellPrice: Number(i.sellPrice) || 0,
+                size: i.size || '',
+                packageItems: i.packageItems || null
+            };
+            const docRef = await firestoreDb.collection('inventory').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                `INSERT INTO inventory (name, category, type, stock, buyPrice, sellPrice, size, packageItems)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [i.name, i.category, i.type, i.stock, i.buyPrice, i.sellPrice, i.size, JSON.stringify(i.packageItems || null)]
+            );
+            return { id: result.lastID };
+        }
+    },
+    updateItem: async (id, i) => {
+        if (dbService.isFirebase()) {
+            const cleanData = {};
+            const VALID_KEYS = ['name', 'category', 'type', 'stock', 'buyPrice', 'sellPrice', 'size', 'packageItems'];
+            for (const [key, val] of Object.entries(i)) {
+                if (VALID_KEYS.includes(key)) {
+                    cleanData[key] = val;
+                }
+            }
+            await firestoreDb.collection('inventory').doc(String(id)).update(cleanData);
+            return { success: true };
+        } else {
+            const updates = [];
+            const params = [];
+            for (const [key, val] of Object.entries(i)) {
+                if (key === 'id') continue;
+                updates.push(`${key} = ?`);
+                params.push(key === 'packageItems' ? JSON.stringify(val) : val);
+            }
+            params.push(id);
+            if (updates.length > 0) {
+                await runQuery(`UPDATE inventory SET ${updates.join(', ')} WHERE id = ?`, params);
+            }
+            return { success: true };
+        }
+    },
+    deleteItem: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('inventory').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM inventory WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Sales
+    getSales: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('sales').orderBy('date', 'desc').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            const rows = await allQuery("SELECT * FROM sales ORDER BY date DESC");
+            return rows.map(r => {
+                let parsedItems = [];
+                if (r.items) {
+                    if (typeof r.items === 'string') {
+                        try { parsedItems = JSON.parse(r.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(r.items)) {
+                        parsedItems = r.items;
+                    }
+                }
+                return {
+                    ...r,
+                    items: parsedItems
+                };
+            });
+        }
+    },
+    getSale: async (id) => {
+        if (dbService.isFirebase()) {
+            const doc = await firestoreDb.collection('sales').doc(String(id)).get();
+            return doc.exists ? { id: doc.id, ...doc.data() } : null;
+        } else {
+            const row = await getQuery("SELECT * FROM sales WHERE id = ?", [id]);
+            if (row) {
+                let parsedItems = [];
+                if (row.items) {
+                    if (typeof row.items === 'string') {
+                        try { parsedItems = JSON.parse(row.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(row.items)) {
+                        parsedItems = row.items;
+                    }
+                }
+                row.items = parsedItems;
+            }
+            return row || null;
+        }
+    },
+    addSale: async (s) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                total: Number(s.total) || 0,
+                buyTotal: Number(s.buyTotal) || 0,
+                date: s.date || new Date().toISOString(),
+                customer: s.customer || 'Guest',
+                paymentMethod: s.paymentMethod || 'cash',
+                items: s.items || [],
+                discount: Number(s.discount) || 0,
+                delivery: Number(s.delivery) || 0,
+                loyaltyDiscount: Number(s.loyaltyDiscount) || 0,
+                cardDiscount: Number(s.cardDiscount) || 0,
+                customerId: s.customerId || 'Guest',
+                customerPhone: s.customerPhone || 'N/A',
+                orderId: s.orderId || '',
+                received: Number(s.received) || 0,
+                balance: Number(s.balance) || 0,
+                weight: s.weight || '',
+                trackingNo: s.trackingNo || '',
+                deliveryMethod: s.deliveryMethod || '',
+                address: s.address || '',
+                city: s.city || '',
+                advancePaid: s.advancePaid !== undefined && s.advancePaid !== null && s.advancePaid !== '' ? Number(s.advancePaid) : null,
+                balanceDue: s.balanceDue !== undefined && s.balanceDue !== null && s.balanceDue !== '' ? Number(s.balanceDue) : null,
+                pointsEarned: Number(s.pointsEarned) || 0,
+                totalPoints: Number(s.totalPoints) || 0
+            };
+            const docRef = await firestoreDb.collection('sales').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                `INSERT INTO sales (total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, cardDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance, advancePaid, balanceDue, pointsEarned, totalPoints)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    s.total, s.buyTotal, s.date || new Date().toISOString(), s.customer, s.paymentMethod,
+                    JSON.stringify(s.items || []), s.discount, s.delivery, s.loyaltyDiscount, s.cardDiscount || 0, s.customerId, s.customerPhone, s.orderId,
+                    s.weight || '', s.trackingNo || '', s.deliveryMethod || '', s.address || '', s.city || '', s.received || 0, s.balance || 0,
+                    (s.advancePaid !== undefined && s.advancePaid !== null && s.advancePaid !== '') ? Number(s.advancePaid) : null,
+                    (s.balanceDue !== undefined && s.balanceDue !== null && s.balanceDue !== '') ? Number(s.balanceDue) : null,
+                    Number(s.pointsEarned) || 0, Number(s.totalPoints) || 0
+                ]
+            );
+            return { id: result.lastID };
+        }
+    },
+    updateSale: async (id, s) => {
+        if (dbService.isFirebase()) {
+            const cleanData = {};
+            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
+            for (const [key, val] of Object.entries(s)) {
+                if (VALID_COLS.includes(key)) {
+                    cleanData[key] = val;
+                }
+            }
+            await firestoreDb.collection('sales').doc(String(id)).update(cleanData);
+            return { success: true };
+        } else {
+            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
+            const updates = [];
+            const params = [];
+            for (const [key, val] of Object.entries(s)) {
+                if (key === 'id' || !VALID_COLS.includes(key)) continue;
+                updates.push(`${key} = ?`);
+                params.push(key === 'items' ? JSON.stringify(val) : val);
+            }
+            params.push(id);
+            if (updates.length > 0) {
+                await runQuery(`UPDATE sales SET ${updates.join(', ')} WHERE id = ?`, params);
+            }
+            return { success: true };
+        }
+    },
+    deleteSale: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('sales').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM sales WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Customers
+    getCustomers: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('customers').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            return await allQuery("SELECT * FROM customers");
+        }
+    },
+    addCustomer: async (c) => {
+        if (dbService.isFirebase()) {
+            // Generate customer ID based on count
+            const snapshot = await firestoreDb.collection('customers').get();
+            const count = snapshot.size;
+            const shortId = 'CUS-' + (100 + count + 1);
+
+            const data = {
+                custId: shortId,
+                name: c.name || '',
+                phone: c.phone || '',
+                address: c.address || '',
+                totalOrders: Number(c.totalOrders) || 0,
+                totalSpent: Number(c.totalSpent) || 0,
+                isBlacklisted: c.isBlacklisted ? 1 : 0,
+                loyaltyPoints: Number(c.loyaltyPoints) || 0,
+                profilePic: c.profilePic || ''
+            };
+            const docRef = await firestoreDb.collection('customers').add(data);
+            return { id: docRef.id, custId: shortId };
+        } else {
+            const countRow = await getQuery("SELECT COUNT(*) as count FROM customers");
+            const count = countRow ? countRow.count : 0;
+            const shortId = 'CUS-' + (100 + count + 1);
+
+            const result = await runQuery(
+                `INSERT INTO customers (custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    shortId, c.name, c.phone, c.address,
+                    c.totalOrders || 0, c.totalSpent || 0, c.isBlacklisted ? 1 : 0, c.loyaltyPoints || 0, c.profilePic
+                ]
+            );
+            return { id: result.lastID, custId: shortId };
+        }
+    },
+    updateCustomer: async (id, c) => {
+        if (dbService.isFirebase()) {
+            const oldCustDoc = await firestoreDb.collection('customers').doc(String(id)).get();
+            const oldCust = oldCustDoc.exists ? oldCustDoc.data() : null;
+
+            const cleanData = {};
+            const VALID_KEYS = ['name', 'phone', 'address', 'totalOrders', 'totalSpent', 'isBlacklisted', 'loyaltyPoints', 'profilePic'];
+            for (const [key, val] of Object.entries(c)) {
+                if (VALID_KEYS.includes(key)) {
+                    cleanData[key] = key === 'isBlacklisted' ? (val ? 1 : 0) : val;
+                }
+            }
+            await firestoreDb.collection('customers').doc(String(id)).update(cleanData);
+
+            if (oldCust && c.name && c.name !== oldCust.name) {
+                const salesSnapshot = await firestoreDb.collection('sales').where('customerId', '==', oldCust.custId).get();
+                const salesBatch = firestoreDb.batch();
+                salesSnapshot.docs.forEach(doc => {
+                    salesBatch.update(doc.ref, { customer: c.name, customerPhone: c.phone || doc.data().customerPhone || '' });
+                });
+                await salesBatch.commit();
+
+                const ordersSnapshot = await firestoreDb.collection('orders').where('customerId', '==', oldCust.custId).get();
+                const ordersBatch = firestoreDb.batch();
+                ordersSnapshot.docs.forEach(doc => {
+                    ordersBatch.update(doc.ref, { customer: c.name, phone: c.phone || doc.data().phone || '' });
+                });
+                await ordersBatch.commit();
+            }
+            return { success: true };
+        } else {
+            const oldCust = await getQuery("SELECT name, custId, phone FROM customers WHERE id = ?", [id]);
+
+            const updates = [];
+            const params = [];
+            for (const [key, val] of Object.entries(c)) {
+                if (key === 'id') continue;
+                updates.push(`${key} = ?`);
+                params.push(key === 'isBlacklisted' ? (val ? 1 : 0) : val);
+            }
+            params.push(id);
+            if (updates.length > 0) {
+                await runQuery(`UPDATE customers SET ${updates.join(', ')} WHERE id = ?`, params);
+            }
+
+            if (oldCust && c.name && c.name !== oldCust.name) {
+                await runQuery("UPDATE sales SET customer = ? WHERE customerId = ? OR (customerId IS NULL AND customer = ?)", [c.name, oldCust.custId, oldCust.name]);
+                await runQuery("UPDATE orders SET customer = ? WHERE customerId = ? OR (customerId IS NULL AND customer = ?)", [c.name, oldCust.custId, oldCust.name]);
+            }
+            if (oldCust && c.phone && c.phone !== oldCust.phone) {
+                await runQuery("UPDATE sales SET customerPhone = ? WHERE customerId = ?", [c.phone, oldCust.custId]);
+                await runQuery("UPDATE orders SET phone = ? WHERE customerId = ?", [c.phone, oldCust.custId]);
+            }
+            return { success: true };
+        }
+    },
+    deleteCustomer: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('customers').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM customers WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Categories
+    getCategories: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('categories').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            return await allQuery("SELECT * FROM categories");
+        }
+    },
+    addCategory: async (c) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                name: c.name || '',
+                description: c.description || ''
+            };
+            const docRef = await firestoreDb.collection('categories').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery("INSERT INTO categories (name, description) VALUES (?, ?)", [c.name, c.description]);
+            return { id: result.lastID };
+        }
+    },
+    deleteCategory: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('categories').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM categories WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Expenses
+    getExpenses: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('expenses').orderBy('date', 'desc').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            return await allQuery("SELECT * FROM expenses ORDER BY date DESC");
+        }
+    },
+    addExpense: async (e) => {
+        if (dbService.isFirebase()) {
+            const data = {
+                reason: e.reason || '',
+                amount: Number(e.amount) || 0,
+                date: e.date || new Date().toISOString()
+            };
+            const docRef = await firestoreDb.collection('expenses').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                "INSERT INTO expenses (reason, amount, date) VALUES (?, ?, ?)",
+                [e.reason, e.amount, e.date || new Date().toISOString()]
+            );
+            return { id: result.lastID };
+        }
+    },
+    deleteExpense: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('expenses').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM expenses WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Waybills
+    getWaybills: async () => {
+        if (dbService.isFirebase()) {
+            const snapshot = await firestoreDb.collection('waybills').orderBy('date', 'desc').get();
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } else {
+            const rows = await allQuery("SELECT * FROM waybills ORDER BY id DESC");
+            return rows.map(r => ({
+                ...r,
+                items: r.items ? (typeof r.items === 'string' ? JSON.parse(r.items) : r.items) : []
+            }));
+        }
+    },
+    addWaybill: async (w) => {
+        const itemsJson = typeof w.items === 'object' ? JSON.stringify(w.items) : (w.items || '[]');
+        if (dbService.isFirebase()) {
+            const data = {
+                orderId: w.orderId || '',
+                trackingNo: w.trackingNo || '',
+                date: w.date || new Date().toISOString(),
+                senderName: w.senderName || 'Roohira Collection',
+                senderAddress: w.senderAddress || '65/11,Sooriyapaluwa,Eldeniya,Kadawatha',
+                senderPhone1: w.senderPhone1 || '075 721 8786',
+                senderPhone2: w.senderPhone2 || '072 905 7972',
+                senderPostcode: w.senderPostcode || '11850',
+                recipientName: w.recipientName || '',
+                recipientPhone1: w.recipientPhone1 || '',
+                recipientPhone2: w.recipientPhone2 || '',
+                recipientAddress: w.recipientAddress || '',
+                recipientCity: w.recipientCity || '',
+                weight: w.weight || '0.5kg',
+                courier: w.courier || '',
+                specialNotice: w.specialNotice || '',
+                paymentMethod: w.paymentMethod || 'COD',
+                totalAmount: Number(w.totalAmount) || 0,
+                advancePaid: Number(w.advancePaid) || 0,
+                amountToCollect: Number(w.amountToCollect) || 0,
+                items: w.items || [],
+                status: w.status || 'Generated'
+            };
+            const docRef = await firestoreDb.collection('waybills').add(data);
+            return { id: docRef.id };
+        } else {
+            const result = await runQuery(
+                `INSERT INTO waybills (
+                    orderId, trackingNo, date, senderName, senderAddress, senderPhone1, senderPhone2,
+                    senderPostcode, recipientName, recipientPhone1, recipientPhone2, recipientAddress,
+                    recipientCity, weight, courier, specialNotice, paymentMethod, totalAmount,
+                    advancePaid, amountToCollect, items, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    w.orderId || '',
+                    w.trackingNo || '',
+                    w.date || new Date().toISOString(),
+                    w.senderName || 'Roohira Collection',
+                    w.senderAddress || '65/11,Sooriyapaluwa,Eldeniya,Kadawatha',
+                    w.senderPhone1 || '075 721 8786',
+                    w.senderPhone2 || '072 905 7972',
+                    w.senderPostcode || '11850',
+                    w.recipientName || '',
+                    w.recipientPhone1 || '',
+                    w.recipientPhone2 || '',
+                    w.recipientAddress || '',
+                    w.recipientCity || '',
+                    w.weight || '0.5kg',
+                    w.courier || '',
+                    w.specialNotice || '',
+                    w.paymentMethod || 'COD',
+                    Number(w.totalAmount) || 0,
+                    Number(w.advancePaid) || 0,
+                    Number(w.amountToCollect) || 0,
+                    itemsJson,
+                    w.status || 'Generated'
+                ]
+            );
+            return { id: result.lastID };
+        }
+    },
+    deleteWaybill: async (id) => {
+        if (dbService.isFirebase()) {
+            await firestoreDb.collection('waybills').doc(String(id)).delete();
+            return { success: true };
+        } else {
+            await runQuery("DELETE FROM waybills WHERE id = ?", [id]);
+            return { success: true };
+        }
+    },
+
+    // Users (Auth)
+    getUser: async (username) => {
+        if (dbService.isFirebase()) {
+            const doc = await firestoreDb.collection('users').doc(username).get();
+            return doc.exists ? doc.data() : null;
+        } else {
+            return await getQuery("SELECT * FROM users WHERE username = ?", [username]);
+        }
+    }
+};
+
 // API Endpoints
 
 // ---------------- NOTES ----------------
 app.get('/api/notes', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM notes ORDER BY date DESC");
+        const rows = await dbService.getNotes();
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -254,12 +1193,9 @@ app.get('/api/notes', async (req, res) => {
 
 app.post('/api/notes', async (req, res) => {
     try {
-        const { title, content, date } = req.body;
-        const result = await runQuery(
-            "INSERT INTO notes (title, content, date) VALUES (?, ?, ?)",
-            [title, content, date || new Date().toISOString()]
-        );
-        res.json({ id: result.lastID });
+        const result = await dbService.addNote(req.body);
+        broadcastRealtimeEvent('notes_changed', { type: 'add' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -267,8 +1203,9 @@ app.post('/api/notes', async (req, res) => {
 
 app.delete('/api/notes/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM notes WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteNote(req.params.id);
+        broadcastRealtimeEvent('notes_changed', { type: 'delete' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -277,12 +1214,8 @@ app.delete('/api/notes/:id', async (req, res) => {
 // ---------------- ORDERS ----------------
 app.get('/api/orders', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM orders ORDER BY date DESC");
-        const parsed = rows.map(r => ({
-            ...r,
-            items: r.items ? JSON.parse(r.items) : []
-        }));
-        res.json(parsed);
+        const rows = await dbService.getOrders();
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -290,11 +1223,8 @@ app.get('/api/orders', async (req, res) => {
 
 app.get('/api/orders/:id', async (req, res) => {
     try {
-        const row = await getQuery("SELECT * FROM orders WHERE id = ?", [req.params.id]);
-        if (row) {
-            row.items = row.items ? JSON.parse(row.items) : [];
-        }
-        res.json(row || null);
+        const row = await dbService.getOrder(req.params.id);
+        res.json(row);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -302,17 +1232,10 @@ app.get('/api/orders/:id', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
     try {
-        const o = req.body;
-        const result = await runQuery(
-            `INSERT INTO orders (orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date, buyTotal, discount, delivery, loyaltyDiscount, customerId)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total,
-                o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.date || new Date().toISOString(),
-                o.buyTotal, o.discount, o.delivery, o.loyaltyDiscount, o.customerId
-            ]
-        );
-        res.json({ id: result.lastID });
+        const result = await dbService.addOrder(req.body);
+        broadcastRealtimeEvent('orders_changed', { type: 'add', id: result });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -320,19 +1243,10 @@ app.post('/api/orders', async (req, res) => {
 
 app.put('/api/orders/:id', async (req, res) => {
     try {
-        const o = req.body;
-        const updates = [];
-        const params = [];
-        for (const [key, val] of Object.entries(o)) {
-            if (key === 'id') continue;
-            updates.push(`${key} = ?`);
-            params.push(key === 'items' ? JSON.stringify(val) : val);
-        }
-        params.push(req.params.id);
-        if (updates.length > 0) {
-            await runQuery(`UPDATE orders SET ${updates.join(', ')} WHERE id = ?`, params);
-        }
-        res.json({ success: true });
+        const result = await dbService.updateOrder(req.params.id, req.body);
+        broadcastRealtimeEvent('orders_changed', { type: 'update', id: req.params.id });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -340,8 +1254,10 @@ app.put('/api/orders/:id', async (req, res) => {
 
 app.delete('/api/orders/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM orders WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteOrder(req.params.id);
+        broadcastRealtimeEvent('orders_changed', { type: 'delete', id: req.params.id });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -350,8 +1266,8 @@ app.delete('/api/orders/:id', async (req, res) => {
 // ---------------- SETTINGS ----------------
 app.get('/api/settings/:key', async (req, res) => {
     try {
-        const row = await getQuery("SELECT value FROM settings WHERE key = ?", [req.params.key]);
-        res.json(row ? row.value : null);
+        const value = await dbService.getSetting(req.params.key);
+        res.json(value);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -360,8 +1276,9 @@ app.get('/api/settings/:key', async (req, res) => {
 app.post('/api/settings', async (req, res) => {
     try {
         const { key, value } = req.body;
-        await runQuery("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, value]);
-        res.json({ success: true });
+        const result = await dbService.setSetting(key, value);
+        broadcastRealtimeEvent('settings_changed', { key });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -370,12 +1287,8 @@ app.post('/api/settings', async (req, res) => {
 // ---------------- INVENTORY ----------------
 app.get('/api/inventory', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM inventory");
-        const parsed = rows.map(r => ({
-            ...r,
-            packageItems: r.packageItems ? JSON.parse(r.packageItems) : null
-        }));
-        res.json(parsed);
+        const rows = await dbService.getInventory();
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -383,11 +1296,8 @@ app.get('/api/inventory', async (req, res) => {
 
 app.get('/api/inventory/:id', async (req, res) => {
     try {
-        const row = await getQuery("SELECT * FROM inventory WHERE id = ?", [req.params.id]);
-        if (row) {
-            row.packageItems = row.packageItems ? JSON.parse(row.packageItems) : null;
-        }
-        res.json(row || null);
+        const row = await dbService.getItem(req.params.id);
+        res.json(row);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -395,13 +1305,9 @@ app.get('/api/inventory/:id', async (req, res) => {
 
 app.post('/api/inventory', async (req, res) => {
     try {
-        const i = req.body;
-        const result = await runQuery(
-            `INSERT INTO inventory (name, category, type, stock, buyPrice, sellPrice, size, packageItems)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [i.name, i.category, i.type, i.stock, i.buyPrice, i.sellPrice, i.size, JSON.stringify(i.packageItems || null)]
-        );
-        res.json({ id: result.lastID });
+        const result = await dbService.addItem(req.body);
+        broadcastRealtimeEvent('inventory_changed', { type: 'add' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -409,19 +1315,9 @@ app.post('/api/inventory', async (req, res) => {
 
 app.put('/api/inventory/:id', async (req, res) => {
     try {
-        const i = req.body;
-        const updates = [];
-        const params = [];
-        for (const [key, val] of Object.entries(i)) {
-            if (key === 'id') continue;
-            updates.push(`${key} = ?`);
-            params.push(key === 'packageItems' ? JSON.stringify(val) : val);
-        }
-        params.push(req.params.id);
-        if (updates.length > 0) {
-            await runQuery(`UPDATE inventory SET ${updates.join(', ')} WHERE id = ?`, params);
-        }
-        res.json({ success: true });
+        const result = await dbService.updateItem(req.params.id, req.body);
+        broadcastRealtimeEvent('inventory_changed', { type: 'update', id: req.params.id });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -429,8 +1325,9 @@ app.put('/api/inventory/:id', async (req, res) => {
 
 app.delete('/api/inventory/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM inventory WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteItem(req.params.id);
+        broadcastRealtimeEvent('inventory_changed', { type: 'delete', id: req.params.id });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -439,12 +1336,17 @@ app.delete('/api/inventory/:id', async (req, res) => {
 // ---------------- SALES ----------------
 app.get('/api/sales', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM sales ORDER BY date DESC");
-        const parsed = rows.map(r => ({
-            ...r,
-            items: r.items ? JSON.parse(r.items) : []
-        }));
-        res.json(parsed);
+        const rows = await dbService.getSales();
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/sales/:id', async (req, res) => {
+    try {
+        const row = await dbService.getSale(req.params.id);
+        res.json(row);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -452,16 +1354,10 @@ app.get('/api/sales', async (req, res) => {
 
 app.post('/api/sales', async (req, res) => {
     try {
-        const s = req.body;
-        const result = await runQuery(
-            `INSERT INTO sales (total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, customerId, customerPhone, orderId)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                s.total, s.buyTotal, s.date || new Date().toISOString(), s.customer, s.paymentMethod,
-                JSON.stringify(s.items || []), s.discount, s.delivery, s.loyaltyDiscount, s.customerId, s.customerPhone, s.orderId
-            ]
-        );
-        res.json({ id: result.lastID });
+        const result = await dbService.addSale(req.body);
+        broadcastRealtimeEvent('sales_changed', { type: 'add', id: result });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -469,19 +1365,10 @@ app.post('/api/sales', async (req, res) => {
 
 app.put('/api/sales/:id', async (req, res) => {
     try {
-        const s = req.body;
-        const updates = [];
-        const params = [];
-        for (const [key, val] of Object.entries(s)) {
-            if (key === 'id') continue;
-            updates.push(`${key} = ?`);
-            params.push(key === 'items' ? JSON.stringify(val) : val);
-        }
-        params.push(req.params.id);
-        if (updates.length > 0) {
-            await runQuery(`UPDATE sales SET ${updates.join(', ')} WHERE id = ?`, params);
-        }
-        res.json({ success: true });
+        const result = await dbService.updateSale(req.params.id, req.body);
+        broadcastRealtimeEvent('sales_changed', { type: 'update', id: req.params.id });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -489,8 +1376,10 @@ app.put('/api/sales/:id', async (req, res) => {
 
 app.delete('/api/sales/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM sales WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteSale(req.params.id);
+        broadcastRealtimeEvent('sales_changed', { type: 'delete', id: req.params.id });
+        broadcastRealtimeEvent('inventory_changed', { type: 'stock_update' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -499,7 +1388,7 @@ app.delete('/api/sales/:id', async (req, res) => {
 // ---------------- CUSTOMERS ----------------
 app.get('/api/customers', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM customers");
+        const rows = await dbService.getCustomers();
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -508,21 +1397,9 @@ app.get('/api/customers', async (req, res) => {
 
 app.post('/api/customers', async (req, res) => {
     try {
-        const c = req.body;
-        // Count to generate custom ID
-        const countRow = await getQuery("SELECT COUNT(*) as count FROM customers");
-        const count = countRow ? countRow.count : 0;
-        const shortId = 'CUS-' + (100 + count + 1);
-
-        const result = await runQuery(
-            `INSERT INTO customers (custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                shortId, c.name, c.phone, c.address,
-                c.totalOrders || 0, c.totalSpent || 0, c.isBlacklisted ? 1 : 0, c.loyaltyPoints || 0, c.profilePic
-            ]
-        );
-        res.json({ id: result.lastID, custId: shortId });
+        const result = await dbService.addCustomer(req.body);
+        broadcastRealtimeEvent('customers_changed', { type: 'add' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -530,19 +1407,9 @@ app.post('/api/customers', async (req, res) => {
 
 app.put('/api/customers/:id', async (req, res) => {
     try {
-        const c = req.body;
-        const updates = [];
-        const params = [];
-        for (const [key, val] of Object.entries(c)) {
-            if (key === 'id') continue;
-            updates.push(`${key} = ?`);
-            params.push(key === 'isBlacklisted' ? (val ? 1 : 0) : val);
-        }
-        params.push(req.params.id);
-        if (updates.length > 0) {
-            await runQuery(`UPDATE customers SET ${updates.join(', ')} WHERE id = ?`, params);
-        }
-        res.json({ success: true });
+        const result = await dbService.updateCustomer(req.params.id, req.body);
+        broadcastRealtimeEvent('customers_changed', { type: 'update', id: req.params.id });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -550,8 +1417,9 @@ app.put('/api/customers/:id', async (req, res) => {
 
 app.delete('/api/customers/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM customers WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteCustomer(req.params.id);
+        broadcastRealtimeEvent('customers_changed', { type: 'delete', id: req.params.id });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -560,7 +1428,7 @@ app.delete('/api/customers/:id', async (req, res) => {
 // ---------------- CATEGORIES ----------------
 app.get('/api/categories', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM categories");
+        const rows = await dbService.getCategories();
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -569,9 +1437,19 @@ app.get('/api/categories', async (req, res) => {
 
 app.post('/api/categories', async (req, res) => {
     try {
-        const { name, description } = req.body;
-        const result = await runQuery("INSERT INTO categories (name, description) VALUES (?, ?)", [name, description]);
-        res.json({ id: result.lastID });
+        const result = await dbService.addCategory(req.body);
+        broadcastRealtimeEvent('categories_changed', { type: 'add' });
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/categories/:id', async (req, res) => {
+    try {
+        const result = await dbService.deleteCategory(req.params.id);
+        broadcastRealtimeEvent('categories_changed', { type: 'delete' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -580,7 +1458,7 @@ app.post('/api/categories', async (req, res) => {
 // ---------------- EXPENSES ----------------
 app.get('/api/expenses', async (req, res) => {
     try {
-        const rows = await allQuery("SELECT * FROM expenses ORDER BY date DESC");
+        const rows = await dbService.getExpenses();
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -589,12 +1467,9 @@ app.get('/api/expenses', async (req, res) => {
 
 app.post('/api/expenses', async (req, res) => {
     try {
-        const e = req.body;
-        const result = await runQuery(
-            "INSERT INTO expenses (reason, amount, date) VALUES (?, ?, ?)",
-            [e.reason, e.amount, e.date || new Date().toISOString()]
-        );
-        res.json({ id: result.lastID });
+        const result = await dbService.addExpense(req.body);
+        broadcastRealtimeEvent('expenses_changed', { type: 'add' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -602,8 +1477,39 @@ app.post('/api/expenses', async (req, res) => {
 
 app.delete('/api/expenses/:id', async (req, res) => {
     try {
-        await runQuery("DELETE FROM expenses WHERE id = ?", [req.params.id]);
-        res.json({ success: true });
+        const result = await dbService.deleteExpense(req.params.id);
+        broadcastRealtimeEvent('expenses_changed', { type: 'delete' });
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ---------------- WAYBILLS ----------------
+app.get('/api/waybills', async (req, res) => {
+    try {
+        const rows = await dbService.getWaybills();
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/waybills', async (req, res) => {
+    try {
+        const result = await dbService.addWaybill(req.body);
+        broadcastRealtimeEvent('waybills_changed', { type: 'add' });
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/waybills/:id', async (req, res) => {
+    try {
+        const result = await dbService.deleteWaybill(req.params.id);
+        broadcastRealtimeEvent('waybills_changed', { type: 'delete' });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -616,7 +1522,7 @@ app.post('/api/auth/login', async (req, res) => {
         const cleanUser = username.trim().toLowerCase();
         const cleanPass = password.trim();
 
-        const user = await getQuery("SELECT * FROM users WHERE username = ?", [cleanUser]);
+        const user = await dbService.getUser(cleanUser);
         if (user && user.password === cleanPass) {
             res.json({
                 username: user.username,
@@ -637,92 +1543,123 @@ app.post('/api/system/restore', async (req, res) => {
     try {
         const data = req.body;
         
-        // Wrap everything in a transaction helper or run sequentially
-        db.serialize(async () => {
-            db.run("BEGIN TRANSACTION");
-            try {
-                if (data.inventory) {
-                    db.run("DELETE FROM inventory");
-                    const stmt = db.prepare("INSERT INTO inventory (id, name, category, type, stock, buyPrice, sellPrice, size, packageItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    for (const item of data.inventory) {
-                        stmt.run([item.id, item.name, item.category, item.type, item.stock, item.buyPrice, item.sellPrice, item.size, JSON.stringify(item.packageItems || null)]);
+        if (dbService.isFirebase()) {
+            await seedFirebase(data);
+            res.json({ success: true });
+        } else {
+            db.serialize(async () => {
+                db.run("BEGIN TRANSACTION");
+                try {
+                    if (data.inventory) {
+                        db.run("DELETE FROM inventory");
+                        const stmt = db.prepare("INSERT INTO inventory (id, name, category, type, stock, buyPrice, sellPrice, size, packageItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        for (const item of data.inventory) {
+                            stmt.run([item.id, item.name, item.category, item.type, item.stock, item.buyPrice, item.sellPrice, item.size, JSON.stringify(item.packageItems || null)]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.sales) {
-                    db.run("DELETE FROM sales");
-                    const stmt = db.prepare("INSERT INTO sales (id, total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, customerId, customerPhone, orderId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    for (const s of data.sales) {
-                        stmt.run([s.id, s.total, s.buyTotal, s.date, s.customer, s.paymentMethod, JSON.stringify(s.items || []), s.discount, s.delivery, s.loyaltyDiscount, s.customerId, s.customerPhone, s.orderId]);
+                    if (data.sales) {
+                        db.run("DELETE FROM sales");
+                        const stmt = db.prepare("INSERT INTO sales (id, total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        for (const s of data.sales) {
+                            stmt.run([s.id, s.total, s.buyTotal, s.date, s.customer, s.paymentMethod, JSON.stringify(s.items || []), s.discount, s.delivery, s.loyaltyDiscount, s.customerId, s.customerPhone, s.orderId, s.weight || '', s.trackingNo || '', s.deliveryMethod || '', s.address || '', s.city || '', s.received || 0, s.balance || 0]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.orders) {
-                    db.run("DELETE FROM orders");
-                    const stmt = db.prepare("INSERT INTO orders (id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date, buyTotal, discount, delivery, loyaltyDiscount, customerId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    for (const o of data.orders) {
-                        stmt.run([o.id, o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total, o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.date, o.buyTotal, o.discount, o.delivery, o.loyaltyDiscount, o.customerId]);
+                    if (data.orders) {
+                        db.run("DELETE FROM orders");
+                        const stmt = db.prepare("INSERT INTO orders (id, orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, date, buyTotal, discount, delivery, loyaltyDiscount, customerId, weight, trackingNo, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        for (const o of data.orders) {
+                            stmt.run([o.id, o.orderId, o.customer, o.phone, o.address, JSON.stringify(o.items || []), o.total, o.status, o.deliveryStatus, o.deliveryMethod, o.paymentStatus, o.date, o.buyTotal, o.discount, o.delivery, o.loyaltyDiscount, o.customerId, o.weight || '', o.trackingNo || '', o.city || '']);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.customers) {
-                    db.run("DELETE FROM customers");
-                    const stmt = db.prepare("INSERT INTO customers (id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    for (const c of data.customers) {
-                        stmt.run([c.id, c.custId, c.name, c.phone, c.address, c.totalOrders, c.totalSpent, c.isBlacklisted ? 1 : 0, c.loyaltyPoints, c.profilePic]);
+                    if (data.customers) {
+                        db.run("DELETE FROM customers");
+                        const stmt = db.prepare("INSERT INTO customers (id, custId, name, phone, address, totalOrders, totalSpent, isBlacklisted, loyaltyPoints, profilePic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        for (const c of data.customers) {
+                            stmt.run([c.id, c.custId, c.name, c.phone, c.address, c.totalOrders, c.totalSpent, c.isBlacklisted ? 1 : 0, c.loyaltyPoints, c.profilePic]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.categories) {
-                    db.run("DELETE FROM categories");
-                    const stmt = db.prepare("INSERT INTO categories (id, name, description) VALUES (?, ?, ?)");
-                    for (const c of data.categories) {
-                        stmt.run([c.id, c.name, c.description]);
+                    if (data.categories) {
+                        db.run("DELETE FROM categories");
+                        const stmt = db.prepare("INSERT INTO categories (id, name, description) VALUES (?, ?, ?)");
+                        for (const c of data.categories) {
+                            stmt.run([c.id, c.name, c.description]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.notes) {
-                    db.run("DELETE FROM notes");
-                    const stmt = db.prepare("INSERT INTO notes (id, title, content, date) VALUES (?, ?, ?, ?)");
-                    for (const n of data.notes) {
-                        stmt.run([n.id, n.title, n.content, n.date]);
+                    if (data.notes) {
+                        db.run("DELETE FROM notes");
+                        const stmt = db.prepare("INSERT INTO notes (id, title, content, date) VALUES (?, ?, ?, ?)");
+                        for (const n of data.notes) {
+                            stmt.run([n.id, n.title, n.content, n.date]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
-                }
-                if (data.expenses) {
-                    db.run("DELETE FROM expenses");
-                    const stmt = db.prepare("INSERT INTO expenses (id, reason, amount, date) VALUES (?, ?, ?, ?)");
-                    for (const e of data.expenses) {
-                        stmt.run([e.id, e.reason, e.amount, e.date]);
+                    if (data.expenses) {
+                        db.run("DELETE FROM expenses");
+                        const stmt = db.prepare("INSERT INTO expenses (id, reason, amount, date) VALUES (?, ?, ?, ?)");
+                        for (const e of data.expenses) {
+                            stmt.run([e.id, e.reason, e.amount, e.date]);
+                        }
+                        stmt.finalize();
                     }
-                    stmt.finalize();
+                    db.run("COMMIT");
+                    res.json({ success: true });
+                } catch (txErr) {
+                    db.run("ROLLBACK");
+                    console.error("Restore transaction failed:", txErr);
+                    res.status(500).json({ error: txErr.message });
                 }
-                db.run("COMMIT");
-                res.json({ success: true });
-            } catch (txErr) {
-                db.run("ROLLBACK");
-                console.error("Restore transaction failed:", txErr);
-                res.status(500).json({ error: txErr.message });
-            }
-        });
+            });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// ---------------- SERVER INFO (Network IP & Cloud Domain) ----------------
+app.get('/api/server-info', (req, res) => {
+    const os = require('os');
+    const interfaces = os.networkInterfaces();
+    const ips = [];
+    for (const name in interfaces) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                ips.push(iface.address);
+            }
+        }
+    }
+    const cloudDomain = 'distant-oxygen-vice.ngrok-free.dev';
+    res.json({
+        port: PORT,
+        ips,
+        localhost: `http://localhost:${PORT}`,
+        mobile: `http://${ips[0] || 'localhost'}:${PORT}/mobile.html`,
+        cloudUrl: `https://${cloudDomain}`,
+        cloudMobile: `https://${cloudDomain}/mobile.html`
+    });
+});
+
+// Mobile App Route
+app.get('/mobile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'mobile.html'));
 });
 
 // Start Server
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running locally at http://localhost:${PORT}`);
     
-    // Print local network IP addresses so other devices on the same Wi-Fi can connect
     const os = require('os');
     const networkInterfaces = os.networkInterfaces();
     for (const interfaceName in networkInterfaces) {
         const interfaces = networkInterfaces[interfaceName];
         for (const iface of interfaces) {
-            // Skip over non-IPv4 and internal (127.0.0.1) addresses
             if (iface.family === 'IPv4' && !iface.internal) {
-                console.log(`Access from other devices on the same network: http://${iface.address}:${PORT}`);
+                console.log(`Access from PC/Browser: http://${iface.address}:${PORT}`);
+                console.log(`📱 Access Mobile App from Phone: http://${iface.address}:${PORT}/mobile.html`);
             }
         }
     }

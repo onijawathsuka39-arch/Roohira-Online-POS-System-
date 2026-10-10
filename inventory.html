@@ -71,6 +71,10 @@
                 <i class="fas fa-file-invoice"></i>
                 <span>Orders</span>
             </a>
+            <a href="waybill.html" class="nav-item">
+                <i class="fas fa-truck-fast"></i>
+                <span>Waybill Generator</span>
+            </a>
             <a href="inventory.html" class="nav-item active">
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
@@ -127,6 +131,10 @@
                 <button class="btn btn-secondary" onclick="themeManager.toggle()"
                     style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-secondary fullscreen-btn" onclick="themeManager.toggleFullscreen()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Full Screen">
+                    <i class="fas fa-expand fullscreen-toggle-icon"></i>
                 </button>
                 <div class="page-actions" style="margin-bottom: 0;">
                     <button class="btn btn-secondary" onclick="openModal('catModal')"><i class="fas fa-tag"></i>
@@ -200,6 +208,17 @@
                 <div class="input-group">
                     <label>Product Name</label>
                     <input type="text" id="prodName" required>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                    <div class="input-group">
+                        <label>Barcode / Short Code</label>
+                        <input type="text" id="prodBarcode" placeholder="e.g. 101, TS-01, 8901234...">
+                    </div>
+                    <div class="input-group">
+                        <label>Colour</label>
+                        <input type="text" id="prodColour" placeholder="Red, Black, Blue...">
+                    </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
@@ -352,6 +371,8 @@
             document.getElementById('modalTitle').textContent = 'Add New Product';
             document.getElementById('productForm').reset();
             document.getElementById('prodId').value = '';
+            document.getElementById('prodBarcode').value = '';
+            document.getElementById('prodColour').value = '';
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -360,6 +381,8 @@
             document.getElementById('modalTitle').textContent = 'Edit Product';
             document.getElementById('prodId').value = item.id;
             document.getElementById('prodName').value = item.name;
+            document.getElementById('prodBarcode').value = item.barcode || item.code || '';
+            document.getElementById('prodColour').value = item.colour || item.color || '';
             document.getElementById('prodCat').value = item.category;
             document.getElementById('prodSize').value = item.size || '';
             document.getElementById('prodStock').value = item.stock;
@@ -374,6 +397,9 @@
             const id = document.getElementById('prodId').value;
             const data = {
                 name: document.getElementById('prodName').value,
+                barcode: document.getElementById('prodBarcode').value.trim(),
+                colour: document.getElementById('prodColour').value.trim(),
+                color: document.getElementById('prodColour').value.trim(),
                 category: document.getElementById('prodCat').value,
                 size: document.getElementById('prodSize').value,
                 stock: parseInt(document.getElementById('prodStock').value),
@@ -409,7 +435,7 @@
 
         async function deleteCategory(id) {
             if (confirm('Delete this category?')) {
-                await db.categories.delete(id);
+                await DB.deleteCategory(id);
                 refreshCategories();
             }
         }

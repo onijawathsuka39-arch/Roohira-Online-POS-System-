@@ -74,6 +74,10 @@
                 <i class="fas fa-file-invoice"></i>
                 <span>Orders</span>
             </a>
+            <a href="waybill.html" class="nav-item">
+                <i class="fas fa-truck-fast"></i>
+                <span>Waybill Generator</span>
+            </a>
             <a href="inventory.html" class="nav-item">
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
@@ -123,6 +127,10 @@
                 <button class="btn btn-secondary" onclick="themeManager.toggle()"
                     style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-secondary fullscreen-btn" onclick="themeManager.toggleFullscreen()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Full Screen">
+                    <i class="fas fa-expand fullscreen-toggle-icon"></i>
                 </button>
                 <button class="btn btn-primary" onclick="openAddCustModal()"><i class="fas fa-user-plus"></i> New
                     Customer</button>
@@ -412,10 +420,9 @@
             } else {
                 picBox.innerHTML = `<i class="fas fa-user"></i>`;
             }
-
             // Fetch History
-            const sales = await DB.getSalesByCustomer(c.name);
-            const orders = await DB.getOrdersByCustomer(c.name);
+            const sales = await DB.getSalesByCustomer(c.name, c.custId);
+            const orders = await DB.getOrdersByCustomer(c.name, c.custId);
 
             // Render Sales
             const salesTbody = document.getElementById('v-sales-history');
@@ -522,8 +529,8 @@
             };
 
             if (id) {
-                const customer = await db.customers.get(parseInt(id));
-                await db.customers.update(parseInt(id), { ...customer, ...data });
+                const customer = await DB.getCustomerByDbId(parseInt(id));
+                await DB.updateCustomer(parseInt(id), { ...customer, ...data });
             } else {
                 await DB.addCustomer(data);
             }

@@ -1,0 +1,24 @@
+{
+  "name": "Roohira POS Mobile",
+  "short_name": "Roohira POS",
+  "description": "Roohira Collection Point of Sale Mobile App",
+  "start_url": "/mobile.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0f19",
+  "theme_color": "#ff4b7d",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

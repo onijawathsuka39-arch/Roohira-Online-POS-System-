@@ -376,6 +376,12 @@ tr:hover td {
     background: var(--card-hover);
 }
 
+.fullscreen-btn.active {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(255, 75, 125, 0.15);
+}
+
 /* Modals */
 .modal-overlay {
     position: fixed;
@@ -522,4 +528,97 @@ textarea:focus {
 
 .fade-in {
     animation: fadeIn 0.4s ease-out;
+}
+
+/* Compact Dashboard Cards */
+.stats-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .stats-grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid-compact {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-card-compact {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card-compact:hover {
+    border-color: var(--card-accent, var(--primary));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-compact .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.stat-card-compact .card-top .title-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.stat-card-compact .card-top .card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.stat-card-compact .card-value {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--text-main, inherit);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.stat-card-compact .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+    margin-top: 6px;
+}
+
+.stat-card-compact .card-bottom span.badge-mini {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
 }

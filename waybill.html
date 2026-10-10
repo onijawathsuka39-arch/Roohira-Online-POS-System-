@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waybill Generator | Roohira POS</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff4b7d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+
+    <!-- Icons & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Custom CSS & Scripts -->
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <script src="db.js"></script>
+
+    <style>
+        :root {
+            --wb-accent: #ff4b7d;
+            --wb-dark: #0f172a;
+        }
+
+        .waybill-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .waybill-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            backdrop-filter: var(--glass);
+        }
+
+        .form-card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .form-card-title i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid-2, .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-control {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-main);
+            padding: 10px 12px;
+            font-size: 13.5px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        [data-theme='light'] .input-control {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .input-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .chip-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chip-btn:hover, .chip-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* Items Builder Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 11.5px;
+            text-transform: uppercase;
+        }
+
+        .items-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .items-table input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 12.5px;
+        }
+
+        [data-theme='light'] .items-table input {
+            background: #fff;
+        }
+
+        /* Payment Selector Tabs */
+        .payment-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .pay-tab {
+            padding: 12px;
+            text-align: center;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .pay-tab:hover {
+            border-color: var(--primary);
+        }
+
+        .pay-tab.active.cod {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #ff6b6b;
+        }
+
+        .pay-tab.active.prepaid {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #34d399;
+        }
+
+        .pay-tab.active.partial {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        /* Preview Sticky Container */
+        .preview-sticky {
+            position: sticky;
+            top: 20px;
+        }
+
+        .preview-card {
+            background: #202228;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        [data-theme='light'] .preview-card {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .preview-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Waybill Sheet Styling (Exact Print Output) */
+        .waybill-sheet-wrapper {
+            background: #ffffff !important;
+            color: #000000 !important;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-family: 'Inter', Arial, sans-serif;
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .waybill-box {
+            border: 2px solid #000;
+            background: #fff;
+            color: #000;
+            font-size: 9px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .waybill-row {
+            display: flex;
+            border-bottom: 2px solid #000;
+        }
+
+        .waybill-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Notice in Black text with Single Red Line Border */
+        .red-notice-box {
+            background: #ffffff;
+            border: 1.5px solid #d32f2f;
+            color: #000000;
+            padding: 4px 6px;
+            font-weight: 700;
+            font-size: 8.5px;
+            margin: 3px 4px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-sizing: border-box;
+        }
+
+        /* Clean blank tracking sticker area */
+        .tracking-sticker-box {
+            border: 1.5px dashed #444;
+            background: #ffffff;
+            min-height: 38px;
+            margin: 3px 4px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        /* Print Specific CSS for A5 format */
+        @media print {
+            @page {
+                size: A5 portrait;
+                margin: 6mm;
+            }
+            body * {
+                visibility: hidden;
+            }
+            .sidebar, .topbar, .form-side, .preview-header-bar, .no-print {
+                display: none !important;
+            }
+            #printableWaybillArea, #printableWaybillArea * {
+                visibility: visible;
+            }
+            #printableWaybillArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 138mm;
+                margin: 0 auto;
+                padding: 0;
+                box-shadow: none !important;
+                background: white !important;
+            }
+        }
+
+        /* Autocomplete dropdown */
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #1e1e24;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        [data-theme='light'] .autocomplete-list {
+            background: #ffffff;
+            border-color: #cbd5e1;
+        }
+        .autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .autocomplete-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Modal styling */
+        .wb-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            padding: 16px;
+        }
+        .wb-modal.active {
+            display: flex;
+        }
+        .wb-modal-content {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .wb-modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wb-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body class="fade-in">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo-section">
+            <div class="logo-box">
+                <i class="fas fa-gem text-white"></i>
+            </div>
+            <span class="logo-text">RUHIRA POS</span>
+        </div>
+
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="pos.html" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>POS Terminal</span>
+            </a>
+            <a href="sales.html" class="nav-item">
+                <i class="fas fa-history"></i>
+                <span>Sales History</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Orders</span>
+            </a>
+            <a href="waybill.html" class="nav-item active">
+                <i class="fas fa-truck-fast" style="color: var(--primary);"></i>
+                <span style="font-weight: 700; color: var(--primary);">Waybill Generator</span>
+            </a>
+            <a href="inventory.html" class="nav-item">
+                <i class="fas fa-boxes"></i>
+                <span>Inventory</span>
+            </a>
+            <a href="expenses.html" class="nav-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </a>
+            <a href="notes.html" class="nav-item">
+                <i class="fas fa-sticky-note"></i>
+                <span>Notes & Tasks</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+            <a href="analysis.html" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analysis</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
+                <i class="fas fa-external-link-alt"></i>
+                <span>Visit Website</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" style="padding-bottom: 60px;">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left" style="display: flex; align-items: center; gap: 14px;">
+                <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('show')">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div>
+                    <h1 class="page-title" style="display: flex; align-items: center; gap: 10px; font-size: 20px;">
+                        <i class="fas fa-truck-fast" style="color: var(--primary);"></i>
+                        Waybill & Courier Dispatch Generator
+                    </h1>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                        ස්වයංක්‍රීය වේබිල් (Waybill) සාදා Download / Print කරගන්න | Barcode, QR & Trans Express
+                    </p>
+                </div>
+            </div>
+
+            <div class="topbar-right" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="openLoadOrderModal()" style="font-size: 12px; font-weight: 700;">
+                    <i class="fas fa-file-import"></i> Load Order
+                </button>
+                <button class="btn btn-secondary" onclick="openWaybillHistoryModal()" style="font-size: 12px; font-weight: 700;">
+                    <i class="fas fa-history"></i> Saved
+                </button>
+                <button class="btn btn-secondary" onclick="downloadWaybillHTML()" style="font-size: 12px; font-weight: 700; color: #3b82f6; border-color: #3b82f6;" title="Download Waybill as HTML File">
+                    <i class="fas fa-file-code"></i> Download HTML
+                </button>
+                <button class="btn btn-secondary" onclick="downloadWaybillPDF()" style="font-size: 12px; font-weight: 700; color: #ef4444; border-color: #ef4444;" title="Download Waybill as A5 PDF">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-secondary" onclick="downloadWaybillImage()" style="font-size: 12px; font-weight: 700; color: #10b981; border-color: #10b981;" title="Download as Image">
+                    <i class="fas fa-download"></i> PNG
+                </button>
+                <button class="btn btn-primary" onclick="printWaybillDirect()" style="font-size: 12px; font-weight: 700; box-shadow: 0 4px 15px var(--primary-glow);">
+                    <i class="fas fa-print"></i> Print A5
+                </button>
+            </div>
+        </header>
+
+        <div class="content-body" style="margin-top: 20px;">
+            <div class="waybill-layout">
+
+                <!-- LEFT SIDE: FORM BUILDER -->
+                <div class="form-side">
+
+                    <!-- CARD 1: SENDER DETAILS -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <div>
+                                <i class="fas fa-store"></i>
+                                <span>Sender Details (මගේ විස්තර)</span>
+                            </div>
+                            <button type="button" class="btn btn-sm" onclick="resetDefaultSender()" style="font-size: 11px; padding: 4px 8px;">
+                                <i class="fas fa-undo"></i> Reset Default
+                            </button>
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label>Store / Brand Name *</label>
+                                <input type="text" id="senderName" class="input-control" value="Roohira Collection" oninput="updateWaybillLive()">
+                            </div>
+                            <div class="input-group">
+                                <label>Postcode / Postal Code</label>
+                                <input type="text" id="senderPostcode" class="input-control" value="11850" oninput="updateWaybillLive()">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Sender Address *</label>
+                            <input type="text" id="senderAddress" class="input-control" value="65/11,Sooriyapaluwa,Eldeniya,Kadawatha" oninput="updateWaybillLive()">
+                        </div>
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label>Contact Number 1 *</label>
+                                <input type="text" id="senderPhone1" class="input-control" value="075 721 8786" oninput="updateWaybillLive()">
+                            </div>
+                            <div class="input-group">
+                                <label>Contact Number 2</label>
+                                <input type="text" id="senderPhone2" class="input-control" value="072 905 7972" oninput="updateWaybillLive()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2: RECIPIENT / SHIPPING DETAILS -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <div>
+                                <i class="fas fa-user-tag"></i>
+                                <span>Recipient / Shipping Details (ලැබුම්කරුගේ විස්තර)</span>
+                            </div>
+                            <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Customer Database එකෙන් තෝරාගත හැක</span>
+                        </div>
+
+                        <div class="input-group" style="position: relative;">
+                            <label>Customer Name *</label>
+                            <input type="text" id="recipientName" class="input-control" placeholder="Type customer name..." oninput="onCustomerInput(this.value); updateWaybillLive();" autocomplete="off">
+                            <div id="customerAutocomplete" class="autocomplete-list" style="display: none;"></div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Delivery Address *</label>
+                            <textarea id="recipientAddress" class="input-control" rows="2" placeholder="House No, Street, Landmark..." oninput="updateWaybillLive()"></textarea>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="input-group">
+                                <label>Primary Contact (Phone 1) *</label>
+                                <input type="text" id="recipientPhone1" class="input-control" placeholder="07X XXX XXXX" oninput="updateWaybillLive()">
+                            </div>
+                            <div class="input-group">
+                                <label>Secondary Contact (Phone 2) <span style="font-weight: 400; opacity: 0.7;">(Optional)</span></label>
+                                <input type="text" id="recipientPhone2" class="input-control" placeholder="Optional phone..." oninput="updateWaybillLive()">
+                            </div>
+                            <div class="input-group">
+                                <label>City / Town *</label>
+                                <input type="text" id="recipientCity" class="input-control" placeholder="e.g. Kadawatha, Kandy, Galle" oninput="updateWaybillLive()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: ORDER ITEMS & INVENTORY SELECTOR -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <div>
+                                <i class="fas fa-tshirt"></i>
+                                <span>Order Items (භාණ්ඩ තෝරන්න)</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addCustomItemRow()" style="font-size: 11px;">
+                                <i class="fas fa-plus"></i> Add Custom Item
+                            </button>
+                        </div>
+
+                        <!-- Main Inventory Selector -->
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label>Select From Main Inventory (ප්‍රධාන බඩු තොගයෙන් එක් කරන්න):</label>
+                            <div style="display: flex; gap: 8px;">
+                                <select id="inventoryPicker" class="input-control" onchange="onInventoryItemSelect(this)">
+                                    <option value="">-- Search & Choose an Item from Stock --</option>
+                                </select>
+                                <button type="button" class="btn btn-primary" onclick="addSelectedInventoryItem()" style="white-space: nowrap; font-size: 12px;">
+                                    <i class="fas fa-cart-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Items Table -->
+                        <table class="items-table" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 48%;">Item Description</th>
+                                    <th style="width: 22%;">Size / Spec</th>
+                                    <th style="width: 15%; text-align: center;">Qty</th>
+                                    <th style="width: 15%; text-align: center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsTableBody">
+                                <!-- Dynamic item rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CARD 4: PARCEL & COURIER DETAILS -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <div>
+                                <i class="fas fa-box-open"></i>
+                                <span>Parcel & Tracking Details (පාර්සල් විස්තර)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="input-group">
+                                <label>Order ID (Barcode generate වේ) *</label>
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="orderId" class="input-control" value="ROO-2026-001" oninput="updateWaybillLive()">
+                                    <button type="button" class="btn btn-secondary" onclick="generateNewOrderId()" title="Generate Random ID" style="padding: 0 10px;">
+                                        <i class="fas fa-dice"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Tracking Number</label>
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="trackingNo" class="input-control" placeholder="e.g. TE-892341" oninput="updateWaybillLive()">
+                                    <button type="button" class="btn btn-secondary" onclick="generateTrackingNumber()" title="Generate Tracking" style="padding: 0 10px;">
+                                        <i class="fas fa-magic"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Parcel Weight</label>
+                                <input type="text" id="parcelWeight" class="input-control" value="0.5 kg" oninput="updateWaybillLive()">
+                                <div class="quick-chips">
+                                    <span class="chip-btn" onclick="setWeight('0.25 kg')">0.25 kg</span>
+                                    <span class="chip-btn active" onclick="setWeight('0.5 kg')">0.5 kg</span>
+                                    <span class="chip-btn" onclick="setWeight('1.0 kg')">1.0 kg</span>
+                                    <span class="chip-btn" onclick="setWeight('2.0 kg')">2.0 kg</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label>Courier Partner (කුරියර් ආයතනය)</label>
+                                <select id="courierPartner" class="input-control" onchange="updateWaybillLive()">
+                                    <option value="Trans Express" selected>Trans Express (Trance Express)</option>
+                                    <option value="Domex Courier">Domex Courier</option>
+                                    <option value="Pronto Lanka">Pronto Lanka</option>
+                                    <option value="Koombiyo Delivery">Koombiyo Delivery</option>
+                                    <option value="Prompt Xpress">Prompt Xpress</option>
+                                    <option value="Certis Lanka">Certis Lanka</option>
+                                    <option value="SL Post (EMS / Speed Post)">SL Post (EMS / Speed Post)</option>
+                                    <option value="Fardar Express">Fardar Express</option>
+                                    <option value="In-house / Store Delivery">In-house / Direct Delivery</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Dispatch / Ship Date</label>
+                                <input type="date" id="shipDate" class="input-control" onchange="updateWaybillLive()">
+                            </div>
+                        </div>
+
+                        <!-- Special Notice (Black Text inside Single Red Border) -->
+                        <div class="input-group" style="margin-top: 10px;">
+                            <label style="color: #ff4b7d; font-weight: 700;">
+                                <i class="fas fa-exclamation-triangle"></i> Special Notice / Courier Instruction (කළු අකුරින් රතු තනි ඉරි කොටුවේ පෙන්වයි):
+                            </label>
+                            <input type="text" id="specialNotice" class="input-control" value="PLEASE CALL BEFORE DELIVERY & HANDLE WITH CARE" placeholder="Type notice to appear in red single line box..." oninput="updateWaybillLive()">
+                            <div class="quick-chips">
+                                <span class="chip-btn" onclick="setNotice('CALL BEFORE DELIVERY')">⚡ Call Before Delivery</span>
+                                <span class="chip-btn" onclick="setNotice('HANDLE WITH CARE / DO NOT BEND')">📦 Handle With Care</span>
+                                <span class="chip-btn" onclick="setNotice('CHECK PACKAGE BEFORE HANDOVER')">🛍️ Check Before Handover</span>
+                                <span class="chip-btn" onclick="setNotice('EXCHANGE PARCEL - COLLECT OLD ITEM')">🔄 Exchange Parcel</span>
+                                <span class="chip-btn" onclick="setNotice('DO NOT OPEN SEAL BEFORE CASH PAYMENT')">🚫 Do Not Open Seal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 5: PAYMENT & COLLECTION (COD / PREPAID) -->
+                    <div class="form-card">
+                        <div class="form-card-title">
+                            <div>
+                                <i class="fas fa-money-bill-wave"></i>
+                                <span>Payment & Cash Collection (මුදල් අය කිරීම)</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-tabs">
+                            <div class="pay-tab active cod" id="tabCOD" onclick="setPaymentType('COD')">
+                                <div style="font-weight: 800; font-size: 14px;"><i class="fas fa-hand-holding-usd"></i> COD</div>
+                                <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">Cash On Delivery</div>
+                            </div>
+                            <div class="pay-tab prepaid" id="tabPrepaid" onclick="setPaymentType('PREPAID')">
+                                <div style="font-weight: 800; font-size: 14px;"><i class="fas fa-check-circle"></i> PREPAID</div>
+                                <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">Fully Paid Online</div>
+                            </div>
+                            <div class="pay-tab partial" id="tabPartial" onclick="setPaymentType('PARTIAL')">
+                                <div style="font-weight: 800; font-size: 14px;"><i class="fas fa-coins"></i> PARTIAL COD</div>
+                                <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">Advance + Balance</div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="input-group">
+                                <label>Total Order Value (LKR)</label>
+                                <input type="number" id="orderTotalVal" class="input-control" value="3500" min="0" step="50" oninput="calculateAmounts(); updateWaybillLive();">
+                            </div>
+                            <div class="input-group" id="advancePaidGroup" style="display: none;">
+                                <label>Advance Paid (LKR)</label>
+                                <input type="number" id="advancePaidVal" class="input-control" value="0" min="0" step="50" oninput="calculateAmounts(); updateWaybillLive();">
+                            </div>
+                            <div class="input-group">
+                                <label style="font-weight: 800; color: var(--primary);">Amount to Collect (LKR) *</label>
+                                <input type="number" id="amountToCollectVal" class="input-control" value="3500" style="font-size: 16px; font-weight: 800; color: #ff4b7d;" oninput="updateWaybillLive()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Buttons -->
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+                        <button class="btn btn-primary" onclick="saveWaybillToDatabase()" style="flex: 1; min-width: 170px; padding: 12px; font-weight: 800; font-size: 13.5px; box-shadow: 0 4px 15px var(--primary-glow);">
+                            <i class="fas fa-save"></i> Save & Print
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadWaybillHTML()" style="padding: 12px 16px; font-weight: 700; color: #3b82f6; border-color: #3b82f6;">
+                            <i class="fas fa-file-code"></i> Download HTML
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadWaybillPDF()" style="padding: 12px 16px; font-weight: 700; color: #ef4444; border-color: #ef4444;">
+                            <i class="fas fa-file-pdf"></i> Download PDF (A5)
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadWaybillImage()" style="padding: 12px 16px; font-weight: 700; color: #10b981; border-color: #10b981;">
+                            <i class="fas fa-download"></i> PNG Image
+                        </button>
+                        <button class="btn btn-secondary" onclick="copyWaybillSummary()" style="padding: 12px 16px; font-weight: 700;">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetEntireForm()" style="padding: 12px 14px;">
+                            <i class="fas fa-trash-alt"></i> Clear
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <!-- RIGHT SIDE: LIVE REAL-TIME WAYBILL SHEET PREVIEW -->
+                <div class="preview-side">
+                    <div class="preview-sticky">
+                        <div class="preview-card">
+                            <div class="preview-header-bar">
+                                <div style="font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
+                                    A5 WAYBILL PREVIEW
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button class="btn btn-sm btn-secondary" onclick="downloadWaybillHTML()" style="color: #3b82f6; font-size: 11px;" title="Download HTML File">
+                                        <i class="fas fa-file-code"></i> HTML
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" onclick="downloadWaybillPDF()" style="color: #ef4444; font-size: 11px;" title="Download PDF (A5)">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" onclick="downloadWaybillImage()" style="color: #10b981; font-size: 11px;" title="Download PNG">
+                                        <i class="fas fa-image"></i> PNG
+                                    </button>
+                                    <button class="btn btn-sm btn-primary" onclick="printWaybillDirect()" title="Direct Print A5" style="font-size: 11px;">
+                                        <i class="fas fa-print"></i> Print
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Printable Waybill Canvas Area -->
+                            <div id="printableWaybillArea" class="waybill-sheet-wrapper">
+                                <div class="waybill-box" id="waybillBoxElement">
+
+                                    <!-- 1. Top Row: Shop Logo, Shop Name & WAYBILL Label -->
+                                    <div class="waybill-row" style="height: 46px; border-bottom: 2px solid #000;">
+                                        <div style="width: 65%; padding: 4px 8px; display: flex; align-items: center; gap: 8px; border-right: 2px solid #000; box-sizing: border-box;">
+                                            <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png" alt="Logo" style="height: 32px; width: auto; object-fit: contain;">
+                                            <div>
+                                                <div id="pvShopName" style="font-weight: 900; font-size: 14px; font-family: 'Outfit', sans-serif; letter-spacing: 0.5px; text-transform: uppercase; color: #000;">
+                                                    Roohira Collection
+                                                </div>
+                                                <div style="font-size: 7px; font-weight: 700; color: #333;">ONLINE CLOTHING & APPARELS</div>
+                                            </div>
+                                        </div>
+                                        <div style="width: 35%; padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; color: #000000; box-sizing: border-box;">
+                                            <div style="font-size: 14px; font-weight: 900; letter-spacing: 2px; font-family: 'Outfit', sans-serif; color: #000000;">WAYBILL</div>
+                                            <div id="pvCourierTag" style="font-size: 7.5px; font-weight: 800; color: #000000; letter-spacing: 0.5px; text-transform: uppercase;">TRANS EXPRESS</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Second Row: Order + High Visibility Sender Details (Left) vs Big QR Code (Right) -->
+                                    <div class="waybill-row" style="border-bottom: 2px solid #000;">
+                                        <div style="width: 62%; border-right: 2px solid #000; display: flex; flex-direction: column; box-sizing: border-box;">
+                                            
+                                            <!-- Order Info -->
+                                            <div style="padding: 4px 6px; border-bottom: 1.5px solid #000; font-size: 8px; line-height: 1.25;">
+                                                <div style="font-weight: 800; font-size: 7px; text-transform: uppercase; color: #444; margin-bottom: 2px; border-bottom: 1px dotted #ccc; padding-bottom: 1px;">
+                                                    Dispatch Info
+                                                </div>
+                                                <div><strong>Ship Date:</strong> <span id="pvShipDate">2026-09-24</span> | <strong>Weight:</strong> <span id="pvWeight">0.5 kg</span></div>
+                                                <div><strong>Order ID:</strong> <span id="pvOrderId" style="font-weight: 800;">ROO-2026-001</span></div>
+                                                <div><strong>Tracking No:</strong> <span id="pvTrackingNo" style="font-weight: 800;">N/A</span></div>
+                                            </div>
+
+                                            <!-- Sender Details (Extra Prominent & Clear) -->
+                                            <div style="padding: 5px 6px; font-size: 8px; line-height: 1.3; background: #fafafa; border-left: 3px solid #000;">
+                                                <div style="font-weight: 900; font-size: 7px; text-transform: uppercase; color: #000; margin-bottom: 2px; letter-spacing: 0.5px;">
+                                                    SENDER (යවන්නා):
+                                                </div>
+                                                <div style="font-weight: 900; font-size: 9.5px; color: #000; text-transform: uppercase;" id="pvSenderName">ROOHIRA COLLECTION</div>
+                                                <div style="font-size: 8px; color: #000; font-weight: 600;" id="pvSenderAddress">65/11,Sooriyapaluwa,Eldeniya,Kadawatha.</div>
+                                                <div style="font-size: 8px; color: #000;"><strong>Contact:</strong> <span id="pvSenderPhone" style="font-weight: 800;">075 721 8786 / 072 905 7972</span></div>
+                                                <div style="font-size: 7.5px; font-weight: 800; color: #000;">Postal Code: <span id="pvSenderPostcode">11850</span></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Box: Scannable Full Details QR Code -->
+                                        <div style="width: 38%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box; text-align: center; background: #fff;">
+                                            <div id="waybillQrCodeHolder" style="width: 105px; height: 105px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 3px; border: 1.5px solid #000; border-radius: 4px; box-sizing: border-box;"></div>
+                                            <div style="font-size: 7px; font-weight: 900; color: #000; margin-top: 2px; letter-spacing: 0.5px;">SCAN FOR ORDER DETAILS</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 3. Third Row: Recipient Details (Large & Highly Visible) -->
+                                    <div class="waybill-row" style="flex-direction: column; border-bottom: 2px solid #000;">
+                                        <div style="padding: 5px 7px; font-size: 10.5px; line-height: 1.3;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #000; padding-bottom: 2px; margin-bottom: 4px;">
+                                                <span style="font-weight: 900; text-transform: uppercase; font-size: 9.5px; color: #000;">Recipient Details (ලැබුම්කරු)</span>
+                                                <span id="pvCityBadge" style="font-weight: 900; font-size: 10.5px; background: #000; color: #fff; padding: 1.5px 8px; border-radius: 3px; text-transform: uppercase;">CITY</span>
+                                            </div>
+                                            <div style="margin-bottom: 3px;">
+                                                <strong>Name:</strong> <span id="pvRecipientName" style="font-size: 12.5px; font-weight: 900; text-transform: uppercase; color: #000;">Customer Name</span>
+                                            </div>
+                                            <div style="margin-bottom: 3px;">
+                                                <strong>Contact 1:</strong> <span id="pvRecipientPhone1" style="font-size: 12px; font-weight: 900; color: #000; letter-spacing: 0.3px;">07X XXX XXXX</span>
+                                                <span id="pvRecipientPhone2Wrap" style="margin-left: 10px; font-size: 10.5px; display: none;">
+                                                    <strong>Contact 2:</strong> <span id="pvRecipientPhone2" style="font-weight: 900; color: #000;"></span>
+                                                </span>
+                                            </div>
+                                            <div style="margin-bottom: 3px; line-height: 1.35;">
+                                                <strong>Address:</strong> <span id="pvRecipientAddress" style="font-size: 11px; font-weight: 800; color: #000;">Customer Full Address</span>
+                                            </div>
+                                            <div>
+                                                <strong>City:</strong> <span id="pvRecipientCity" style="font-size: 11.5px; font-weight: 900; text-transform: uppercase; color: #000;">City</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4. Fourth Row: Order ID Barcode (Razor Sharp Scannable CODE128) -->
+                                    <div class="waybill-row" style="flex-direction: column; align-items: center; justify-content: center; padding: 3px; border-bottom: 2px solid #000; background: #ffffff;">
+                                        <div style="font-size: 7.5px; font-weight: 800; color: #000; letter-spacing: 0.5px;">ORDER ID BARCODE</div>
+                                        <svg id="waybillBarcodeSvg" style="height: 38px; max-width: 98%; display: block; margin: 0 auto; shape-rendering: crispEdges;"></svg>
+                                    </div>
+
+                                    <!-- 5. Blank Tracking Label Sticker Area (Clean Box with No Text) -->
+                                    <div class="waybill-row" style="flex-direction: column; border-bottom: 2px solid #000; background: #ffffff;">
+                                        <div class="tracking-sticker-box" id="pvTrackingBlankBox">
+                                            <!-- Completely blank for attaching tracking label sticker as requested -->
+                                        </div>
+                                    </div>
+
+                                    <!-- 6. Special Notice: Black Text in Single Red Line Box (Larger text) -->
+                                    <div class="waybill-row" id="pvRedNoticeRow" style="border-bottom: 2px solid #000;">
+                                        <div class="red-notice-box" style="width: 100%; padding: 4px 8px; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-exclamation-triangle" style="color: #d32f2f; font-size: 13px;"></i>
+                                            <div style="color: #000000;">
+                                                <span style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #d32f2f;">COURIER NOTICE: </span>
+                                                <span id="pvSpecialNoticeText" style="font-size: 10px; font-weight: 900; color: #000000;">
+                                                    PLEASE CALL BEFORE DELIVERY & HANDLE WITH CARE
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 7. Order Items (Clean & Readable Manifest Table) -->
+                                    <div class="waybill-row" style="flex-direction: column; padding: 2px 5px; border-bottom: 2px solid #000; font-size: 7.5px; line-height: 1.2; background: #ffffff;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                            <span style="font-weight: 900; text-transform: uppercase; font-size: 7.5px; color: #000; letter-spacing: 0.2px;">ITEM DESCRIPTION / MANIFEST</span>
+                                            <span id="pvTotalQtyTag" style="font-weight: 900; font-size: 7.5px; color: #000;">TOTAL ITEMS: 1</span>
+                                        </div>
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 7.5px; line-height: 1.2;">
+                                            <thead>
+                                                <tr style="border-top: 1px solid #000; border-bottom: 1px solid #000; background: #ffffff;">
+                                                    <th style="text-align: center; padding: 1.5px 2px; width: 14px; font-weight: 900; border-right: 0.5px solid #ccc; color: #000;">#</th>
+                                                    <th style="text-align: left; padding: 1.5px 3px; font-weight: 900; text-transform: uppercase; color: #000;">Item Name</th>
+                                                    <th style="text-align: center; padding: 1.5px 2px; width: 32px; font-weight: 900; text-transform: uppercase; border-left: 0.5px solid #ccc; border-right: 0.5px solid #ccc; color: #000;">Size</th>
+                                                    <th style="text-align: center; padding: 1.5px 2px; width: 24px; font-weight: 900; text-transform: uppercase; color: #000;">Qty</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="pvItemsTableBody">
+                                                <tr style="border-bottom: 0.5px solid #eee;">
+                                                    <td style="padding: 1.5px 2px; text-align: center; color: #000;">1</td>
+                                                    <td style="padding: 1.5px 3px; color: #000;">Oversized Graphic T-Shirt</td>
+                                                    <td style="padding: 1.5px 2px; text-align: center; color: #000;">L</td>
+                                                    <td style="padding: 1.5px 2px; text-align: center; font-weight: 900; color: #000;">1</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- 8. Payment / COD Amount Banner (White Background, Pure Black Text, No Color) -->
+                                    <div class="waybill-row" style="align-items: stretch; border-bottom: 2px solid #000; background: #ffffff;">
+                                        <div id="pvCodBadgeBox" style="width: 60%; padding: 4px 6px; display: flex; flex-direction: column; justify-content: center; border-right: 2px solid #000; background: #ffffff; color: #000000; box-sizing: border-box;">
+                                            <div id="pvCodStatusTitle" style="font-weight: 900; font-size: 8.5px; color: #000000; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                CASH ON DELIVERY (COD)
+                                            </div>
+                                            <div id="pvCodAmountDisplay" style="font-size: 14.5px; font-weight: 900; font-family: 'Outfit', sans-serif; color: #000000; margin-top: 1px;">
+                                                LKR 3,500.00
+                                            </div>
+                                        </div>
+                                        <div style="width: 40%; padding: 3px 5px; font-size: 7px; line-height: 1.2; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; background: #ffffff; color: #000000;">
+                                            <div style="font-weight: 800; text-transform: uppercase; font-size: 6.5px; color: #000000;">Courier Instructions:</div>
+                                            <div id="pvCourierCashNote" style="font-size: 7px; color: #000000;">
+                                                • Verify recipient name & phone.<br>
+                                                • <strong>Collect exact COD cash before handover.</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 9. POD (Proof of Delivery) -->
+                                    <div class="waybill-row" style="font-size: 7px; padding: 3px 5px;">
+                                        <div style="width: 100%;">
+                                            <div style="font-weight: 800; text-transform: uppercase; font-size: 6.5px; color: #444; margin-bottom: 1px;">Proof of Delivery (POD)</div>
+                                            <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                                                <div>Receiver Name: ______________</div>
+                                                <div>Phone/NIC: ______________</div>
+                                                <div>Signature: ______________</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL 1: LOAD FROM ORDERS -->
+    <div class="wb-modal" id="loadOrderModal">
+        <div class="wb-modal-content">
+            <div class="wb-modal-header">
+                <h3 style="font-family: 'Outfit'; font-size: 16px;"><i class="fas fa-file-invoice text-primary"></i> Load From POS Orders</h3>
+                <button class="btn btn-sm" onclick="closeLoadOrderModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="wb-modal-body">
+                <input type="text" id="orderSearchInput" class="input-control" placeholder="Search by Order ID, Customer name or phone..." oninput="filterOrdersList(this.value)" style="margin-bottom: 14px;">
+                <div id="ordersListContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SAVED WAYBILLS HISTORY -->
+    <div class="wb-modal" id="historyModal">
+        <div class="wb-modal-content">
+            <div class="wb-modal-header">
+                <h3 style="font-family: 'Outfit'; font-size: 16px;"><i class="fas fa-history text-primary"></i> Saved Waybill History</h3>
+                <button class="btn btn-sm" onclick="closeWaybillHistoryModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="wb-modal-body">
+                <div id="historyListContainer" style="display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Global State
+        let currentItems = [
+            { name: "Oversized Graphic T-Shirt", size: "L", qty: 1, price: 3500 }
+        ];
+        let paymentType = "COD"; // "COD", "PREPAID", "PARTIAL"
+        let allInventoryCache = [];
+        let allCustomersCache = [];
+        let allOrdersCache = [];
+
+        // Initializer
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Set today's date
+            const today = new Date().toISOString().split('T')[0];
+            const shipDateEl = document.getElementById('shipDate');
+            if (shipDateEl) shipDateEl.value = today;
+
+            // Generate initial ID if not set
+            if (!document.getElementById('orderId').value) {
+                generateNewOrderId();
+            }
+
+            // Load Inventory & Customers
+            await loadInventoryData();
+            await loadCustomersData();
+
+            // Render table & live waybill
+            renderItemsTable();
+            updateWaybillLive();
+        });
+
+        // Load Inventory from DB
+        async function loadInventoryData() {
+            try {
+                allInventoryCache = await DB.getAllInventory();
+                const select = document.getElementById('inventoryPicker');
+                if (!select) return;
+                select.innerHTML = '<option value="">-- Search & Choose an Item from Stock --</option>';
+
+                allInventoryCache.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.id;
+                    const sizeTxt = item.size ? ` [Size: ${item.size}]` : '';
+                    const stockTxt = (item.stock !== undefined) ? ` (Stock: ${item.stock})` : '';
+                    opt.textContent = `${item.name}${sizeTxt} - LKR ${Number(item.sellPrice || 0).toLocaleString()}${stockTxt}`;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Failed to load inventory:", err);
+            }
+        }
+
+        // Load Customers for autocomplete
+        async function loadCustomersData() {
+            try {
+                allCustomersCache = await DB.getAllCustomers();
+            } catch (err) {
+                console.error("Failed to load customers:", err);
+            }
+        }
+
+        function onCustomerInput(val) {
+            const list = document.getElementById('customerAutocomplete');
+            if (!val || val.trim().length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+            const clean = val.toLowerCase().trim();
+            const matched = allCustomersCache.filter(c => 
+                (c.name && c.name.toLowerCase().includes(clean)) || 
+                (c.phone && c.phone.includes(clean))
+            ).slice(0, 5);
+
+            if (matched.length === 0) {
+                list.style.display = 'none';
+                return;
+            }
+
+            list.innerHTML = matched.map(c => `
+                <div class="autocomplete-item" onclick="selectCustomer(${c.id})">
+                    <strong>${c.name}</strong> - <span>${c.phone || 'No phone'}</span>
+                    <div style="font-size: 11px; opacity: 0.7;">${c.address || ''}</div>
+                </div>
+            `).join('');
+            list.style.display = 'block';
+        }
+
+        function selectCustomer(custId) {
+            const c = allCustomersCache.find(item => item.id === custId);
+            if (!c) return;
+            document.getElementById('recipientName').value = c.name || '';
+            document.getElementById('recipientPhone1').value = c.phone || '';
+            document.getElementById('recipientAddress').value = c.address || '';
+            if (c.city) document.getElementById('recipientCity').value = c.city;
+            document.getElementById('customerAutocomplete').style.display = 'none';
+            updateWaybillLive();
+        }
+
+        // Add selected inventory item
+        function addSelectedInventoryItem() {
+            const select = document.getElementById('inventoryPicker');
+            const itemId = select.value;
+            if (!itemId) return;
+
+            const item = allInventoryCache.find(i => String(i.id) === String(itemId));
+            if (!item) return;
+
+            currentItems.push({
+                name: item.name,
+                size: item.size || 'Free',
+                qty: 1,
+                price: Number(item.sellPrice) || 0
+            });
+
+            select.value = '';
+            renderItemsTable();
+            recalculateTotalFromItems();
+            updateWaybillLive();
+        }
+
+        function addCustomItemRow() {
+            currentItems.push({
+                name: "New Item",
+                size: "M",
+                qty: 1,
+                price: 0
+            });
+            renderItemsTable();
+            updateWaybillLive();
+        }
+
+        function removeOrderItem(index) {
+            currentItems.splice(index, 1);
+            if (currentItems.length === 0) {
+                currentItems.push({ name: "Custom Item", size: "Free", qty: 1, price: 0 });
+            }
+            renderItemsTable();
+            recalculateTotalFromItems();
+            updateWaybillLive();
+        }
+
+        function updateItemField(index, field, value) {
+            if (!currentItems[index]) return;
+            if (field === 'qty') {
+                currentItems[index].qty = Math.max(1, parseInt(value) || 1);
+            } else {
+                currentItems[index][field] = value;
+            }
+            recalculateTotalFromItems();
+            updateWaybillLive();
+        }
+
+        function renderItemsTable() {
+            const tbody = document.getElementById('itemsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = currentItems.map((item, idx) => `
+                <tr>
+                    <td>
+                        <input type="text" class="input-control" value="${escapeHtml(item.name)}" 
+                            oninput="updateItemField(${idx}, 'name', this.value)" style="width: 100%;">
+                    </td>
+                    <td>
+                        <input type="text" class="input-control" value="${escapeHtml(item.size || '')}" 
+                            placeholder="Size" oninput="updateItemField(${idx}, 'size', this.value)" style="width: 100%;">
+                    </td>
+                    <td style="text-align: center;">
+                        <input type="number" class="input-control" value="${item.qty}" min="1" 
+                            oninput="updateItemField(${idx}, 'qty', this.value)" style="width: 55px; text-align: center;">
+                    </td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeOrderItem(${idx})" style="padding: 4px 8px; font-size: 11px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function recalculateTotalFromItems() {
+            let sum = 0;
+            currentItems.forEach(i => {
+                if (i.price) sum += (Number(i.price) * (Number(i.qty) || 1));
+            });
+            if (sum > 0) {
+                document.getElementById('orderTotalVal').value = sum;
+                calculateAmounts();
+            }
+        }
+
+        // Helper escape
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Weight, Notice & Presets
+        function setWeight(w) {
+            document.getElementById('parcelWeight').value = w;
+            document.querySelectorAll('.quick-chips .chip-btn').forEach(btn => {
+                if (btn.textContent.trim() === w) btn.classList.add('active');
+                else if (btn.textContent.includes('kg')) btn.classList.remove('active');
+            });
+            updateWaybillLive();
+        }
+
+        function setNotice(text) {
+            document.getElementById('specialNotice').value = text;
+            updateWaybillLive();
+        }
+
+        function generateNewOrderId() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('orderId').value = `ROO-${y}${m}${day}-${rand}`;
+            updateWaybillLive();
+        }
+
+        function generateTrackingNumber() {
+            const courier = document.getElementById('courierPartner').value;
+            let prefix = 'TE';
+            if (courier.includes('Trans')) prefix = 'TE';
+            else if (courier.includes('Domex')) prefix = 'DMX';
+            else if (courier.includes('Pronto')) prefix = 'PRN';
+            else if (courier.includes('Koombiyo')) prefix = 'KMB';
+            else if (courier.includes('Prompt')) prefix = 'PX';
+            const num = Math.floor(1000000 + Math.random() * 9000000);
+            document.getElementById('trackingNo').value = `${prefix}-${num}`;
+            updateWaybillLive();
+        }
+
+        // Payment Mode
+        function setPaymentType(type) {
+            paymentType = type;
+            document.getElementById('tabCOD').className = 'pay-tab' + (type === 'COD' ? ' active cod' : '');
+            document.getElementById('tabPrepaid').className = 'pay-tab' + (type === 'PREPAID' ? ' active prepaid' : '');
+            document.getElementById('tabPartial').className = 'pay-tab' + (type === 'PARTIAL' ? ' active partial' : '');
+
+            const advGroup = document.getElementById('advancePaidGroup');
+            if (type === 'PARTIAL') {
+                advGroup.style.display = 'flex';
+            } else {
+                advGroup.style.display = 'none';
+            }
+            calculateAmounts();
+            updateWaybillLive();
+        }
+
+        function calculateAmounts() {
+            const total = Number(document.getElementById('orderTotalVal').value) || 0;
+            const adv = Number(document.getElementById('advancePaidVal').value) || 0;
+            const collectInput = document.getElementById('amountToCollectVal');
+
+            if (paymentType === 'COD') {
+                collectInput.value = total;
+            } else if (paymentType === 'PREPAID') {
+                collectInput.value = 0;
+            } else if (paymentType === 'PARTIAL') {
+                collectInput.value = Math.max(0, total - adv);
+            }
+        }
+
+        function resetDefaultSender() {
+            document.getElementById('senderName').value = "Roohira Collection";
+            document.getElementById('senderAddress').value = "65/11,Sooriyapaluwa,Eldeniya,Kadawatha";
+            document.getElementById('senderPhone1').value = "075 721 8786";
+            document.getElementById('senderPhone2').value = "072 905 7972";
+            document.getElementById('senderPostcode').value = "11850";
+            updateWaybillLive();
+        }
+
+        function resetEntireForm() {
+            if (!confirm("Are you sure you want to clear the waybill form?")) return;
+            document.getElementById('recipientName').value = '';
+            document.getElementById('recipientPhone1').value = '';
+            document.getElementById('recipientPhone2').value = '';
+            document.getElementById('recipientAddress').value = '';
+            document.getElementById('recipientCity').value = '';
+            document.getElementById('trackingNo').value = '';
+            generateNewOrderId();
+            currentItems = [{ name: "Oversized Graphic T-Shirt", size: "L", qty: 1, price: 3500 }];
+            renderItemsTable();
+            document.getElementById('orderTotalVal').value = 3500;
+            setPaymentType('COD');
+            updateWaybillLive();
+        }
+
+        // LIVE WAYBILL UPDATE CORE FUNCTION
+        function updateWaybillLive() {
+            // 1. Gather Form Values
+            const senderName = document.getElementById('senderName').value || 'Roohira Collection';
+            const senderAddress = document.getElementById('senderAddress').value || '65/11,Sooriyapaluwa,Eldeniya,Kadawatha';
+            const senderPhone1 = document.getElementById('senderPhone1').value || '075 721 8786';
+            const senderPhone2 = document.getElementById('senderPhone2').value || '072 905 7972';
+            const senderPostcode = document.getElementById('senderPostcode').value || '11850';
+
+            const recipientName = document.getElementById('recipientName').value.trim() || 'CUSTOMER NAME';
+            const recipientPhone1 = document.getElementById('recipientPhone1').value.trim() || '07X XXX XXXX';
+            const recipientPhone2 = document.getElementById('recipientPhone2').value.trim();
+            const recipientAddress = document.getElementById('recipientAddress').value.trim() || 'Customer delivery address not specified';
+            const recipientCity = document.getElementById('recipientCity').value.trim() || 'CITY';
+
+            const orderId = document.getElementById('orderId').value.trim() || 'ROO-2026-001';
+            const trackingNo = document.getElementById('trackingNo').value.trim() || 'PENDING';
+            const parcelWeight = document.getElementById('parcelWeight').value.trim() || '0.5 kg';
+            const courier = document.getElementById('courierPartner').value || 'TRANS EXPRESS';
+            const shipDate = document.getElementById('shipDate').value || new Date().toISOString().split('T')[0];
+            const specialNotice = document.getElementById('specialNotice').value.trim();
+
+            const totalVal = Number(document.getElementById('orderTotalVal').value) || 0;
+            const advanceVal = Number(document.getElementById('advancePaidVal').value) || 0;
+            const collectAmt = Number(document.getElementById('amountToCollectVal').value) || 0;
+
+            // 2. Update Preview DOM
+            document.getElementById('pvShopName').textContent = senderName;
+            document.getElementById('pvCourierTag').textContent = courier.toUpperCase();
+            document.getElementById('pvShipDate').textContent = shipDate;
+            document.getElementById('pvWeight').textContent = parcelWeight;
+            document.getElementById('pvOrderId').textContent = orderId;
+            document.getElementById('pvTrackingNo').textContent = trackingNo;
+
+            // Clear, crisp sender details
+            document.getElementById('pvSenderName').textContent = senderName.toUpperCase();
+            document.getElementById('pvSenderAddress').textContent = senderAddress;
+            document.getElementById('pvSenderPhone').textContent = `${senderPhone1} / ${senderPhone2}`;
+            document.getElementById('pvSenderPostcode').textContent = senderPostcode;
+
+            document.getElementById('pvRecipientName').textContent = recipientName;
+            document.getElementById('pvRecipientPhone1').textContent = recipientPhone1;
+            if (recipientPhone2) {
+                document.getElementById('pvRecipientPhone2').textContent = recipientPhone2;
+                document.getElementById('pvRecipientPhone2Wrap').style.display = 'inline';
+            } else {
+                document.getElementById('pvRecipientPhone2Wrap').style.display = 'none';
+            }
+            document.getElementById('pvRecipientAddress').textContent = recipientAddress;
+            document.getElementById('pvRecipientCity').textContent = recipientCity;
+            document.getElementById('pvCityBadge').textContent = recipientCity.toUpperCase();
+
+            // Special Notice in Black Text with Single Red Line Border
+            const redNoticeRow = document.getElementById('pvRedNoticeRow');
+            if (specialNotice) {
+                redNoticeRow.style.display = 'flex';
+                document.getElementById('pvSpecialNoticeText').textContent = specialNotice;
+            } else {
+                redNoticeRow.style.display = 'none';
+            }
+
+            // Order Items Manifest Table in Waybill Preview
+            let totalItemQty = 0;
+            const itemsTbody = document.getElementById('pvItemsTableBody');
+            itemsTbody.innerHTML = currentItems.map((item, idx) => {
+                const q = Number(item.qty) || 1;
+                totalItemQty += q;
+                return `
+                    <tr style="border-bottom: 0.5px solid #d1d5db; font-size: 7.5px; line-height: 1.2;">
+                        <td style="padding: 1.5px 2px; text-align: center; font-weight: 700; color: #000; border-right: 0.5px solid #eee;">${idx + 1}</td>
+                        <td style="padding: 1.5px 3px; font-weight: 700; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">
+                            ${escapeHtml(item.name)}
+                        </td>
+                        <td style="padding: 1.5px 2px; text-align: center; font-weight: 700; color: #000; border-left: 0.5px solid #eee; border-right: 0.5px solid #eee;">
+                            ${escapeHtml(item.size || '-')}
+                        </td>
+                        <td style="padding: 1.5px 2px; text-align: center; font-weight: 900; color: #000;">
+                            ${q}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const totalQtyTag = document.getElementById('pvTotalQtyTag');
+            if (totalQtyTag) {
+                totalQtyTag.textContent = `TOTAL ITEMS: ${totalItemQty}`;
+            }
+
+            // COD & Payment Box (Always Pure White Background, No Color Tint)
+            const codBadgeBox = document.getElementById('pvCodBadgeBox');
+            const codStatusTitle = document.getElementById('pvCodStatusTitle');
+            const codAmountDisplay = document.getElementById('pvCodAmountDisplay');
+            const courierCashNote = document.getElementById('pvCourierCashNote');
+
+            codBadgeBox.style.background = '#ffffff';
+            codBadgeBox.style.color = '#000000';
+            codStatusTitle.style.color = '#000000';
+            codAmountDisplay.style.color = '#000000';
+
+            if (paymentType === 'PREPAID' || collectAmt <= 0) {
+                codStatusTitle.textContent = 'PREPAID - DO NOT COLLECT CASH';
+                codAmountDisplay.textContent = 'LKR 0.00 (PAID)';
+                courierCashNote.innerHTML = '• Verify recipient name & phone.<br>• <strong>Prepaid parcel: DO NOT collect any cash from customer.</strong>';
+            } else if (paymentType === 'PARTIAL') {
+                codStatusTitle.textContent = 'PARTIAL COD (COLLECT BALANCE)';
+                codAmountDisplay.textContent = `LKR ${collectAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                courierCashNote.innerHTML = `• Advance Paid: LKR ${advanceVal.toLocaleString()}<br>• <strong>Collect balance LKR ${collectAmt.toLocaleString()} before delivery.</strong>`;
+            } else {
+                codStatusTitle.textContent = 'CASH ON DELIVERY (COD)';
+                codAmountDisplay.textContent = `LKR ${collectAmt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                courierCashNote.innerHTML = '• Verify recipient name & phone.<br>• <strong>Collect exact COD cash before handing over parcel.</strong>';
+            }
+
+            // 3. Render Barcode specifically for the Order ID (Crisp Scannable CODE128)
+            renderWaybillBarcode(orderId);
+
+            // 4. Render High-Contrast Instantly Scannable QR Code
+            renderWaybillQR(orderId, trackingNo, recipientName, recipientPhone1, recipientPhone2, recipientAddress, recipientCity, currentItems, collectAmt, paymentType, specialNotice);
+        }
+
+        // Render Barcode (High-Precision Scannable CODE128)
+        function renderWaybillBarcode(orderId) {
+            const svg = document.getElementById('waybillBarcodeSvg');
+            if (typeof JsBarcode !== 'undefined' && svg && orderId) {
+                try {
+                    svg.style.display = 'block';
+                    JsBarcode('#waybillBarcodeSvg', orderId.toString().trim(), {
+                        format: "CODE128",
+                        width: 1.8,
+                        height: 38,
+                        displayValue: true,
+                        fontSize: 10,
+                        font: "Inter, Arial, sans-serif",
+                        fontOptions: "bold",
+                        textMargin: 2,
+                        margin: 6,
+                        background: "#ffffff",
+                        lineColor: "#000000"
+                    });
+                } catch (e) {
+                    console.warn("Barcode rendering error:", e);
+                }
+            }
+        }
+
+        // Render High-Resolution Instantly Scannable QR Code (Contains Full Order Details)
+        function renderWaybillQR(orderId, tracking, custName, phone1, phone2, address, city, items, collectAmt, payType, notice) {
+            const holder = document.getElementById('waybillQrCodeHolder');
+            if (!holder) return;
+            holder.innerHTML = '';
+
+            const phoneStr = phone2 ? `${phone1} / ${phone2}` : phone1;
+            const itemsStr = (items && items.length > 0)
+                ? items.map(i => `${i.name}${i.size ? ` (${i.size})` : ''} x${i.qty}`).join(', ')
+                : '1 Item';
+
+            // Clean, clear structured Order Details Payload for QR Code
+            const qrText = [
+                `--- ROOHIRA COLLECTION ---`,
+                `Order ID: ${orderId || 'N/A'}`,
+                tracking ? `Tracking No: ${tracking}` : '',
+                `Customer: ${custName || 'N/A'}`,
+                `Phone: ${phoneStr || 'N/A'}`,
+                `Address: ${address ? address + (city ? ', ' + city : '') : (city || 'N/A')}`,
+                `Items: ${itemsStr}`,
+                `COD Amount: LKR ${Number(collectAmt || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${payType || 'COD'})`,
+                notice ? `Notice: ${notice}` : '',
+                `Sender: Roohira Collection (075 721 8786 / 072 905 7972)`
+            ].filter(Boolean).join('\n');
+
+            let rendered = false;
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    const tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: unescape(encodeURIComponent(qrText)),
+                        width: 240,
+                        height: 240,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+
+                    const canvas = tempDiv.querySelector('canvas');
+                    const img = tempDiv.querySelector('img');
+
+                    if (canvas && canvas.width > 0) {
+                        try {
+                            const dataUrl = canvas.toDataURL("image/png");
+                            holder.innerHTML = `<img src="${dataUrl}" alt="QR" style="width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; shape-rendering: crispEdges;" />`;
+                            rendered = true;
+                        } catch (err) {}
+                    }
+                    if (!rendered && img && img.src) {
+                        holder.innerHTML = `<img src="${img.src}" alt="QR" style="width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; shape-rendering: crispEdges;" />`;
+                        rendered = true;
+                    }
+                } catch (e) {
+                    console.warn("QRCode exception, using fallback API:", e);
+                }
+            }
+
+            if (!rendered) {
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=1&ecc=L&data=${encodeURIComponent(qrText)}`;
+                holder.innerHTML = `<img src="${qrUrl}" alt="QR" style="width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated;" />`;
+            }
+        }
+
+        // Download Standalone Self-Contained HTML File of the Waybill
+        function downloadWaybillHTML() {
+            updateWaybillLive();
+            const element = document.getElementById('printableWaybillArea');
+            if (!element) return;
+            const waybillContent = element.innerHTML;
+            const orderId = document.getElementById('orderId').value.trim() || 'ROO-WAYBILL';
+
+            const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waybill - ${escapeHtml(orderId)}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f1f5f9;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #000;
+    }
+    .no-print-bar {
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+    }
+    .print-btn {
+      background: #ff4b7d;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 75, 125, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .print-btn:hover {
+      opacity: 0.9;
+    }
+    .waybill-sheet-wrapper {
+      background: #ffffff;
+      width: 140mm;
+      max-width: 100%;
+      padding: 6px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .waybill-box {
+      border: 2px solid #000;
+      background: #ffffff;
+      color: #000000;
+      font-size: 8.5px;
+      line-height: 1.15;
+    }
+    .waybill-row {
+      display: flex;
+      border-bottom: 2px solid #000;
+      box-sizing: border-box;
+    }
+    .waybill-row:last-child {
+      border-bottom: none;
+    }
+    .tracking-sticker-box {
+      height: 40px;
+      border: 1.5px dashed #666;
+      margin: 3px 6px;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+    .red-notice-box {
+      border: 1.5px solid #d32f2f;
+      background: #ffffff;
+      margin: 2px 4px;
+      padding: 2px 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    table { border-collapse: collapse; width: 100%; }
+    svg { display: block; }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .waybill-sheet-wrapper {
+        width: 100%;
+        box-shadow: none;
+        padding: 0;
+      }
+      @page {
+        size: A5 portrait;
+        margin: 4mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print-bar">
+    <button class="print-btn" onclick="window.print()">
+      <i class="fas fa-print"></i> Print Waybill (A5)
+    </button>
+  </div>
+  <div class="waybill-sheet-wrapper">
+    ${waybillContent}
+  </div>
+</body>
+</html>`;
+
+            const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Waybill_${orderId}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        }
+
+        // Download Waybill as High-Res A5 PDF
+        async function downloadWaybillPDF() {
+            updateWaybillLive();
+            const element = document.getElementById('printableWaybillArea');
+            if (!element) return;
+
+            const orderId = document.getElementById('orderId').value.trim() || 'ROO-WAYBILL';
+            const opt = {
+                margin: [4, 4, 4, 4],
+                filename: `Waybill_${orderId}_A5.pdf`,
+                image: { type: 'jpeg', quality: 0.99 },
+                html2canvas: {
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a5',
+                    orientation: 'portrait'
+                }
+            };
+
+            try {
+                if (typeof html2pdf !== 'undefined') {
+                    await html2pdf().set(opt).from(element).save();
+                } else {
+                    window.print();
+                }
+            } catch (err) {
+                console.error("PDF generation failed:", err);
+                window.print();
+            }
+        }
+
+        // Download Waybill as High-Res Image (PNG)
+        async function downloadWaybillImage() {
+            updateWaybillLive();
+            const element = document.getElementById('printableWaybillArea');
+            if (!element) return;
+
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 3,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const orderId = document.getElementById('orderId').value.trim() || 'ROO-WAYBILL';
+                const link = document.createElement('a');
+                link.download = `Waybill_${orderId}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                console.error("Download image failed:", err);
+                alert("Image download error. You can download as PDF instead.");
+            }
+        }
+
+        // Print Function (Direct A5 Print)
+        function printWaybillDirect() {
+            updateWaybillLive();
+            window.print();
+        }
+
+        // Save Waybill to Database
+        async function saveWaybillToDatabase() {
+            try {
+                const waybillRecord = {
+                    orderId: document.getElementById('orderId').value.trim() || 'ROO-001',
+                    trackingNo: document.getElementById('trackingNo').value.trim() || '',
+                    date: document.getElementById('shipDate').value || new Date().toISOString(),
+                    senderName: document.getElementById('senderName').value || 'Roohira Collection',
+                    senderAddress: document.getElementById('senderAddress').value || '',
+                    senderPhone1: document.getElementById('senderPhone1').value || '',
+                    senderPhone2: document.getElementById('senderPhone2').value || '',
+                    senderPostcode: document.getElementById('senderPostcode').value || '11850',
+                    recipientName: document.getElementById('recipientName').value.trim() || 'Customer',
+                    recipientPhone1: document.getElementById('recipientPhone1').value.trim() || '',
+                    recipientPhone2: document.getElementById('recipientPhone2').value.trim() || '',
+                    recipientAddress: document.getElementById('recipientAddress').value.trim() || '',
+                    recipientCity: document.getElementById('recipientCity').value.trim() || '',
+                    weight: document.getElementById('parcelWeight').value.trim() || '0.5 kg',
+                    courier: document.getElementById('courierPartner').value || 'Trans Express',
+                    specialNotice: document.getElementById('specialNotice').value.trim() || '',
+                    paymentMethod: paymentType,
+                    totalAmount: Number(document.getElementById('orderTotalVal').value) || 0,
+                    advancePaid: Number(document.getElementById('advancePaidVal').value) || 0,
+                    amountToCollect: Number(document.getElementById('amountToCollectVal').value) || 0,
+                    items: currentItems,
+                    status: 'Generated'
+                };
+
+                const savedId = await DB.addWaybill(waybillRecord);
+                alert(`✅ Waybill successfully saved for Order: ${waybillRecord.orderId}`);
+                printWaybillDirect();
+            } catch (err) {
+                console.error("Failed to save waybill:", err);
+                alert("Waybill saved locally.");
+                printWaybillDirect();
+            }
+        }
+
+        // Copy Text Summary for Courier / Customer (With Tracking URL)
+        function copyWaybillSummary() {
+            const orderId = document.getElementById('orderId').value;
+            const tracking = document.getElementById('trackingNo').value || 'Pending';
+            const name = document.getElementById('recipientName').value;
+            const phone = document.getElementById('recipientPhone1').value;
+            const address = document.getElementById('recipientAddress').value;
+            const city = document.getElementById('recipientCity').value;
+            const amt = document.getElementById('amountToCollectVal').value;
+            const items = currentItems.map(i => `${i.name} (${i.size || 'Free'}) x${i.qty}`).join(', ');
+
+            const text = `📦 ROOHIRA COLLECTION WAYBILL SUMMARY\nOrder ID: ${orderId}\nTracking: ${tracking}\nCustomer: ${name}\nPhone: ${phone}\nAddress: ${address}, ${city}\nItems: ${items}\nCOD Amount to Collect: LKR ${amt}\nTrack Order: https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/track-order.html\nSender: Roohira Collection (075 721 8786 / 072 905 7972)`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("📋 Waybill summary with Tracking link copied to clipboard!");
+            }).catch(() => {
+                alert("Copied to clipboard!");
+            });
+        }
+
+        // MODAL: Load from Orders
+        async function openLoadOrderModal() {
+            const modal = document.getElementById('loadOrderModal');
+            const container = document.getElementById('ordersListContainer');
+            modal.classList.add('active');
+            container.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading POS Orders...</div>';
+
+            try {
+                allOrdersCache = await DB.getAllOrders();
+                renderOrdersList(allOrdersCache);
+            } catch (err) {
+                container.innerHTML = '<div style="color: red; padding: 10px;">Failed to load orders.</div>';
+            }
+        }
+
+        function closeLoadOrderModal() {
+            document.getElementById('loadOrderModal').classList.remove('active');
+        }
+
+        function filterOrdersList(query) {
+            if (!query || !query.trim()) {
+                renderOrdersList(allOrdersCache);
+                return;
+            }
+            const q = query.toLowerCase().trim();
+            const filtered = allOrdersCache.filter(o => 
+                (o.orderId && o.orderId.toLowerCase().includes(q)) ||
+                (o.customer && o.customer.toLowerCase().includes(q)) ||
+                (o.phone && o.phone.includes(q)) ||
+                (o.city && o.city.toLowerCase().includes(q))
+            );
+            renderOrdersList(filtered);
+        }
+
+        function renderOrdersList(orders) {
+            const container = document.getElementById('ordersListContainer');
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No orders found.</div>';
+                return;
+            }
+
+            container.innerHTML = orders.map(o => {
+                const idDisplay = o.orderId || (`#ORD-${o.id}`);
+                const itemsCount = (o.items && Array.isArray(o.items)) ? o.items.length : 1;
+                const total = Number(o.total || 0).toLocaleString();
+                const balDue = Number(o.balanceDue !== undefined ? o.balanceDue : o.total);
+
+                return `
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 14px; color: var(--primary);">
+                                ${idDisplay} <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">(${new Date(o.date).toLocaleDateString()})</span>
+                            </div>
+                            <div style="font-size: 13px; font-weight: 700; margin-top: 2px;">
+                                <i class="fas fa-user" style="font-size: 11px; opacity: 0.7;"></i> ${o.customer || 'Guest'} - <i class="fas fa-phone" style="font-size: 11px; opacity: 0.7;"></i> ${o.phone || 'N/A'}
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                                ${o.address ? o.address + (o.city ? ', ' + o.city : '') : 'Address not specified'}
+                            </div>
+                            <div style="font-size: 12px; font-weight: 700; margin-top: 4px;">
+                                Total: LKR ${total} | <span style="color: ${balDue > 0 ? '#ef4444' : '#10b981'};">Collect: LKR ${balDue.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="populateFormFromOrder(${o.id})" style="font-size: 11px; font-weight: 700; padding: 8px 14px; white-space: nowrap;">
+                            <i class="fas fa-magic"></i> Select & Fill
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateFormFromOrder(orderDbId) {
+            const o = allOrdersCache.find(item => item.id === orderDbId);
+            if (!o) return;
+
+            document.getElementById('orderId').value = o.orderId || (`ROO-${o.id}`);
+            if (o.trackingNo) document.getElementById('trackingNo').value = o.trackingNo;
+            if (o.weight) document.getElementById('parcelWeight').value = o.weight;
+            if (o.deliveryMethod) {
+                const opt = Array.from(document.getElementById('courierPartner').options).find(x => x.value.toLowerCase().includes(o.deliveryMethod.toLowerCase()));
+                if (opt) document.getElementById('courierPartner').value = opt.value;
+            }
+
+            document.getElementById('recipientName').value = o.customer || '';
+            document.getElementById('recipientPhone1').value = o.phone || '';
+            document.getElementById('recipientAddress').value = o.address || '';
+            if (o.city) document.getElementById('recipientCity').value = o.city;
+
+            // Items
+            if (o.items && Array.isArray(o.items) && o.items.length > 0) {
+                currentItems = o.items.map(i => ({
+                    name: i.name || 'Item',
+                    size: i.size || '',
+                    qty: i.qty || 1,
+                    price: i.price || 0
+                }));
+            }
+            renderItemsTable();
+
+            // Payment
+            document.getElementById('orderTotalVal').value = o.total || 0;
+            const balDue = (o.balanceDue !== undefined && o.balanceDue !== null) ? Number(o.balanceDue) : (o.paymentStatus === 'paid' ? 0 : Number(o.total || 0));
+            const advPaid = Number(o.advancePaid || 0);
+
+            if (advPaid > 0 && balDue > 0) {
+                setPaymentType('PARTIAL');
+                document.getElementById('advancePaidVal').value = advPaid;
+                document.getElementById('amountToCollectVal').value = balDue;
+            } else if (balDue <= 0 || (o.paymentStatus && o.paymentStatus.toLowerCase() === 'paid')) {
+                setPaymentType('PREPAID');
+            } else {
+                setPaymentType('COD');
+            }
+
+            closeLoadOrderModal();
+            updateWaybillLive();
+        }
+
+        // MODAL: Saved Waybills History
+        async function openWaybillHistoryModal() {
+            const modal = document.getElementById('historyModal');
+            const container = document.getElementById('historyListContainer');
+            modal.classList.add('active');
+            container.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading history...</div>';
+
+            try {
+                const list = await DB.getAllWaybills();
+                if (!list || list.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">No saved waybills yet. Generate your first one!</div>';
+                    return;
+                }
+
+                container.innerHTML = list.map(w => `
+                    <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 14px; color: var(--primary);">
+                                ${w.orderId} <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">| Tracking: ${w.trackingNo || 'N/A'}</span>
+                            </div>
+                            <div style="font-size: 13px; font-weight: 700; margin-top: 2px;">
+                                Recipient: ${w.recipientName} (${w.recipientPhone1 || 'No Phone'})
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted);">
+                                ${w.recipientAddress || ''}, ${w.recipientCity || ''}
+                            </div>
+                            <div style="font-size: 12px; font-weight: 700; margin-top: 3px;">
+                                ${w.paymentMethod} - Collect: LKR ${Number(w.amountToCollect || 0).toLocaleString()} | Date: ${new Date(w.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-sm btn-primary" onclick="loadWaybillFromHistory(${JSON.stringify(w).replace(/"/g, '&quot;')})" title="Load & Print" style="font-size: 11px;">
+                                <i class="fas fa-edit"></i> Load
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteWaybillRecord(${w.id})" title="Delete" style="font-size: 11px;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = '<div style="color: red; padding: 10px;">Failed to load waybills history.</div>';
+            }
+        }
+
+        function closeWaybillHistoryModal() {
+            document.getElementById('historyModal').classList.remove('active');
+        }
+
+        function loadWaybillFromHistory(w) {
+            if (!w) return;
+            document.getElementById('orderId').value = w.orderId || '';
+            document.getElementById('trackingNo').value = w.trackingNo || '';
+            document.getElementById('parcelWeight').value = w.weight || '0.5 kg';
+            if (w.courier) document.getElementById('courierPartner').value = w.courier;
+            if (w.specialNotice) document.getElementById('specialNotice').value = w.specialNotice;
+
+            document.getElementById('senderName').value = w.senderName || 'Roohira Collection';
+            document.getElementById('senderAddress').value = w.senderAddress || '';
+            document.getElementById('senderPhone1').value = w.senderPhone1 || '';
+            document.getElementById('senderPhone2').value = w.senderPhone2 || '';
+            document.getElementById('senderPostcode').value = w.senderPostcode || '11850';
+
+            document.getElementById('recipientName').value = w.recipientName || '';
+            document.getElementById('recipientPhone1').value = w.recipientPhone1 || '';
+            document.getElementById('recipientPhone2').value = w.recipientPhone2 || '';
+            document.getElementById('recipientAddress').value = w.recipientAddress || '';
+            document.getElementById('recipientCity').value = w.recipientCity || '';
+
+            if (w.items && Array.isArray(w.items) && w.items.length > 0) {
+                currentItems = w.items;
+            }
+            renderItemsTable();
+
+            document.getElementById('orderTotalVal').value = w.totalAmount || 0;
+            document.getElementById('advancePaidVal').value = w.advancePaid || 0;
+            document.getElementById('amountToCollectVal').value = w.amountToCollect || 0;
+            setPaymentType(w.paymentMethod || 'COD');
+
+            closeWaybillHistoryModal();
+            updateWaybillLive();
+        }
+
+        async function deleteWaybillRecord(id) {
+            if (!confirm("Are you sure you want to delete this saved waybill?")) return;
+            await DB.deleteWaybill(id);
+            openWaybillHistoryModal();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,3 +1,8 @@
 node_modules/
+ngrok.exe
+.ngrok.exe.old
+firebase-service-account.json
+firebase-service-account.json.json
+*.log
 implementation_plan.md
 deepseek_html_20260521_e534eb.html

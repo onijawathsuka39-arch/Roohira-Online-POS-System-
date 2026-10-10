@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Analysis & Reports | Ruhira POS</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23ff4b7d'/><text x='50' y='50' dominant-baseline='middle' text-anchor='middle' font-family='Outfit' font-weight='bold' font-size='50' fill='white'>R</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="theme.js"></script>
+    <style>
+        .filter-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .select-input, .search-input {
+            background: var(--bg-sidebar);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .select-input:focus, .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--primary-light);
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: capitalize;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .badge-warning { background: rgba(255, 215, 0, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .badge-info { background: rgba(59, 130, 246, 0.15); color: var(--info); border: 1px solid var(--info); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+        .view-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: var(--primary-glow);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .view-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+        }
+
+        .chart-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .modal-body-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-body-table td {
+            padding: 10px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sub-text {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        @media print {
+            aside.sidebar, .header-top .page-actions, .filter-card, .tabs-header, .search-box-row {
+                display: none !important;
+            }
+            main.main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .content-wrapper, .stat-card, .chart-card {
+                border: none !important;
+                background: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="fade-in">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo-section">
+            <div class="logo-box"><i class="fas fa-gem text-white"></i></div>
+            <span class="logo-text">RUHIRA POS</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-th-large"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="pos.html" class="nav-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span>POS Terminal</span>
+            </a>
+            <a href="sales.html" class="nav-item">
+                <i class="fas fa-history"></i>
+                <span>Sales History</span>
+            </a>
+            <a href="orders.html" class="nav-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Orders</span>
+            </a>
+            <a href="waybill.html" class="nav-item">
+                <i class="fas fa-truck-fast"></i>
+                <span>Waybill Generator</span>
+            </a>
+            <a href="inventory.html" class="nav-item">
+                <i class="fas fa-boxes"></i>
+                <span>Inventory</span>
+            </a>
+            <a href="expenses.html" class="nav-item">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>Expenses</span>
+            </a>
+            <a href="customers.html" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Customers</span>
+            </a>
+            <a href="notes.html" class="nav-item">
+                <i class="fas fa-sticky-note"></i>
+                <span>Notes & Tasks</span>
+            </a>
+            <a href="reports.html" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Reports</span>
+            </a>
+            <a href="analysis.html" class="nav-item active">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analysis</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+            <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
+            <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
+                class="nav-item" style="color: var(--primary); font-weight: 800;">
+                <i class="fas fa-external-link-alt"></i>
+                <span>Visit Website</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="nav-item" onclick="DB.logout()" style="cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header-top">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="hamburger-menu" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="page-title">
+                    <h1>Monthly Financial & Sales Analysis</h1>
+                    <p>Month-by-month sales revenue, profit margins, sale & order breakdown</p>
+                </div>
+            </div>
+            <div class="page-actions" style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn btn-secondary" onclick="themeManager.toggle()" style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
+                    <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-secondary fullscreen-btn" onclick="themeManager.toggleFullscreen()" style="padding: 8px; width: 40px; justify-content: center;" title="Full Screen">
+                    <i class="fas fa-expand fullscreen-toggle-icon"></i>
+                </button>
+                <button class="btn btn-secondary" onclick="exportAnalysisCSV()"><i class="fas fa-download"></i> Export CSV</button>
+                <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+            </div>
+        </header>
+
+        <!-- Month Filter Card -->
+        <div class="filter-card">
+            <div class="filter-group">
+                <i class="fas fa-calendar-alt" style="color: var(--primary); font-size: 18px;"></i>
+                <label for="monthSelect" style="font-weight: 600; font-size: 14px;">Select Analysis Month:</label>
+                <select id="monthSelect" class="select-input" onchange="onMonthSelectChange()"></select>
+                <button class="btn btn-secondary" onclick="stepMonth(-1)" title="Previous Month"><i class="fas fa-chevron-left"></i></button>
+                <button class="btn btn-secondary" onclick="stepMonth(1)" title="Next Month"><i class="fas fa-chevron-right"></i></button>
+                <button class="btn btn-secondary" onclick="resetToCurrentMonth()"><i class="fas fa-sync"></i> Current Month</button>
+            </div>
+            <div id="filterSummaryText" style="font-weight: 500; color: var(--text-muted); font-size: 13px;">
+                Showing overall statistics
+            </div>
+        </div>
+
+        <!-- Monthly Overview KPI Stat Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon" style="background:var(--primary-glow); color:var(--primary);"><i class="fas fa-wallet"></i></div>
+                <div class="value" id="kpiTotalRevenue">Rs. 0.00</div>
+                <div class="label">Total Combined Revenue</div>
+                <div class="trend up" id="kpiRevSubtext"><i class="fas fa-store"></i> POS: Rs. 0 | Orders: Rs. 0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon" style="background:rgba(16, 185, 129, 0.15); color:var(--success);"><i class="fas fa-chart-line"></i></div>
+                <div class="value" id="kpiTotalProfit">Rs. 0.00</div>
+                <div class="label">Total Net Profit</div>
+                <div class="trend up" id="kpiProfitMargin"><i class="fas fa-percentage"></i> Margin: 0.0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon" style="background:rgba(59, 130, 246, 0.15); color:var(--info);"><i class="fas fa-receipt"></i></div>
+                <div class="value" id="kpiSalesCount">0</div>
+                <div class="label">POS Sales Count</div>
+                <div class="sub-text" id="kpiSalesRevenueSub">Completed POS transactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon" style="background:rgba(255, 215, 0, 0.15); color:var(--warning);"><i class="fas fa-box-open"></i></div>
+                <div class="value" id="kpiOrdersCount">0</div>
+                <div class="label">Orders Count</div>
+                <div class="sub-text" id="kpiOrdersRevenueSub">Online & Direct Customer Orders</div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card" style="grid-column: span 2;">
+                <h3><span><i class="fas fa-chart-area" style="color:var(--primary);"></i> Daily Performance (Selected Month)</span> <span id="dailyChartBadge" style="font-size:12px; font-weight:normal; color:var(--text-dim);"></span></h3>
+                <canvas id="dailyChart" style="max-height: 280px;"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><span><i class="fas fa-chart-pie" style="color:var(--info);"></i> Revenue Breakdown</span></h3>
+                <canvas id="revenuePieChart" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+
+        <div class="content-wrapper" style="margin-bottom: 24px;">
+            <div class="table-header">
+                <h2><i class="fas fa-history" style="color:var(--primary);"></i> Month-by-Month Performance Overview</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>POS Revenue</th>
+                            <th>Sales Count</th>
+                            <th>Orders Revenue</th>
+                            <th>Orders Count</th>
+                            <th>Total Combined</th>
+                            <th>Net Profit</th>
+                            <th>Profit Margin</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthlySummaryTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Detailed Month Transactions (Karapu Sales and Orders) -->
+        <div class="content-wrapper">
+            <div class="table-header" style="flex-wrap: wrap;">
+                <h2><i class="fas fa-list-alt" style="color:var(--primary);"></i> Month Transaction Details</h2>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="transactionSearch" class="search-input" placeholder="🔍 Search customer, ID, or item..." onkeyup="filterMonthDetails()">
+                    <select id="statusFilter" class="select-input" onchange="filterMonthDetails()">
+                        <option value="all">All Statuses</option>
+                        <option value="completed">Completed / Paid</option>
+                        <option value="pending">Pending / Unpaid</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-header">
+                <button class="tab-btn active" id="tabBtnSales" onclick="switchTab('sales')">
+                    <i class="fas fa-shopping-bag"></i> POS Sales (<span id="salesTabCount">0</span>)
+                </button>
+                <button class="tab-btn" id="tabBtnOrders" onclick="switchTab('orders')">
+                    <i class="fas fa-truck"></i> Customer Orders (<span id="ordersTabCount">0</span>)
+                </button>
+                <button class="tab-btn" id="tabBtnItems" onclick="switchTab('items')">
+                    <i class="fas fa-tshirt"></i> Top Items Sold (<span id="itemsTabCount">0</span>)
+                </button>
+            </div>
+
+            <!-- Tab 1: Sales -->
+            <div id="tabSales" class="tab-content active">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Receipt / Sale ID</th>
+                                <th>Customer</th>
+                                <th>Items Purchased</th>
+                                <th>Total Amount</th>
+                                <th>Net Profit</th>
+                                <th>Payment Method</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthSalesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 2: Orders -->
+            <div id="tabOrders" class="tab-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Order ID</th>
+                                <th>Customer & Phone</th>
+                                <th>Items Ordered</th>
+                                <th>Total Amount</th>
+                                <th>Net Profit</th>
+                                <th>Order Status</th>
+                                <th>Payment</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthOrdersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Top Items -->
+            <div id="tabItems" class="tab-content">
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Category / Code</th>
+                                <th>Units Sold</th>
+                                <th>Total Revenue</th>
+                                <th>Estimated Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthItemsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Details Modal -->
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal" style="max-width: 600px; width: 90%; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; color: var(--text-main);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;">
+                <h3 id="modalTitle" style="font-family:'Outfit', sans-serif; font-size:18px;"><i class="fas fa-receipt text-primary"></i> Transaction Details</h3>
+                <button onclick="closeModal()" style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modalBody"></div>
+            <div style="display:flex; justify-content:flex-end; margin-top:20px; gap:10px;">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script>
+        let allSales = [];
+        let allOrders = [];
+        let monthsList = [];
+        let selectedMonthKey = 'all'; // 'YYYY-MM' or 'all'
+        
+        let dailyChartInstance = null;
+        let pieChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAnalysisData();
+        });
+
+        async function loadAnalysisData() {
+            try {
+                // Fetch all sales and orders from DB
+                const [salesData, ordersData] = await Promise.all([
+                    DB.getAllSales(),
+                    DB.getAllOrders()
+                ]);
+
+                allSales = salesData || [];
+                allOrders = ordersData || [];
+
+                // Extract all unique YYYY-MM months from data
+                const monthSet = new Set();
+                
+                const processDateStr = (dateStr) => {
+                    if (!dateStr) return null;
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime())) {
+                        const m = String(dateStr).match(/^(\d{4}-\d{2})/);
+                        return m ? m[1] : null;
+                    }
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    return `${y}-${m}`;
+                };
+
+                allSales.forEach(s => {
+                    const key = processDateStr(s.date);
+                    if (key) monthSet.add(key);
+                });
+
+                allOrders.forEach(o => {
+                    const key = processDateStr(o.date);
+                    if (key) monthSet.add(key);
+                });
+
+                // Convert to array and sort descending (latest month first)
+                monthsList = Array.from(monthSet).sort().reverse();
+
+                // If current month is not in list, add it
+                const currentMonthKey = processDateStr(new Date().toISOString());
+                if (currentMonthKey && !monthsList.includes(currentMonthKey)) {
+                    monthsList.unshift(currentMonthKey);
+                }
+
+                // Default to current month if available, else first month in list, else 'all'
+                if (monthsList.includes(currentMonthKey)) {
+                    selectedMonthKey = currentMonthKey;
+                } else if (monthsList.length > 0) {
+                    selectedMonthKey = monthsList[0];
+                } else {
+                    selectedMonthKey = 'all';
+                }
+
+                populateMonthDropdown();
+                renderAll();
+            } catch (err) {
+                console.error("Error loading analysis data:", err);
+            }
+        }
+
+        function populateMonthDropdown() {
+            const select = document.getElementById('monthSelect');
+            select.innerHTML = '';
+
+            const allOpt = document.createElement('option');
+            allOpt.value = 'all';
+            allOpt.textContent = '🌟 All Months (Overall Summary)';
+            select.appendChild(allOpt);
+
+            monthsList.forEach(mKey => {
+                const opt = document.createElement('option');
+                opt.value = mKey;
+                const [y, m] = mKey.split('-');
+                const dateObj = new Date(parseInt(y), parseInt(m) - 1, 1);
+                const monthName = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                opt.textContent = `📅 ${monthName} (${mKey})`;
+                select.appendChild(opt);
+            });
+
+            select.value = selectedMonthKey;
+        }
+
+        function onMonthSelectChange() {
+            selectedMonthKey = document.getElementById('monthSelect').value;
+            renderAll();
+        }
+
+        function stepMonth(direction) {
+            if (selectedMonthKey === 'all') {
+                if (monthsList.length > 0) {
+                    selectedMonthKey = direction < 0 ? monthsList[monthsList.length - 1] : monthsList[0];
+                }
+            } else {
+                const idx = monthsList.indexOf(selectedMonthKey);
+                if (idx !== -1) {
+                    const newIdx = idx - direction; // because monthsList is descending
+                    if (newIdx >= 0 && newIdx < monthsList.length) {
+                        selectedMonthKey = monthsList[newIdx];
+                    }
+                }
+            }
+            document.getElementById('monthSelect').value = selectedMonthKey;
+            renderAll();
+        }
+
+        function resetToCurrentMonth() {
+            const currentMonthKey = new Date().toISOString().slice(0, 7);
+            if (monthsList.includes(currentMonthKey)) {
+                selectedMonthKey = currentMonthKey;
+            } else if (monthsList.length > 0) {
+                selectedMonthKey = monthsList[0];
+            } else {
+                selectedMonthKey = 'all';
+            }
+            document.getElementById('monthSelect').value = selectedMonthKey;
+            renderAll();
+        }
+
+        function getMonthKeyFromDate(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) {
+                const m = String(dateStr).match(/^(\d{4}-\d{2})/);
+                return m ? m[1] : '';
+            }
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            return `${y}-${m}`;
+        }
+
+        function safeItems(items) {
+            if (!items) return [];
+            if (Array.isArray(items)) return items;
+            if (typeof items === 'string') {
+                try { return JSON.parse(items); } catch(e) { return []; }
+            }
+            return [];
+        }
+
+        function renderAll() {
+            // Filter sales and orders for selected month
+            let filteredSales = allSales;
+            let filteredOrders = allOrders;
+
+            if (selectedMonthKey !== 'all') {
+                filteredSales = allSales.filter(s => getMonthKeyFromDate(s.date) === selectedMonthKey);
+                filteredOrders = allOrders.filter(o => getMonthKeyFromDate(o.date) === selectedMonthKey);
+            }
+
+            // Update Summary text
+            const filterSummaryText = document.getElementById('filterSummaryText');
+            if (selectedMonthKey === 'all') {
+                filterSummaryText.textContent = `Showing all-time total history across ${monthsList.length} recorded months.`;
+            } else {
+                const [y, m] = selectedMonthKey.split('-');
+                const dObj = new Date(parseInt(y), parseInt(m) - 1, 1);
+                const mName = dObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                filterSummaryText.textContent = `Showing statistics for ${mName} (${filteredSales.length} sales, ${filteredOrders.length} orders).`;
+            }
+
+            // Calculate Metrics
+            const posRevenue = filteredSales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            const posBuyTotal = filteredSales.reduce((sum, s) => sum + (Number(s.buyTotal) || 0), 0);
+            const posProfit = posRevenue - posBuyTotal;
+
+            // Orders revenue (excluding cancelled orders from revenue/profit if status is Cancelled)
+            const activeOrders = filteredOrders.filter(o => o.status !== 'Cancelled');
+            const ordersRevenue = activeOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+            const ordersBuyTotal = activeOrders.reduce((sum, o) => sum + (Number(o.buyTotal) || 0), 0);
+            const ordersProfit = ordersRevenue - ordersBuyTotal;
+
+            const totalRevenue = posRevenue + ordersRevenue;
+            const totalProfit = posProfit + ordersProfit;
+            const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+            // Render KPI Cards
+            document.getElementById('kpiTotalRevenue').textContent = `Rs. ${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('kpiRevSubtext').innerHTML = `<i class="fas fa-store"></i> POS: Rs. ${posRevenue.toLocaleString()} | Orders: Rs. ${ordersRevenue.toLocaleString()}`;
+            
+            document.getElementById('kpiTotalProfit').textContent = `Rs. ${totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('kpiProfitMargin').innerHTML = `<i class="fas fa-percentage"></i> Margin: ${profitMargin.toFixed(1)}%`;
+            
+            document.getElementById('kpiSalesCount').textContent = filteredSales.length;
+            document.getElementById('kpiSalesRevenueSub').textContent = `POS Rev: Rs. ${posRevenue.toLocaleString()}`;
+
+            document.getElementById('kpiOrdersCount').textContent = filteredOrders.length;
+            document.getElementById('kpiOrdersRevenueSub').textContent = `Orders Rev: Rs. ${ordersRevenue.toLocaleString()}`;
+
+            // Render Charts
+            renderDailyChart(filteredSales, activeOrders);
+            renderPieChart(posRevenue, ordersRevenue, filteredOrders);
+
+            // Render Month-by-Month Overview Table
+            renderMonthlySummaryTable();
+
+            // Render Transaction Details Tables
+            renderMonthSalesTable(filteredSales);
+            renderMonthOrdersTable(filteredOrders);
+            renderMonthItemsTable(filteredSales, activeOrders);
+        }
+
+        function renderDailyChart(sales, orders) {
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            if (dailyChartInstance) dailyChartInstance.destroy();
+
+            // Determine day breakdown labels
+            let labels = [];
+            let salesDaily = [];
+            let ordersDaily = [];
+            let profitDaily = [];
+
+            if (selectedMonthKey !== 'all') {
+                const [y, m] = selectedMonthKey.split('-').map(Number);
+                const daysInMonth = new Date(y, m, 0).getDate();
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayStr = String(day).padStart(2, '0');
+                    const fullDateStr = `${selectedMonthKey}-${dayStr}`;
+                    labels.push(`Day ${day}`);
+
+                    const daySales = sales.filter(s => {
+                        const dKey = (s.date || '').slice(0, 10);
+                        return dKey === fullDateStr;
+                    });
+                    const dayOrders = orders.filter(o => {
+                        const dKey = (o.date || '').slice(0, 10);
+                        return dKey === fullDateStr;
+                    });
+
+                    const sRev = daySales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+                    const oRev = dayOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+                    const sProf = daySales.reduce((sum, s) => sum + ((Number(s.total) || 0) - (Number(s.buyTotal) || 0)), 0);
+                    const oProf = dayOrders.reduce((sum, o) => sum + ((Number(o.total) || 0) - (Number(o.buyTotal) || 0)), 0);
+
+                    salesDaily.push(sRev);
+                    ordersDaily.push(oRev);
+                    profitDaily.push(sProf + oProf);
+                }
+                document.getElementById('dailyChartBadge').textContent = `Daily Breakdown for ${selectedMonthKey}`;
+            } else {
+                // If All Months selected, group by Month
+                const monthKeys = monthsList.slice().reverse();
+                labels = monthKeys;
+
+                monthKeys.forEach(mKey => {
+                    const mSales = allSales.filter(s => getMonthKeyFromDate(s.date) === mKey);
+                    const mOrders = allOrders.filter(o => getMonthKeyFromDate(o.date) === mKey && o.status !== 'Cancelled');
+
+                    const sRev = mSales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+                    const oRev = mOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+                    const sProf = mSales.reduce((sum, s) => sum + ((Number(s.total) || 0) - (Number(s.buyTotal) || 0)), 0);
+                    const oProf = mOrders.reduce((sum, o) => sum + ((Number(o.total) || 0) - (Number(o.buyTotal) || 0)), 0);
+
+                    salesDaily.push(sRev);
+                    ordersDaily.push(oRev);
+                    profitDaily.push(sProf + oProf);
+                });
+                document.getElementById('dailyChartBadge').textContent = `Multi-Month Overview`;
+            }
+
+            dailyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'POS Sales (Rs.)',
+                            data: salesDaily,
+                            backgroundColor: 'rgba(255, 75, 125, 0.7)',
+                            borderColor: '#ff4b7d',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Orders Revenue (Rs.)',
+                            data: ordersDaily,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Net Profit (Rs.)',
+                            data: profitDaily,
+                            type: 'line',
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+                    },
+                    plugins: {
+                        legend: { labels: { color: 'var(--text-main)' } }
+                    }
+                }
+            });
+        }
+
+        function renderPieChart(posRevenue, ordersRevenue, orders) {
+            const ctx = document.getElementById('revenuePieChart').getContext('2d');
+            if (pieChartInstance) pieChartInstance.destroy();
+
+            pieChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['POS Terminal Sales', 'Customer Orders'],
+                    datasets: [{
+                        data: [posRevenue, ordersRevenue],
+                        backgroundColor: ['#ff4b7d', '#3b82f6'],
+                        borderWidth: 2,
+                        borderColor: 'var(--bg-dark)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: 'var(--text-main)' } }
+                    }
+                }
+            });
+        }
+
+        function renderMonthlySummaryTable() {
+            const tbody = document.getElementById('monthlySummaryTable');
+            tbody.innerHTML = '';
+
+            if (monthsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-dim);">No monthly data available</td></tr>';
+                return;
+            }
+
+            monthsList.forEach(mKey => {
+                const mSales = allSales.filter(s => getMonthKeyFromDate(s.date) === mKey);
+                const mOrders = allOrders.filter(o => getMonthKeyFromDate(o.date) === mKey && o.status !== 'Cancelled');
+
+                const sRev = mSales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+                const sProf = mSales.reduce((sum, s) => sum + ((Number(s.total) || 0) - (Number(s.buyTotal) || 0)), 0);
+
+                const oRev = mOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+                const oProf = mOrders.reduce((sum, o) => sum + ((Number(o.total) || 0) - (Number(o.buyTotal) || 0)), 0);
+
+                const combinedRev = sRev + oRev;
+                const combinedProf = sProf + oProf;
+                const margin = combinedRev > 0 ? (combinedProf / combinedRev) * 100 : 0;
+
+                const [y, m] = mKey.split('-');
+                const dateObj = new Date(parseInt(y), parseInt(m) - 1, 1);
+                const monthLabel = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+                const isSelected = (selectedMonthKey === mKey);
+                const row = document.createElement('tr');
+                if (isSelected) row.style.background = 'rgba(255, 75, 125, 0.08)';
+
+                row.innerHTML = `
+                    <td style="font-weight:600;">${monthLabel} <span class="sub-text">(${mKey})</span></td>
+                    <td>Rs. ${sRev.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td><span class="status-badge badge-info">${mSales.length} Sales</span></td>
+                    <td>Rs. ${oRev.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td><span class="status-badge badge-warning">${mOrders.length} Orders</span></td>
+                    <td style="font-weight:700; color:var(--primary);">Rs. ${combinedRev.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td style="font-weight:700; color:var(--success);">Rs. ${combinedProf.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td><span class="status-badge badge-success">${margin.toFixed(1)}%</span></td>
+                    <td>
+                        <button class="view-btn" onclick="selectSpecificMonth('${mKey}')">
+                            <i class="fas fa-eye"></i> ${isSelected ? 'Active' : 'Inspect'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function selectSpecificMonth(mKey) {
+            selectedMonthKey = mKey;
+            document.getElementById('monthSelect').value = mKey;
+            renderAll();
+        }
+
+        function renderMonthSalesTable(sales) {
+            const tbody = document.getElementById('monthSalesTable');
+            tbody.innerHTML = '';
+            document.getElementById('salesTabCount').textContent = sales.length;
+
+            if (sales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:30px; color:var(--text-dim);">No POS Sales recorded for this period</td></tr>';
+                return;
+            }
+
+            sales.forEach(s => {
+                const profitVal = (Number(s.total) || 0) - (Number(s.buyTotal) || 0);
+                const itemsList = safeItems(s.items);
+                const itemsSummary = itemsList.map(i => `${i.name || 'Item'} (${i.qty || 1})`).join(', ') || 'N/A';
+                const formattedDate = s.date ? new Date(s.date).toLocaleString('en-GB') : 'N/A';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-size:13px; color:var(--text-muted);">${formattedDate}</td>
+                    <td style="font-weight:600; color:var(--primary);">#${s.id || s.orderId || 'POS'}</td>
+                    <td style="font-weight:500;">${s.customer || 'Guest'}</td>
+                    <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${itemsSummary}">${itemsSummary}</td>
+                    <td style="font-weight:700;">Rs. ${Number(s.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td style="color:var(--success); font-weight:600;">Rs. ${profitVal.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td><span class="status-badge badge-info">${s.paymentMethod || 'Cash'}</span></td>
+                    <td>
+                        <button class="view-btn" onclick="viewSaleDetails(${s.id})"><i class="fas fa-info-circle"></i> Details</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderMonthOrdersTable(orders) {
+            const tbody = document.getElementById('monthOrdersTable');
+            tbody.innerHTML = '';
+            document.getElementById('ordersTabCount').textContent = orders.length;
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:30px; color:var(--text-dim);">No Customer Orders recorded for this period</td></tr>';
+                return;
+            }
+
+            orders.forEach(o => {
+                const profitVal = (Number(o.total) || 0) - (Number(o.buyTotal) || 0);
+                const itemsList = safeItems(o.items);
+                const itemsSummary = itemsList.map(i => `${i.name || 'Item'} (${i.qty || 1})`).join(', ') || 'N/A';
+                const formattedDate = o.date ? new Date(o.date).toLocaleString('en-GB') : 'N/A';
+
+                let statusBadgeClass = 'badge-info';
+                if (o.status === 'Completed' || o.status === 'Delivered') statusBadgeClass = 'badge-success';
+                else if (o.status === 'Pending' || o.status === 'Processing') statusBadgeClass = 'badge-warning';
+                else if (o.status === 'Cancelled') statusBadgeClass = 'badge-danger';
+
+                let paymentBadgeClass = o.paymentStatus === 'paid' ? 'badge-success' : 'badge-warning';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-size:13px; color:var(--text-muted);">${formattedDate}</td>
+                    <td style="font-weight:600; color:var(--info);">${o.orderId || ('#' + o.id)}</td>
+                    <td><strong>${o.customer || 'Customer'}</strong><br><span class="sub-text">${o.phone || ''}</span></td>
+                    <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${itemsSummary}">${itemsSummary}</td>
+                    <td style="font-weight:700;">Rs. ${Number(o.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td style="color:${o.status === 'Cancelled' ? 'var(--text-dim)' : 'var(--success)'}; font-weight:600;">
+                        ${o.status === 'Cancelled' ? 'Rs. 0.00' : 'Rs. ' + profitVal.toLocaleString('en-US', {minimumFractionDigits:2})}
+                    </td>
+                    <td><span class="status-badge ${statusBadgeClass}">${o.status || 'Pending'}</span></td>
+                    <td><span class="status-badge ${paymentBadgeClass}">${o.paymentStatus || 'unpaid'}</span></td>
+                    <td>
+                        <button class="view-btn" onclick="viewOrderDetails('${o.id}')"><i class="fas fa-info-circle"></i> Details</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderMonthItemsTable(sales, orders) {
+            const tbody = document.getElementById('monthItemsTable');
+            tbody.innerHTML = '';
+
+            const itemMap = {};
+
+            const addItem = (item, type) => {
+                const name = item.name || 'Unknown Item';
+                if (!itemMap[name]) {
+                    itemMap[name] = {
+                        name: name,
+                        category: item.category || type,
+                        qty: 0,
+                        revenue: 0,
+                        profit: 0
+                    };
+                }
+                const qty = Number(item.qty) || 1;
+                const sellPrice = Number(item.price || item.sellPrice) || 0;
+                const buyPrice = Number(item.buyPrice) || 0;
+                const rev = sellPrice * qty;
+                const prof = (sellPrice - buyPrice) * qty;
+
+                itemMap[name].qty += qty;
+                itemMap[name].revenue += rev;
+                itemMap[name].profit += prof;
+            };
+
+            sales.forEach(s => {
+                safeItems(s.items).forEach(i => addItem(i, 'POS Item'));
+            });
+
+            orders.forEach(o => {
+                safeItems(o.items).forEach(i => addItem(i, 'Order Item'));
+            });
+
+            const itemList = Object.values(itemMap).sort((a, b) => b.qty - a.qty);
+            document.getElementById('itemsTabCount').textContent = itemList.length;
+
+            if (itemList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-dim);">No items sold during this period</td></tr>';
+                return;
+            }
+
+            itemList.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight:600;">${item.name}</td>
+                    <td><span class="status-badge badge-info">${item.category}</span></td>
+                    <td style="font-weight:700;">${item.qty} units</td>
+                    <td style="font-weight:700;">Rs. ${item.revenue.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td style="color:var(--success); font-weight:700;">Rs. ${item.profit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'sales') {
+                document.getElementById('tabBtnSales').classList.add('active');
+                document.getElementById('tabSales').classList.add('active');
+            } else if (tabName === 'orders') {
+                document.getElementById('tabBtnOrders').classList.add('active');
+                document.getElementById('tabOrders').classList.add('active');
+            } else if (tabName === 'items') {
+                document.getElementById('tabBtnItems').classList.add('active');
+                document.getElementById('tabItems').classList.add('active');
+            }
+        }
+
+        function filterMonthDetails() {
+            const query = document.getElementById('transactionSearch').value.toLowerCase();
+            const statusVal = document.getElementById('statusFilter').value;
+
+            // Filter Sales
+            let filteredSales = allSales;
+            let filteredOrders = allOrders;
+
+            if (selectedMonthKey !== 'all') {
+                filteredSales = allSales.filter(s => getMonthKeyFromDate(s.date) === selectedMonthKey);
+                filteredOrders = allOrders.filter(o => getMonthKeyFromDate(o.date) === selectedMonthKey);
+            }
+
+            if (query) {
+                filteredSales = filteredSales.filter(s => {
+                    const cust = (s.customer || '').toLowerCase();
+                    const idStr = String(s.id || '');
+                    const itemsStr = safeItems(s.items).map(i => i.name || '').join(' ').toLowerCase();
+                    return cust.includes(query) || idStr.includes(query) || itemsStr.includes(query);
+                });
+
+                filteredOrders = filteredOrders.filter(o => {
+                    const cust = (o.customer || '').toLowerCase();
+                    const phone = (o.phone || '').toLowerCase();
+                    const orderId = (o.orderId || '').toLowerCase();
+                    const idStr = String(o.id || '');
+                    const itemsStr = safeItems(o.items).map(i => i.name || '').join(' ').toLowerCase();
+                    return cust.includes(query) || phone.includes(query) || orderId.includes(query) || idStr.includes(query) || itemsStr.includes(query);
+                });
+            }
+
+            if (statusVal !== 'all') {
+                if (statusVal === 'completed') {
+                    filteredOrders = filteredOrders.filter(o => o.status === 'Completed' || o.status === 'Delivered' || o.paymentStatus === 'paid');
+                } else if (statusVal === 'pending') {
+                    filteredOrders = filteredOrders.filter(o => o.status === 'Pending' || o.status === 'Processing' || o.paymentStatus === 'unpaid');
+                } else if (statusVal === 'cancelled') {
+                    filteredOrders = filteredOrders.filter(o => o.status === 'Cancelled');
+                }
+            }
+
+            renderMonthSalesTable(filteredSales);
+            renderMonthOrdersTable(filteredOrders);
+        }
+
+        function viewSaleDetails(saleId) {
+            const sale = allSales.find(s => String(s.id) === String(saleId));
+            if (!sale) return;
+
+            const items = safeItems(sale.items);
+            const itemsRows = items.map(i => `
+                <tr>
+                    <td>${i.name || 'Item'} ${i.size ? `(${i.size})` : ''}</td>
+                    <td style="text-align:center;">${i.qty || 1}</td>
+                    <td style="text-align:right;">Rs. ${Number(i.price || i.sellPrice || 0).toLocaleString()}</td>
+                    <td style="text-align:right; font-weight:600;">Rs. ${(Number(i.price || i.sellPrice || 0) * (i.qty || 1)).toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            const profit = (Number(sale.total) || 0) - (Number(sale.buyTotal) || 0);
+
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-shopping-bag text-primary"></i> POS Sale #${sale.id}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div style="font-size:14px; line-height:1.8;">
+                    <p><strong>Date & Time:</strong> ${sale.date ? new Date(sale.date).toLocaleString() : 'N/A'}</p>
+                    <p><strong>Customer:</strong> ${sale.customer || 'Guest'}</p>
+                    <p><strong>Payment Method:</strong> ${sale.paymentMethod || 'Cash'}</p>
+                </div>
+                <table class="modal-body-table">
+                    <thead>
+                        <tr><th>Item</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Price</th><th style="text-align:right;">Total</th></tr>
+                    </thead>
+                    <tbody>${itemsRows}</tbody>
+                </table>
+                <div style="border-top:1px solid var(--border); margin-top:15px; padding-top:10px; font-size:14px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>Total Revenue:</span>
+                        <strong style="font-size:16px;">Rs. ${Number(sale.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--success);">
+                        <span>Estimated Profit:</span>
+                        <strong>Rs. ${profit.toLocaleString('en-US', {minimumFractionDigits:2})}</strong>
+                    </div>
+                </div>
+            `;
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function viewOrderDetails(orderDbId) {
+            const order = allOrders.find(o => String(o.id) === String(orderDbId));
+            if (!order) return;
+
+            const items = safeItems(order.items);
+            const itemsRows = items.map(i => `
+                <tr>
+                    <td>${i.name || 'Item'} ${i.size ? `(${i.size})` : ''}</td>
+                    <td style="text-align:center;">${i.qty || 1}</td>
+                    <td style="text-align:right;">Rs. ${Number(i.price || i.sellPrice || 0).toLocaleString()}</td>
+                    <td style="text-align:right; font-weight:600;">Rs. ${(Number(i.price || i.sellPrice || 0) * (i.qty || 1)).toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            const profit = (Number(order.total) || 0) - (Number(order.buyTotal) || 0);
+
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-truck text-info"></i> Customer Order ${order.orderId || ('#' + order.id)}`;
+            document.getElementById('modalBody').innerHTML = `
+                <div style="font-size:14px; line-height:1.8;">
+                    <p><strong>Date & Time:</strong> ${order.date ? new Date(order.date).toLocaleString() : 'N/A'}</p>
+                    <p><strong>Customer:</strong> ${order.customer || 'Customer'} (${order.phone || 'No phone'})</p>
+                    <p><strong>Address:</strong> ${order.address || 'N/A'}</p>
+                    <p><strong>Order Status:</strong> <span class="status-badge badge-info">${order.status || 'Pending'}</span></p>
+                    <p><strong>Payment Status:</strong> <span class="status-badge ${order.paymentStatus === 'paid' ? 'badge-success' : 'badge-warning'}">${order.paymentStatus || 'unpaid'}</span></p>
+                </div>
+                <table class="modal-body-table">
+                    <thead>
+                        <tr><th>Item</th><th style="text-align:center;">Qty</th><th style="text-align:right;">Price</th><th style="text-align:right;">Total</th></tr>
+                    </thead>
+                    <tbody>${itemsRows}</tbody>
+                </table>
+                <div style="border-top:1px solid var(--border); margin-top:15px; padding-top:10px; font-size:14px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>Order Total:</span>
+                        <strong style="font-size:16px;">Rs. ${Number(order.total || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--success);">
+                        <span>Estimated Profit:</span>
+                        <strong>Rs. ${order.status === 'Cancelled' ? '0.00 (Cancelled)' : profit.toLocaleString('en-US', {minimumFractionDigits:2})}</strong>
+                    </div>
+                </div>
+            `;
+            document.getElementById('detailsModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+        }
+
+        function exportAnalysisCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Analysis Report - Month: " + selectedMonthKey + "\n\n";
+
+            csvContent += "MONTHLY SUMMARY OVERVIEW\n";
+            csvContent += "Month,POS Revenue,Sales Count,Orders Revenue,Orders Count,Total Combined Revenue,Net Profit,Margin %\n";
+
+            monthsList.forEach(mKey => {
+                const mSales = allSales.filter(s => getMonthKeyFromDate(s.date) === mKey);
+                const mOrders = allOrders.filter(o => getMonthKeyFromDate(o.date) === mKey && o.status !== 'Cancelled');
+                const sRev = mSales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+                const sProf = mSales.reduce((sum, s) => sum + ((Number(s.total) || 0) - (Number(s.buyTotal) || 0)), 0);
+                const oRev = mOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+                const oProf = mOrders.reduce((sum, o) => sum + ((Number(o.total) || 0) - (Number(o.buyTotal) || 0)), 0);
+                const totRev = sRev + oRev;
+                const totProf = sProf + oProf;
+                const margin = totRev > 0 ? (totProf / totRev) * 100 : 0;
+
+                csvContent += `"${mKey}",${sRev},${mSales.length},${oRev},${mOrders.length},${totRev},${totProf},${margin.toFixed(1)}%\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `ruhira_monthly_analysis_${selectedMonthKey}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+
+</html>

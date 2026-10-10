@@ -302,6 +302,7 @@
             <a href="pos.html" class="nav-item"><i class="fas fa-shopping-cart"></i><span>POS Terminal</span></a>
             <a href="sales.html" class="nav-item"><i class="fas fa-history"></i><span>Sales History</span></a>
             <a href="orders.html" class="nav-item active"><i class="fas fa-file-invoice"></i><span>Orders</span></a>
+            <a href="waybill.html" class="nav-item"><i class="fas fa-truck-fast"></i><span>Waybill Generator</span></a>
             <a href="inventory.html" class="nav-item"><i class="fas fa-boxes"></i><span>Inventory</span></a>
             <a href="expenses.html" class="nav-item"><i class="fas fa-money-bill-wave"></i><span>Expenses</span></a>
             <a href="customers.html" class="nav-item"><i class="fas fa-users"></i><span>Customers</span></a>
@@ -310,6 +311,10 @@
             <a href="analysis.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Analysis</span></a>
             <a href="settings.html" class="nav-item"><i class="fas fa-cog"></i><span>Settings</span></a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
+            <a href="mobile.html" target="_blank" class="nav-item" style="color: #10b981; font-weight: 800;">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile App</span>
+            </a>
             <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
                 class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
@@ -340,6 +345,10 @@
                 <button class="btn btn-secondary" onclick="themeManager.toggle()"
                     style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                     <i class="fas fa-sun theme-toggle-icon"></i>
+                </button>
+                <button class="btn btn-secondary fullscreen-btn" onclick="themeManager.toggleFullscreen()"
+                    style="padding: 8px; width: 40px; justify-content: center;" title="Full Screen">
+                    <i class="fas fa-expand fullscreen-toggle-icon"></i>
                 </button>
                 <div class="action-btns">
                     <button class="btn btn-primary" onclick="window.location.href='pos.html'"><i
@@ -453,6 +462,11 @@
                         <span>Loyalty Used:</span>
                         <span id="v-loyalty-val"></span>
                     </div>
+                    <div id="v-card-discount-row"
+                        style="display:none; justify-content:space-between; margin-bottom:4px; font-size:12px; color:#f59e0b; font-weight:600; background:rgba(245,158,11,0.07); padding:5px 8px; border-radius:6px; border-left:3px solid #f59e0b;">
+                        <span><i class="fas fa-university" style="margin-right:4px;"></i>Card Bank Fee (3%):</span>
+                        <span id="v-card-discount-val"></span>
+                    </div>
                     <div id="v-delivery-row"
                         style="display:none; justify-content:space-between; margin-bottom:4px; font-size:13px;">
                         <span>Delivery Charge:</span>
@@ -464,6 +478,19 @@
                         <span>GRAND TOTAL:</span>
                         <span id="v-order-total"></span>
                     </div>
+
+                    <div id="v-advance-row"
+                        style="display:flex; justify-content:space-between; margin-top:6px; font-size:13px; color:#047857; font-weight:700;">
+                        <span>Advance Paid:</span>
+                        <span id="v-advance-val">Rs. 0.00</span>
+                    </div>
+                    <div id="v-balance-row"
+                        style="display:flex; justify-content:space-between; margin-top:3px; font-size:14px; color:#b91c1c; font-weight:800; border-top:1px dashed var(--border); padding-top:4px;">
+                        <span>Balance Due:</span>
+                        <span id="v-balance-val">Rs. 0.00</span>
+                    </div>
+
+                    <div id="v-full-paid-box" style="margin-top: 12px;"></div>
 
                     <div id="v-performance-box"
                         style="margin-top:15px; padding:10px; background:var(--success-glow); border-radius:8px; border-left:4px solid var(--success);">
@@ -477,6 +504,11 @@
                     </div>
 
                     <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="btn btn-success"
+                            style="justify-content:center; background: #10b981; color: white; grid-column: span 2; display:none; padding: 10px; font-size: 13px; font-weight: 800;"
+                            id="btn-mark-full-paid">
+                            <i class="fas fa-check-circle" style="margin-right: 6px;"></i> MARK AS FULL PAID
+                        </button>
                         <button class="btn btn-success"
                             style="justify-content:center; background: #10b981; color: white;"
                             id="btn-customer-order-bill">
@@ -496,9 +528,9 @@
                             <i class="fas fa-file-code"></i> SAVE AS HTML
                         </button>
                         <button class="btn btn-secondary"
-                            style="justify-content:center; color:var(--danger); border-color:var(--danger);"
+                            style="justify-content:center; color:var(--danger); border-color:var(--danger); grid-column: span 2;"
                             id="btn-delete-order">
-                            <i class="fas fa-trash"></i> DELETE
+                            <i class="fas fa-trash"></i> DELETE ORDER
                         </button>
                     </div>
                 </div>
@@ -506,126 +538,151 @@
         </div>
     </div>
 
+    <script src="bank_logos.js"></script>
     <script src="db.js"></script>
     <script>
+        let cachedOrders = [];
+
         document.addEventListener('DOMContentLoaded', async () => {
             await refreshOrders();
         });
 
         async function refreshOrders() {
-            const orders = await DB.getAllOrders();
-            renderOrders(orders);
+            try {
+                cachedOrders = await DB.getAllOrders() || [];
+                filterOrders();
+            } catch (err) {
+                console.error("Failed to load orders:", err);
+                const tbody = document.getElementById('ordersTable');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Error loading orders: ${err.message}</td></tr>`;
+                }
+            }
+        }
+
+        function filterOrders() {
+            const term = (document.getElementById('orderSearch')?.value || '').toLowerCase().trim();
+            const status = (document.getElementById('statusFilter')?.value || 'all').toLowerCase();
+
+            const filtered = (cachedOrders || []).filter(o => {
+                const matchesTerm = !term ||
+                    (o.orderId && String(o.orderId).toLowerCase().includes(term)) ||
+                    (o.id && String(o.id).toLowerCase().includes(term)) ||
+                    (o.customer && String(o.customer).toLowerCase().includes(term)) ||
+                    (o.phone && String(o.phone).toLowerCase().includes(term)) ||
+                    (o.address && String(o.address).toLowerCase().includes(term)) ||
+                    (o.city && String(o.city).toLowerCase().includes(term)) ||
+                    (o.trackingNo && String(o.trackingNo).toLowerCase().includes(term));
+
+                const orderStatus = (o.status || 'Pending').toLowerCase();
+                const paymentStatus = (o.paymentStatus || '').toLowerCase();
+                const matchesStatus = status === 'all' || orderStatus === status || paymentStatus === status;
+
+                return matchesTerm && matchesStatus;
+            });
+
+            renderOrders(filtered);
         }
 
         function renderOrders(orders) {
             const tbody = document.getElementById('ordersTable');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:var(--text-dim);">No orders found</td></tr>';
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-dim);"><i class="fas fa-box-open" style="font-size:24px; margin-bottom:8px; display:block;"></i>No orders found</td></tr>`;
                 return;
             }
 
-            orders.forEach(o => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="font-weight:600;">#${o.orderId || o.id}</td>
-                    <td style="font-size:12px;">${new Date(o.date).toLocaleDateString()}</td>
+            orders.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(o => {
+                const tr = document.createElement('tr');
+                const orderTotal = Number(o.total) || 0;
+                const advPaid = (o.advancePaid !== undefined && o.advancePaid !== null && o.advancePaid !== '') ? Number(o.advancePaid) : (o.status === 'Paid' || o.paymentStatus === 'paid' ? orderTotal : 0);
+                const balDue = (o.balanceDue !== undefined && o.balanceDue !== null && o.balanceDue !== '') ? Number(o.balanceDue) : Math.max(0, orderTotal - advPaid);
+
+                let paymentBadge = '';
+                if (balDue <= 0 || o.paymentStatus === 'paid' || o.status === 'Paid') {
+                    paymentBadge = `<span class="badge badge-success" style="font-size:11px;"><i class="fas fa-check-circle"></i> Paid Full</span>`;
+                } else if (advPaid > 0) {
+                    paymentBadge = `
+                        <span class="badge badge-warning" style="font-size:10.5px; background:rgba(245,158,11,0.12); color:#d97706; display:inline-flex; flex-direction:column; gap:2px; padding:4px 8px; text-align:left;">
+                            <span><strong>Adv:</strong> Rs. ${advPaid.toLocaleString()}</span>
+                            <span style="color:#dc2626;"><strong>Due:</strong> Rs. ${balDue.toLocaleString()}</span>
+                        </span>
+                    `;
+                } else {
+                    paymentBadge = `<span class="badge badge-warning" style="font-size:11px;">Unpaid</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td><strong>#${o.orderId || o.id}</strong></td>
+                    <td>${new Date(o.date).toLocaleDateString()}</td>
                     <td>
-                        <div style="font-weight:600;">${o.customer}</div>
-                        <div style="font-size:10px; color:var(--text-dim);">${o.customerId || ''}</div>
+                        <div style="font-weight:600;">${o.customer || 'Guest'}</div>
+                        <div style="font-size:11px; color:var(--text-dim);">${o.phone || ''} ${o.city ? '• ' + o.city : ''}</div>
                     </td>
-                    <td style="font-weight:700; color:var(--primary);">Rs. ${o.total.toLocaleString()}</td>
+                    <td><strong style="color:var(--primary); font-size:14px;">Rs. ${orderTotal.toLocaleString()}</strong></td>
                     <td>
-                        <select onchange="updateStatus(${o.id}, this.value)" class="status-badge status-${o.status.toLowerCase()}" style="border:none; cursor:pointer;">
-                            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>PENDING</option>
-                            <option value="Paid" ${o.status === 'Paid' ? 'selected' : ''}>PAID</option>
-                            <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>CANCELLED</option>
-                        </select>
+                        <span class="badge ${o.status === 'Paid' || o.status === 'Completed' ? 'badge-success' : (o.status === 'Cancelled' ? 'badge-danger' : 'badge-warning')}">${o.status || 'Pending'}</span>
                     </td>
+                    <td>${paymentBadge}</td>
                     <td>
-                        <button onclick="togglePayment(${o.id}, '${o.paymentStatus}')" 
-                                class="badge ${o.paymentStatus === 'paid' ? 'badge-success' : 'badge-warning'}" 
-                                style="border:none; cursor:pointer; width:80px;"
-                                ${o.paymentStatus === 'paid' ? 'disabled' : ''}>
-                            ${o.paymentStatus === 'paid' ? 'PAID' : 'MARK PAID'}
-                        </button>
-                    </td>
-                    <td class="action-btns">
-                        <button class="btn btn-primary btn-sm" onclick="viewOrder(${o.id})" title="View Details"><i class="fas fa-eye"></i> VIEW</button>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            ${balDue > 0 ? `
+                            <button class="btn btn-success" style="padding:5px 9px; font-size:11px; background:#10b981; color:white; font-weight:700; border:none;" onclick="markOrderFullPaid('${o.id}')" title="Mark Remaining Balance as Full Paid">
+                                <i class="fas fa-check-circle"></i> Pay Full
+                            </button>` : ''}
+                            <button class="btn btn-secondary" style="padding:5px 9px; font-size:12px;" onclick="viewOrder('${o.id}')" title="View Order">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-secondary" style="padding:5px 9px; font-size:12px; color:#10b981; border-color:#10b981;" onclick="printCustomerOrder('${o.id}')" title="Print Bill">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn btn-secondary" style="padding:5px 9px; font-size:12px; color:#6366f1; border-color:#6366f1;" onclick="downloadOrderHtmlBill('${o.id}')" title="Save as HTML">
+                                <i class="fas fa-file-code"></i>
+                            </button>
+                        </div>
                     </td>
                 `;
-                tbody.appendChild(row);
+                tbody.appendChild(tr);
             });
         }
 
-        async function filterOrders() {
-            const search = document.getElementById('orderSearch').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-            let orders = await DB.getAllOrders();
-
-            if (search) orders = orders.filter(o =>
-                (o.orderId && o.orderId.toLowerCase().includes(search)) ||
-                (o.customer && o.customer.toLowerCase().includes(search)) ||
-                (o.customerId && o.customerId.toLowerCase().includes(search))
-            );
-            if (status !== 'all') orders = orders.filter(o => o.status.toLowerCase() === status);
-
-            renderOrders(orders);
-        }
-
-        async function updateStatus(id, newStatus) {
-            await DB.updateOrderStatus(id, newStatus);
-            refreshOrders();
-        }
-
-        async function togglePayment(id, currentStatus) {
-            if (currentStatus === 'paid') return;
-            if (confirm('Mark this order as PAID? This will record the sale record and finalize the transaction.')) {
-                await DB.updateOrderPaymentStatus(id, 'paid');
-                refreshOrders();
-            }
-        }
-
-        async function deleteOrder(id) {
-            if (confirm('Delete this order?')) {
-                await DB.deleteOrder(id);
-                refreshOrders();
-            }
-        }
-
         async function viewOrder(id) {
-            const orders = await DB.getAllOrders();
-            const o = orders.find(x => x.id === id);
-            if (!o) return;
+            const orders = cachedOrders.length ? cachedOrders : await DB.getAllOrders();
+            const o = orders.find(x => String(x.id) === String(id) || String(x.orderId) === String(id));
+            if (!o) {
+                alert('Order not found!');
+                return;
+            }
 
-            // Basic Info
             document.getElementById('v-order-id').innerText = 'Order #' + (o.orderId || o.id);
-            document.getElementById('v-cust-name').innerText = o.customer;
-            document.getElementById('v-cust-id').innerText = o.customerId || 'Guest';
+            document.getElementById('v-cust-name').innerText = o.customer || 'Guest';
             document.getElementById('v-cust-phone').innerText = o.phone || 'N/A';
-            document.getElementById('v-cust-address').innerText = o.address || 'Standard Store Pickup';
             document.getElementById('v-delivery-method').innerText = o.deliveryMethod || 'Store Pickup';
+            document.getElementById('v-cust-id').innerText = o.customerId || 'N/A';
             document.getElementById('v-tracking-no').innerText = o.trackingNo || 'N/A';
             document.getElementById('v-weight').innerText = o.weight ? o.weight + ' kg' : 'N/A';
+            document.getElementById('v-cust-address').innerText = (o.address || 'N/A') + (o.city ? ', ' + o.city : '');
 
-            // Items List
             const itemsTbody = document.getElementById('v-items-list');
             itemsTbody.innerHTML = '';
-            o.items.forEach(item => {
+
+            const items = Array.isArray(o.items) ? o.items : [];
+            items.forEach(item => {
                 const originalPrice = item.originalPrice || item.sellPrice;
                 const priceDiff = item.sellPrice - originalPrice;
-                let priceHtml = `<div>Rs. ${item.sellPrice.toLocaleString()}</div>`;
+                let priceHtml = `<span>Rs. ${Number(item.sellPrice).toLocaleString()}</span>`;
 
                 if (priceDiff < 0) {
                     priceHtml = `
-                        <div style="font-weight:700; color:var(--danger);">Rs. ${item.sellPrice.toLocaleString()}</div>
-                        <div style="font-size:10px; color:var(--text-dim); text-decoration:line-through;">Was Rs. ${originalPrice.toLocaleString()}</div>
+                        <span style="color:var(--danger); font-weight:700;">Rs. ${Number(item.sellPrice).toLocaleString()}</span>
+                        <div style="font-size:10px; color:var(--text-dim); text-decoration:line-through;">Rs. ${Number(originalPrice).toLocaleString()}</div>
                     `;
                 } else if (priceDiff > 0) {
                     priceHtml = `
-                        <div style="font-weight:700; color:var(--warning);">Rs. ${item.sellPrice.toLocaleString()}</div>
-                        <div style="font-size:10px; color:var(--text-dim);">Up from Rs. ${originalPrice.toLocaleString()}</div>
+                        <span style="color:var(--warning); font-weight:700;">Rs. ${Number(item.sellPrice).toLocaleString()}</span>
+                        <div style="font-size:10px; color:var(--text-dim); text-decoration:line-through;">Rs. ${Number(originalPrice).toLocaleString()}</div>
                     `;
                 }
 
@@ -638,16 +695,72 @@
                     <td style="text-align:center;">${item.qty}</td>
                     <td style="text-align:right;">
                         ${priceHtml}
-                        <div style="font-size:11px; font-weight:700; margin-top:2px;">Total: Rs. ${(item.sellPrice * item.qty).toLocaleString()}</div>
+                        <div style="font-size:11px; font-weight:700; margin-top:2px;">Total: Rs. ${(Number(item.sellPrice) * Number(item.qty)).toLocaleString()}</div>
                     </td>
                 `;
                 itemsTbody.appendChild(tr);
             });
 
             // Financial Summary
-            const subtotal = o.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
+            const subtotal = items.reduce((sum, item) => sum + (Number(item.sellPrice) * Number(item.qty)), 0);
+            const totalAmt = Number(o.total) || subtotal;
             document.getElementById('v-subtotal').innerText = 'Rs. ' + subtotal.toLocaleString();
-            document.getElementById('v-order-total').innerText = 'Rs. ' + o.total.toLocaleString();
+            document.getElementById('v-order-total').innerText = 'Rs. ' + totalAmt.toLocaleString();
+
+            // Advance & Balance Calculation
+            let advancePaidAmt;
+            if (o.advancePaid !== undefined && o.advancePaid !== null && o.advancePaid !== '') {
+                advancePaidAmt = parseFloat(o.advancePaid) || 0;
+            } else {
+                advancePaidAmt = (o.status === 'Paid' || o.paymentStatus === 'paid') ? totalAmt : 0;
+            }
+            let balanceDueAmt;
+            if (o.balanceDue !== undefined && o.balanceDue !== null && o.balanceDue !== '') {
+                balanceDueAmt = parseFloat(o.balanceDue) || 0;
+            } else {
+                balanceDueAmt = Math.max(0, totalAmt - advancePaidAmt);
+            }
+
+            document.getElementById('v-advance-val').innerText = 'Rs. ' + advancePaidAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('v-balance-val').innerText = 'Rs. ' + balanceDueAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('v-balance-val').style.color = balanceDueAmt > 0 ? '#b91c1c' : '#047857';
+
+            // Full Paid Banner in Modal
+            const fullPaidBox = document.getElementById('v-full-paid-box');
+            const btnMarkFullPaid = document.getElementById('btn-mark-full-paid');
+            if (balanceDueAmt > 0) {
+                if (fullPaidBox) {
+                    fullPaidBox.innerHTML = `
+                        <div style="background: rgba(16, 185, 129, 0.08); border: 1.5px dashed #10b981; border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                            <div>
+                                <div style="font-size: 10.5px; font-weight: 700; color: #047857; text-transform: uppercase;">Payment Incomplete</div>
+                                <div style="font-size: 13px; font-weight: 800; color: #b91c1c;">Due: Rs. ${balanceDueAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            </div>
+                            <button class="btn btn-success" style="background: #10b981; color: white; font-weight: 800; padding: 7px 12px; font-size: 11.5px; white-space: nowrap; border: none; border-radius: 6px; cursor: pointer;" onclick="markOrderFullPaid('${o.id}')">
+                                <i class="fas fa-check-circle" style="margin-right: 4px;"></i> Pay Full (Rs. ${balanceDueAmt.toLocaleString()})
+                            </button>
+                        </div>
+                    `;
+                    fullPaidBox.style.display = 'block';
+                }
+                if (btnMarkFullPaid) {
+                    btnMarkFullPaid.style.display = 'flex';
+                    btnMarkFullPaid.innerHTML = `<i class="fas fa-check-circle" style="margin-right:6px;"></i> COMPLETE FULL PAYMENT (Rs. ${balanceDueAmt.toLocaleString()})`;
+                    btnMarkFullPaid.onclick = () => markOrderFullPaid(o.id);
+                }
+            } else {
+                if (fullPaidBox) {
+                    fullPaidBox.innerHTML = `
+                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 6px; color: #047857; font-weight: 800; font-size: 12px;">
+                            <i class="fas fa-check-double"></i> ORDER IS FULLY PAID
+                        </div>
+                    `;
+                    fullPaidBox.style.display = 'block';
+                }
+                if (btnMarkFullPaid) {
+                    btnMarkFullPaid.style.display = 'none';
+                }
+            }
 
             // Discount
             const discRow = document.getElementById('v-discount-row');
@@ -669,6 +782,17 @@
                 loyaltyRow.style.display = 'none';
             }
 
+            // Card Discount
+            const cardDiscRow = document.getElementById('v-card-discount-row');
+            if (cardDiscRow) {
+                if (o.cardDiscount > 0) {
+                    document.getElementById('v-card-discount-val').innerText = `- Rs. ${o.cardDiscount.toLocaleString()}`;
+                    cardDiscRow.style.display = 'flex';
+                } else {
+                    cardDiscRow.style.display = 'none';
+                }
+            }
+
             // Delivery
             const deliveryRow = document.getElementById('v-delivery-row');
             if (o.delivery > 0) {
@@ -678,16 +802,16 @@
                 deliveryRow.style.display = 'none';
             }
 
-            // Profit Calculation (if buyTotal exists)
+            // Profit Calculation
             const profitVal = document.getElementById('v-profit-val');
+            const cardFee = o.cardDiscount || 0;
             if (o.buyTotal !== undefined) {
-                const profit = o.total - o.buyTotal;
+                const profit = (totalAmt - cardFee) - o.buyTotal;
                 profitVal.innerText = 'Rs. ' + profit.toLocaleString();
                 document.getElementById('v-performance-box').style.display = 'block';
             } else {
-                // Fallback: simple calculation if buyTotal missing
-                const buySum = o.items.reduce((sum, i) => sum + ((i.buyPrice || 0) * i.qty), 0);
-                const profit = o.total - buySum;
+                const buySum = items.reduce((sum, i) => sum + ((i.buyPrice || 0) * i.qty), 0);
+                const profit = (totalAmt - cardFee) - buySum;
                 profitVal.innerText = 'Rs. ' + profit.toLocaleString();
                 document.getElementById('v-performance-box').style.display = 'block';
             }
@@ -701,27 +825,280 @@
             };
             document.getElementById('btn-edit-order').onclick = () => window.location.href = 'pos.html?editOrder=' + o.id;
             document.getElementById('btn-customer-order-bill').onclick = () => printCustomerOrder(o.id);
-            document.getElementById('btn-download-order-html').onclick = () => {
-                printCustomerOrder(o.id, false);
-                setTimeout(() => downloadHTMLBill(`Order_${o.id}`), 100);
-            };
+            document.getElementById('btn-download-order-html').onclick = () => downloadOrderHtmlBill(o.id);
             document.getElementById('viewOrderModal').style.display = 'flex';
         }
 
-        async function printCustomerOrder(id, triggerPrint = true) {
-            const orders = await DB.getAllOrders();
-            const o = orders.find(x => x.id === id);
-            if (!o) return;
+        async function markOrderFullPaid(id) {
+            const orders = cachedOrders.length ? cachedOrders : await DB.getAllOrders();
+            const o = orders.find(x => String(x.id) === String(id) || String(x.orderId) === String(id));
+            if (!o) {
+                alert('Order not found!');
+                return;
+            }
 
+            const orderTotal = Number(o.total) || 0;
+            const currentAdv = (o.advancePaid !== undefined && o.advancePaid !== null && o.advancePaid !== '') ? Number(o.advancePaid) : 0;
+            const currentBal = (o.balanceDue !== undefined && o.balanceDue !== null && o.balanceDue !== '') ? Number(o.balanceDue) : Math.max(0, orderTotal - currentAdv);
+
+            if (currentBal <= 0 || o.paymentStatus === 'paid' || o.status === 'Paid') {
+                alert('This order is already fully paid!');
+                return;
+            }
+
+            const confirmMsg = `Order #${o.orderId || o.id} එකෙහි ඉතිරි මුදල (Rs. ${currentBal.toLocaleString('en-LK', { minimumFractionDigits: 2 })}) සම්පූර්ණයෙන්ම ගෙවා අවසන් (Full Paid) ලෙස සටහන් කරන්නද?\n\n• Grand Total: Rs. ${orderTotal.toLocaleString()}\n• Advance Paid: Rs. ${currentAdv.toLocaleString()}\n• Balance to Complete: Rs. ${currentBal.toLocaleString()}`;
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                await DB.updateOrder(o.id, {
+                    advancePaid: orderTotal,
+                    balanceDue: 0,
+                    paymentStatus: 'paid',
+                    status: (o.status === 'Cancelled' ? o.status : 'Paid'),
+                    received: orderTotal,
+                    balance: 0
+                });
+
+                // Sync sales table if matching record exists
+                try {
+                    const sales = await DB.getAllSales();
+                    const matchingSale = sales.find(s => String(s.orderId) === String(o.orderId) || String(s.orderId) === String(o.id));
+                    if (matchingSale) {
+                        await DB.updateSale(matchingSale.id, {
+                            advancePaid: orderTotal,
+                            balanceDue: 0,
+                            received: orderTotal,
+                            balance: 0
+                        });
+                    }
+                } catch (syncErr) {
+                    console.warn("Could not sync sales table:", syncErr);
+                }
+
+                await refreshOrders();
+
+                // If view order modal is open, refresh it
+                const modal = document.getElementById('viewOrderModal');
+                if (modal && modal.style.display !== 'none') {
+                    viewOrder(o.id);
+                }
+
+                alert(`Order #${o.orderId || o.id} සාර්ථකව FULL PAID ලෙස සටහන් කරන ලදී!`);
+            } catch (err) {
+                console.error("Failed to mark order as full paid:", err);
+                alert("Error updating order payment: " + err.message);
+            }
+        }
+
+        async function downloadOrderHtmlBill(id) {
+            await printCustomerOrder(id, false);
+            const orders = cachedOrders.length ? cachedOrders : await DB.getAllOrders();
+            const o = orders.find(x => String(x.id) === String(id) || String(x.orderId) === String(id));
+            const filename = o ? `Order_${o.orderId || o.id}` : `Order_${id}`;
+            downloadHTMLBill(filename);
+        }
+
+        function generateBillSealSVG(type, uniqueId = 'seal_' + Math.random().toString(36).substr(2, 6)) {
+            if (!type || (type !== 'FULL_PAID' && type !== 'ADVANCE_PAID')) return '';
+
+            const isFull = type === 'FULL_PAID';
+            // Vibrant Green for Full Paid, Rich Amber/Golden-Yellow for Advance Paid
+            const color = isFull ? '#16a34a' : '#d97706';
+            const size = 138;
+            const cx = 69;
+            const cy = 69;
+
+            // 36-point serrated starburst points
+            const points = 36;
+            const outerR = 66;
+            const innerR = 61;
+            const step = Math.PI / points;
+            let serratedPath = '';
+            for (let i = 0; i < 2 * points; i++) {
+                const r = (i % 2 === 0) ? outerR : innerR;
+                const a = i * step - Math.PI / 2;
+                const x = (cx + r * Math.cos(a)).toFixed(1);
+                const y = (cy + r * Math.sin(a)).toFixed(1);
+                serratedPath += (i === 0 ? `M ${x},${y}` : ` L ${x},${y}`);
+            }
+            serratedPath += ' Z';
+
+            return `
+                <svg width="${size}" height="${size}" viewBox="0 0 138 138" xmlns="http://www.w3.org/2000/svg" style="display: block; overflow: visible;">
+                    <defs>
+                        <path id="${uniqueId}_top" d="M 26,69 A 43,43 0 0,1 112,69" fill="none" />
+                        <path id="${uniqueId}_bot" d="M 112,69 A 43,43 0 0,1 26,69" fill="none" />
+                    </defs>
+                    <!-- Outer Serrated Stamp Teeth (Solid fill matching reference) -->
+                    <path d="${serratedPath}" fill="${color}" stroke="${color}" stroke-width="1.2" stroke-linejoin="round" />
+                    <!-- White Inner Base -->
+                    <circle cx="69" cy="69" r="59" fill="#ffffff" />
+                    <!-- Concentric Circular Stamp Borders -->
+                    <circle cx="69" cy="69" r="57" fill="none" stroke="${color}" stroke-width="2.4" />
+                    <circle cx="69" cy="69" r="51.5" fill="none" stroke="${color}" stroke-width="1.1" stroke-dasharray="2.8 1.8" />
+                    <!-- Curved THANK YOU - Top -->
+                    <text fill="${color}" font-size="7.2" font-weight="900" font-family="'Outfit', 'Inter', Arial, sans-serif" letter-spacing="1.8">
+                        <textPath href="#${uniqueId}_top" startOffset="50%" text-anchor="middle">★ THANK YOU ★</textPath>
+                    </text>
+                    <!-- Curved THANK YOU - Bottom -->
+                    <text fill="${color}" font-size="7.2" font-weight="900" font-family="'Outfit', 'Inter', Arial, sans-serif" letter-spacing="1.8">
+                        <textPath href="#${uniqueId}_bot" startOffset="50%" text-anchor="middle">★ THANK YOU ★</textPath>
+                    </text>
+                    <!-- Divider Arcs around center text -->
+                    <path d="M 29,55 A 42,42 0 0,1 109,55" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" />
+                    <path d="M 29,83 A 42,42 0 0,0 109,83" fill="none" stroke="${color}" stroke-width="1.8" stroke-linecap="round" />
+                    <!-- Center Status Text -->
+                    ${isFull ? `
+                        <text x="69" y="77" fill="${color}" text-anchor="middle" font-size="25" font-weight="900" font-family="'Outfit', 'Impact', sans-serif" letter-spacing="1.8">PAID</text>
+                    ` : `
+                        <text x="69" y="68" fill="${color}" text-anchor="middle" font-size="13" font-weight="900" font-family="'Outfit', 'Impact', sans-serif" letter-spacing="1">ADVANCE</text>
+                        <text x="69" y="80.5" fill="${color}" text-anchor="middle" font-size="14.5" font-weight="900" font-family="'Outfit', 'Impact', sans-serif" letter-spacing="1.5">PAID</text>
+                    `}
+                </svg>
+            `;
+        }
+
+        function getBillSealHtml(data) {
+            const isFullPaid = !!data.isFullPaid;
+            const isAdvancePaid = !!data.isAdvancePaid;
+
+            if (!isFullPaid && !isAdvancePaid) {
+                return ''; // Unpaid: no seal
+            }
+
+            const type = isFullPaid ? 'FULL_PAID' : 'ADVANCE_PAID';
+            const svg = generateBillSealSVG(type);
+
+            return `
+                <div class="seal-watermark-wrap" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                    <div style="transform: rotate(-10deg); opacity: 0.24; mix-blend-mode: multiply; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                        ${svg}
+                    </div>
+                    ${isAdvancePaid ? `
+                        <div style="margin-top: 6px; display: inline-flex; align-items: center; gap: 6px; background: #fffdf5; border: 1.8px solid #d97706; border-radius: 5px; padding: 4px 10px; box-shadow: 0 1px 3px rgba(217, 119, 6, 0.15); opacity: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                            <input type="checkbox" id="seal-full-paid-check" style="width: 15px; height: 15px; cursor: pointer; accent-color: #15803d; margin: 0; vertical-align: middle;">
+                            <label for="seal-full-paid-check" style="font-size: 10px; font-weight: 900; color: #92400e; font-family: 'Outfit', sans-serif; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; user-select: none;">
+                                Full Paid
+                            </label>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function renderWaybillQR(qrDivId, orderOrSale) {
+            const qrDiv = document.getElementById(qrDivId);
+            if (!qrDiv) return;
+            qrDiv.innerHTML = '';
+
+            const id = orderOrSale.orderId || ('#' + (orderOrSale.id || ''));
+            const cust = (orderOrSale.customer || 'Guest').trim();
+            const phone = orderOrSale.phone || orderOrSale.customerPhone || 'N/A';
+            const address = orderOrSale.address || 'N/A';
+            const city = orderOrSale.city || '';
+            const delivery = orderOrSale.deliveryMethod || 'N/A';
+            const tracking = orderOrSale.trackingNo || orderOrSale.tracking || 'N/A';
+            const total = Number(orderOrSale.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Compact, highly scannable format (Low matrix density, fast scan on all mobile cameras & scanners)
+            const rawQrText = `ROOHIRA ORDER: ${id}\nCUST: ${cust}\nTEL: ${phone}\nADDR: ${address}${city ? ', ' + city : ''}\nTRACKING: ${tracking}\nTOTAL: LKR ${total}`;
+
+            let rendered = false;
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    let textToEncode = rawQrText;
+                    try { textToEncode = unescape(encodeURIComponent(rawQrText)); } catch(e) {}
+
+                    const tempHolder = document.createElement('div');
+                    new QRCode(tempHolder, {
+                        text: textToEncode,
+                        width: 120,
+                        height: 120,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: (QRCode.CorrectLevel && QRCode.CorrectLevel.M !== undefined) ? QRCode.CorrectLevel.M : 0
+                    });
+
+                    const canvas = tempHolder.querySelector('canvas');
+                    const img = tempHolder.querySelector('img');
+
+                    if (canvas && canvas.width > 0) {
+                        try {
+                            const dataUrl = canvas.toDataURL("image/png");
+                            qrDiv.innerHTML = `<img src="${dataUrl}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated;" />`;
+                            rendered = true;
+                        } catch(canvasErr) {
+                            console.warn("Canvas toDataURL failed:", canvasErr);
+                        }
+                    }
+                    if (!rendered && img && img.src) {
+                        qrDiv.innerHTML = `<img src="${img.src}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated;" />`;
+                        rendered = true;
+                    }
+                } catch (e) {
+                    console.warn("QRCode library exception, using fallback QR API:", e);
+                }
+            }
+
+            if (!rendered) {
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=2&data=${encodeURIComponent(rawQrText)}`;
+                qrDiv.innerHTML = `<img src="${qrApiUrl}" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain; border: none; display: block; image-rendering: pixelated;" />`;
+            }
+        }
+
+        async function printCustomerOrder(id, triggerPrint = true) {
+            const orders = cachedOrders.length ? cachedOrders : await DB.getAllOrders();
+            const o = orders.find(x => String(x.id) === String(id) || String(x.orderId) === String(id));
+            if (!o) {
+                alert('Order not found for printing!');
+                return;
+            }
+
+            const items = Array.isArray(o.items) ? o.items : [];
             const itemsPerPage = 22;
             const itemChunks = [];
-            for (let i = 0; i < o.items.length; i += itemsPerPage) {
-                itemChunks.push(o.items.slice(i, i + itemsPerPage));
+            for (let i = 0; i < items.length; i += itemsPerPage) {
+                itemChunks.push(items.slice(i, i + itemsPerPage));
             }
+            if (itemChunks.length === 0) itemChunks.push([]);
 
             const printContainer = document.getElementById('printableReceipt');
             printContainer.innerHTML = '';
             printContainer.style.display = 'block';
+
+            const orderTotal = Number(o.total) || 0;
+            let advancePaidAmt;
+            if (o.advancePaid !== undefined && o.advancePaid !== null && o.advancePaid !== '') {
+                advancePaidAmt = parseFloat(o.advancePaid) || 0;
+            } else {
+                advancePaidAmt = (o.status === 'Paid' || o.paymentStatus === 'paid') ? orderTotal : 0;
+            }
+            let balanceDueAmt;
+            if (o.balanceDue !== undefined && o.balanceDue !== null && o.balanceDue !== '') {
+                balanceDueAmt = parseFloat(o.balanceDue) || 0;
+            } else {
+                balanceDueAmt = Math.max(0, orderTotal - advancePaidAmt);
+            }
+
+            const isGuest = !o.customer || o.customer.trim().toLowerCase() === 'guest' || o.customer.trim().toLowerCase() === 'guest customer';
+            const cleanCustName = (o.customer || '').trim();
+            const strippedName = cleanCustName.replace(/^\(?(Miss\.|Mrs\.|Mr\.)(\s*[\/\.,]\s*(Miss\.|Mrs\.|Mr\.))*\)?\s*/i, '').trim();
+            const finalCustName = isGuest ? (o.customer || 'Guest Customer') : (strippedName || cleanCustName);
+            const displayCustName = finalCustName;
+            let allCustomersForBill = [];
+            if (!isGuest) {
+                try { allCustomersForBill = await DB.getAllCustomers() || []; } catch(e){}
+            }
+
+            const pointsEarnedVal = Number(o.pointsEarned) || 0;
+            let totalPointsDisplay = 0;
+            if (o.totalPoints !== undefined && o.totalPoints !== null && o.totalPoints !== '') {
+                totalPointsDisplay = Number(o.totalPoints) || 0;
+            } else if (!isGuest && allCustomersForBill.length > 0) {
+                const foundCust = allCustomersForBill.find(c => (o.customerId && String(c.custId) === String(o.customerId)) || (c.name && c.name.trim().toLowerCase() === finalCustName.toLowerCase()));
+                if (foundCust) totalPointsDisplay = Number(foundCust.loyaltyPoints) || 0;
+            }
 
             itemChunks.forEach((chunk, index) => {
                 const isLastPage = index === itemChunks.length - 1;
@@ -731,80 +1108,121 @@
                     width: 148mm; min-height: 210mm; padding: 10mm; padding-top: 5mm; 
                     position: relative; box-sizing: border-box; background: white; 
                     page-break-after: always; color: black; font-family: 'Inter', sans-serif;
+                    border: 2px solid #000;
                 `;
 
                 const headerHtml = `
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <img src="https://i.ibb.co/nsNtMvd8/Roohira-Batch.png" style="height: 45px; width: auto; object-fit: contain;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png" style="height: 44px; width: auto; object-fit: contain;">
                             <div>
-                                <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: 1px; color: #000; text-transform: uppercase;">
+                                <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 0.5px; color: #000; text-transform: uppercase; line-height: 1.1;">
                                     Roohira Collection
                                 </div>
-                                <div style="font-size: 10px; color: #444; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px;">
-                                    by Roohira Online | <i class="fas fa-phone-alt" style="font-size:8px;"></i> 0720898640 / 0714433279
+                                <div style="font-size: 9.5px; color: #333; font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <span>by Roohira Online</span>
+                                    <span style="color:#bbb;">|</span>
+                                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                        <i class="fab fa-whatsapp" style="color: #25D366; font-size: 11px;"></i>
+                                        <strong style="color: #000;">075 721 8786</strong>
+                                    </span>
+                                    <span style="color:#bbb;">|</span>
+                                    <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                        <i class="fas fa-phone-alt" style="font-size: 8.5px; color: #444;"></i>
+                                        <strong style="color: #000;">072-089-8640 / 075-721-8786</strong>
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <a href="https://ibb.co/67dSn5n1"><img src="https://i.ibb.co/MxXH2L2G/logo.png" alt="logo" border="0" style="height: 45px; width: auto; object-fit: contain;"></a>
                     </div>
-                    <div style="border-bottom: 2.5px solid #000; margin-top: 5px; width: 100%; -webkit-print-color-adjust: exact;"></div>
+                    <div style="border-bottom: 2.5px solid #000; margin-top: 4px; width: 100%; -webkit-print-color-adjust: exact;"></div>
                     
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; padding-bottom: 8px; border-bottom: 1.5px solid #000;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; padding-bottom: 6px; border-bottom: 1.5px solid #000;">
                         <div style="text-align: left;">
-                            <h1 style="font-size: 20px; font-weight: 300; margin: 0; color: #000; letter-spacing: 6px; text-transform: uppercase;">ORDER</h1>
+                            <h1 style="font-size: 18px; font-weight: 300; margin: 0; color: #000; letter-spacing: 5px; text-transform: uppercase;">ORDER INVOICE</h1>
                         </div>
                         <div style="text-align: right;">
-                            <p style="font-size: 10px; color: #555; margin: 0;">Page ${index + 1} of ${itemChunks.length}</p>
+                            <p style="font-size: 9.5px; color: #555; margin: 0;">Page ${index + 1} of ${itemChunks.length}</p>
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px;">
                         <div style="flex: 1;">
-                            <h3 style="font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 4px 0;">ORDER DETAILS</h3>
-                            <p style="font-weight: 800; font-size: 14px; margin: 0; color: #000;">${o.customer || 'Guest Customer'}</p>
-                            ${o.customerId && o.customerId !== 'Guest' ? `<p style="font-size: 10px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${o.customerId}</p>` : ''}
-                            <p style="font-size: 11px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${o.phone || 'N/A'}</p>
+                            <h3 style="font-size: 8.5px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 2px 0;">ORDER DETAILS</h3>
+                            ${!isGuest ? `<div style="font-size: 8.5px; font-weight: 700; color: #666; margin-bottom: 1px; letter-spacing: 0.3px;">(Mr. / Mrs. / Miss.)</div>` : ''}
+                            <p style="font-weight: 800; font-size: 13.5px; margin: 0; color: #000;">${finalCustName}</p>
+                            ${o.customerId && o.customerId !== 'Guest' ? `<p style="font-size: 9.5px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${o.customerId}</p>` : ''}
+                            <p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${o.phone || 'N/A'}</p>
+                            ${o.address && o.address !== 'N/A' ? `<p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">Addr: ${o.address}</p>` : ''}
+                            ${o.city ? `<p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">City: ${o.city}</p>` : ''}
+                            ${!isGuest ? `
+                            <div style="margin-top: 5px; padding: 3px 8px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px; font-size: 8.5px; color: #92400e; display: inline-flex; align-items: center; gap: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                                <i class="fas fa-star" style="color:#f59e0b; font-size: 9px;"></i>
+                                <span style="font-weight: 800; color: #b45309; text-transform: uppercase; font-size: 8px;">Loyalty Points:</span>
+                                <span>Earned: <strong style="color: #d97706; font-size: 9px;">+${pointsEarnedVal}</strong></span>
+                                <span style="color: #fcd34d;">|</span>
+                                <span>Total: <strong style="color: #b45309; font-size: 9px;">${totalPointsDisplay} pts</strong></span>
+                            </div>
+                            ` : ''}
                         </div>
                         <div style="text-align: right;">
-                            <p style="font-weight: 800; font-size: 11px; margin: 0; color: #000;">Order: #${o.orderId || o.id}</p>
-                            <p style="font-size: 11px; color: #444; margin: 3px 0 0 0; font-weight: 500;">Date: ${new Date(o.date).toLocaleDateString()}</p>
-                            ${o.deliveryMethod ? `<p style="font-size: 11px; margin: 3px 0 0 0; font-weight: 600; color: #111;">Method: ${o.deliveryMethod}</p>` : `<p style="font-size: 11px; margin: 3px 0 0 0; font-weight: 600; color: #111;">Method: Store Pickup</p>`}
+                            <p style="font-weight: 800; font-size: 10.5px; margin: 0; color: #000;">Order: #${o.orderId || o.id}</p>
+                            <p style="font-size: 10.5px; color: #444; margin: 2px 0 0 0; font-weight: 500;">Date: ${new Date(o.date).toLocaleDateString()}</p>
+                            <p style="font-size: 10.5px; margin: 2px 0 0 0; font-weight: 600; color: #111;">Method: ${o.deliveryMethod || 'Store Pickup'}</p>
                         </div>
                     </div>
                 `;
 
                 let tableRows = chunk.map(item => {
-                    const originalPrice = item.originalPrice || item.sellPrice;
-                    const priceDiff = item.sellPrice - originalPrice;
-                    let priceDetails = `Rs. ${item.sellPrice.toLocaleString()}`;
-                    if (priceDiff !== 0) {
-                        priceDetails += `<br><span style="font-size:8px; color:#777;">(Orig: Rs. ${originalPrice.toLocaleString()})</span>`;
+                    const originalPrice = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
+                    const sellPrice = parseFloat(item.sellPrice) || 0;
+                    const qty = parseFloat(item.qty) || 1;
+                    const priceDiff = originalPrice - sellPrice;
+
+                    let discDisplay = `<span style="color: #aaa; font-size: 9px;">-</span>`;
+                    if (priceDiff > 0 && originalPrice > 0) {
+                        const discPct = Math.round((priceDiff / originalPrice) * 100);
+                        discDisplay = `<span style="color: #be185d; font-weight: 800; font-size: 9px; background: #fdf2f8; padding: 1px 4px; border-radius: 3px; border: 1px solid #fbcfe8;">${discPct}%</span>`;
                     }
+
+                    let priceDetails = `Rs. ${sellPrice.toLocaleString()}`;
+                    if (priceDiff > 0) {
+                        priceDetails = `Rs. ${sellPrice.toLocaleString()}<br><span style="font-size:7.5px; color:#888; text-decoration: line-through;">Rs. ${originalPrice.toLocaleString()}</span>`;
+                    } else if (priceDiff < 0) {
+                        priceDetails = `Rs. ${sellPrice.toLocaleString()}<br><span style="font-size:7.5px; color:#b45309;">(Orig: Rs. ${originalPrice.toLocaleString()})</span>`;
+                    }
+
+                    let opts = [];
+                    if (item.size) opts.push(`Size: ${item.size}`);
+                    if (item.colour || item.color) opts.push(`Color: ${item.colour || item.color}`);
+                    let optStr = opts.length > 0 ? `<br><span style="font-size:8px; color:#555; font-weight:600;">(${opts.join(' | ')})</span>` : '';
+
                     return `
-                        <tr style="border-bottom: 1px solid #000;">
-                            <td style="padding:6px 0; text-align: left; font-weight: 500; font-size: 10px;">
+                        <tr style="border-bottom: 1.5px solid #000;">
+                            <td style="padding:5px 0; text-align: left; font-weight: 500; font-size: 9.5px;">
                                 ${item.name}
-                                ${item.size ? `<span style="font-size:9px; color:#666;"> - Size: ${item.size}</span>` : ''}
+                                ${optStr}
                             </td>
-                            <td style="padding:6px 0; text-align: center; font-size: 10px;">${item.qty}</td>
-                            <td style="padding:6px 0; text-align: right; font-size: 10px;">${priceDetails}</td>
-                            <td style="padding:6px 0; text-align: right; font-weight: 700; font-size: 10px;">Rs. ${(item.sellPrice * item.qty).toLocaleString()}</td>
+                            <td style="padding:5px 0; text-align: center; font-size: 9.5px;">${qty}</td>
+                            <td style="padding:5px 0; text-align: right; font-size: 9.5px;">${priceDetails}</td>
+                            <td style="padding:5px 0; text-align: center; font-size: 9.5px;">${discDisplay}</td>
+                            <td style="padding:5px 0; text-align: right; font-weight: 700; font-size: 9.5px;">Rs. ${(sellPrice * qty).toLocaleString()}</td>
                         </tr>
                     `;
                 }).join('');
 
                 const tableHtml = `
-                    <div style="margin-top: 10px;">
+                    <div style="margin-top: 8px;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="border-bottom: 2px solid #000;">
-                                    <th style="padding: 6px 0; text-align: left; font-size: 9px; font-weight: 800; text-transform: uppercase;">Item Descriptions</th>
-                                    <th style="padding: 6px 0; text-align: center; font-size: 9px; font-weight: 800; text-transform: uppercase; width: 40px;">Qty</th>
-                                    <th style="padding: 6px 0; text-align: right; font-size: 9px; font-weight: 800; text-transform: uppercase; width: 80px;">Price</th>
-                                    <th style="padding: 6px 0; text-align: right; font-size: 9px; font-weight: 800; text-transform: uppercase; width: 80px;">Total</th>
+                                    <th style="padding: 5px 0; text-align: left; font-size: 8.5px; font-weight: 800; text-transform: uppercase;">Item Descriptions</th>
+                                    <th style="padding: 5px 0; text-align: center; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 32px;">Qty</th>
+                                    <th style="padding: 5px 0; text-align: right; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 65px;">Price</th>
+                                    <th style="padding: 5px 0; text-align: center; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 48px;">Disc (%)</th>
+                                    <th style="padding: 5px 0; text-align: right; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 68px;">Total</th>
                                 </tr>
                             </thead>
-                            <tbody style="font-size: 10px;">
+                            <tbody style="font-size: 9.5px;">
                                 ${tableRows}
                             </tbody>
                         </table>
@@ -814,69 +1232,161 @@
                 pageDiv.innerHTML = headerHtml + tableHtml;
 
                 if (isLastPage) {
-                    const subtotal = o.items.reduce((sum, item) => sum + (item.sellPrice * item.qty), 0);
-                    const discVal = (subtotal * (o.discount || 0)) / 100;
+                    const subtotal = items.reduce((sum, item) => sum + ((parseFloat(item.sellPrice) || 0) * (parseFloat(item.qty) || 1)), 0);
+                    const orderDiscPercent = parseFloat(o.discount) || 0;
+                    const orderDiscVal = Math.round(((subtotal * orderDiscPercent) / 100) * 100) / 100;
+                    const itemSavings = items.reduce((sum, item) => {
+                        const orig = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
+                        const sell = parseFloat(item.sellPrice) || 0;
+                        const qty = parseFloat(item.qty) || 1;
+                        return sum + (orig > sell ? (orig - sell) * qty : 0);
+                    }, 0);
+                    const loyaltyDisc = parseFloat(o.loyaltyDiscount) || 0;
+                    const totalSavingsAmount = orderDiscVal + itemSavings + loyaltyDisc;
+
+                    const isFullPaid = (balanceDueAmt <= 0 || o.status === 'Paid' || o.paymentStatus === 'paid' || (orderTotal > 0 && advancePaidAmt >= orderTotal));
+                    const isAdvancePaid = !isFullPaid && (advancePaidAmt > 0);
+
+                    const sealHtml = getBillSealHtml({
+                        isFullPaid: isFullPaid,
+                        isAdvancePaid: isAdvancePaid,
+                        advancePaid: advancePaidAmt,
+                        balanceDue: balanceDueAmt,
+                        total: orderTotal
+                    });
+
+                    const pointsEarnedVal = Number(o.pointsEarned) || 0;
+                    let totalPointsDisplay = 0;
+                    if (o.totalPoints !== undefined && o.totalPoints !== null && o.totalPoints !== '') {
+                        totalPointsDisplay = Number(o.totalPoints) || 0;
+                    } else if (!isGuest && allCustomersForBill.length > 0) {
+                        const foundCust = allCustomersForBill.find(c => (o.customerId && String(c.custId) === String(o.customerId)) || (c.name && c.name.trim().toLowerCase() === finalCustName.toLowerCase()));
+                        if (foundCust) totalPointsDisplay = Number(foundCust.loyaltyPoints) || 0;
+                    }
 
                     const totalsHtml = `
-                        <div style="margin-top: 10px; margin-left: auto; width: 220px;">
-                            <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px;">
-                                <span style="font-weight: 600; color: #555;">Subtotal:</span>
-                                <span style="font-weight: 700;">Rs. ${subtotal.toLocaleString()}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; width: 100%;">
+                            <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 0 10px 0 0; min-height: 160px;">
+                                <div style="width: 100%; text-align: center;">
+                                    ${sealHtml}
+                                </div>
                             </div>
-                            ${o.discount > 0 ? `
-                            <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #a00;">
-                                <span style="font-weight: 600;">Discount:</span>
-                                <span style="font-weight: 700;">- Rs. ${discVal.toLocaleString()}</span>
-                            </div>` : ''}
-                            ${o.loyaltyDiscount > 0 ? `
-                            <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; color: #b45309;">
-                                <span style="font-weight: 600;">Loyalty Disc:</span>
-                                <span style="font-weight: 700;">- Rs. ${o.loyaltyDiscount.toLocaleString()}</span>
-                            </div>` : ''}
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0 4px; border-top: 2px solid #000; margin-top: 4px; font-size: 15px; font-weight: 900; color: #000;">
-                                <span>TOTAL:</span>
-                                <span>Rs. ${o.total.toLocaleString()}</span>
+                            <div style="width: 240px; flex-shrink: 0;">
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px;">
+                                    <span style="font-weight: 600; color: #555;">Subtotal:</span>
+                                    <span style="font-weight: 700;">Rs. ${subtotal.toLocaleString()}</span>
+                                </div>
+                                ${itemSavings > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #be185d;">
+                                    <span style="font-weight: 600;">Item Discounts:</span>
+                                    <span style="font-weight: 700;">- Rs. ${itemSavings.toLocaleString()}</span>
+                                </div>` : ''}
+                                ${orderDiscPercent > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #dc2626;">
+                                    <span style="font-weight: 600;">Bill Discount (${orderDiscPercent}%):</span>
+                                    <span style="font-weight: 700;">- Rs. ${orderDiscVal.toLocaleString()}</span>
+                                </div>` : ''}
+                                ${loyaltyDisc > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #b45309;">
+                                    <span style="font-weight: 600;">Loyalty Discount:</span>
+                                    <span style="font-weight: 700;">- Rs. ${loyaltyDisc.toLocaleString()}</span>
+                                </div>` : ''}
+                                ${totalSavingsAmount > 0 && (itemSavings > 0 || loyaltyDisc > 0) ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 5px; font-size: 10px; color: #15803d; background: #f0fdf4; border-radius: 3px; margin: 2px 0; border: 1px dashed #86efac;">
+                                    <span style="font-weight: 700;">Total Saved:</span>
+                                    <span style="font-weight: 800;">Rs. ${totalSavingsAmount.toLocaleString()}</span>
+                                </div>` : ''}
+                                ${o.cardDiscount > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10px; color: #92400e; background:#fffbeb; padding: 2px 4px; border-radius:3px;">
+                                    <span style="font-weight: 600;">Card Bank Fee (3%):</span>
+                                    <span style="font-weight: 700;">- Rs. ${o.cardDiscount.toLocaleString()}</span>
+                                </div>` : ''}
+                                ${o.delivery > 0 ? `
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #555;">
+                                    <span style="font-weight: 600;">Delivery Charge:</span>
+                                    <span style="font-weight: 700;">+ Rs. ${Number(o.delivery).toLocaleString()}</span>
+                                </div>` : ''}
+                                <div style="display: flex; justify-content: space-between; padding: 6px 0 3px; border-top: 2px solid #000; margin-top: 3px; font-size: 14px; font-weight: 900; color: #000;">
+                                    <span>GRAND TOTAL:</span>
+                                    <span>Rs. ${orderTotal.toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 3px 6px; font-size: 11px; color: #047857; font-weight: 800; background: #ecfdf5; border-radius: 4px; margin-top: 3px; border: 1px solid #a7f3d0;">
+                                    <span>Advance Paid:</span>
+                                    <span>Rs. ${advancePaidAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 3px 6px; font-size: 12px; color: ${balanceDueAmt > 0 ? '#b91c1c' : '#047857'}; font-weight: 900; background: ${balanceDueAmt > 0 ? '#fef2f2' : '#ecfdf5'}; border-radius: 4px; margin-top: 3px; border: 1px solid ${balanceDueAmt > 0 ? '#fecaca' : '#a7f3d0'};">
+                                    <span>Remaining Balance:</span>
+                                    <span>Rs. ${balanceDueAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 8.5px; color: #444; margin-top: 4px; border-top: 1px solid #000;">
+                                    <span style="font-weight: 500;">Pay Method:</span>
+                                    <span style="font-weight: 700; text-transform: uppercase;">${o.paymentMethod || 'Cash'}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 8.5px; color: #444;">
+                                    <span style="font-weight: 500;">Received:</span>
+                                    <span style="font-weight: 700;">Rs. ${(o.received || 0).toLocaleString()}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 8.5px; color: #444;">
+                                    <span style="font-weight: 500;">Change:</span>
+                                    <span style="font-weight: 700;">Rs. ${(o.balance > 0 ? o.balance : 0).toLocaleString()}</span>
+                                </div>
                             </div>
-                            <div style="display: flex; justify-content: space-between; padding: 3px 0; font-size: 9px; color: #444; margin-top: 6px; border-top: 1px solid #000;">
-                                <span style="font-weight: 500;">Pay Method:</span>
-                                <span style="font-weight: 700; text-transform: uppercase;">${o.paymentMethod || 'Cash'}</span>
-                            </div>
-                            ${o.received > 0 ? `
-                            <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 9px; color: #444;">
-                                <span style="font-weight: 500;">Received:</span>
-                                <span style="font-weight: 700;">Rs. ${o.received.toLocaleString()}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 1px 0; font-size: 9px; color: #444;">
-                                <span style="font-weight: 500;">Balance:</span>
-                                <span style="font-weight: 700;">Rs. ${o.balance.toLocaleString()}</span>
-                            </div>` : ''}
                         </div>
                     `;
 
+                    const hnbLogoSrc = (typeof HNB_LOGO_B64 !== 'undefined') ? HNB_LOGO_B64 : 'hnb_logo.png';
+                    const pbLogoSrc = (typeof PEOPLES_BANK_LOGO_B64 !== 'undefined') ? PEOPLES_BANK_LOGO_B64 : 'peoples_bank_logo.png';
+
                     const footerHtml = `
-                        <div style="position: absolute; bottom: 5mm; left: 10mm; right: 10mm; border-top: 1.5px solid #000; padding-top: 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div style="font-size: 9.5px; color: #000; line-height: 1.2;">
-                                    <p style="margin: 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #555; margin-bottom: 2px;">Bank Transfer Details:</p>
-                                    <div style="display: grid; grid-template-columns: 55px 1fr; gap: 1px;">
-                                        <span style="font-weight: 600;">Bank:</span> <span>People's Bank</span>
-                                        <span style="font-weight: 600;">Name:</span> <span>Onija Wathsuka Kodithuwakku</span>
-                                        <span style="font-weight: 600;">Acc.No:</span> <span style="font-weight: 800;">217-200-4500-29209</span>
-                                        <span style="font-weight: 600;">Branch:</span> <span>Mahara</span>
+                        <div style="position: absolute; bottom: 4mm; left: 10mm; right: 10mm; border-top: 1.5px solid #000; padding-top: 6px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <!-- Bank Accounts Box with Official Logos -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <p style="margin: 0 0 3px 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #444; letter-spacing: 0.5px;">Bank Transfer Details:</p>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                        <!-- HNB Bank -->
+                                        <div style="border: 1px solid #0b2c6d; border-radius: 4px; padding: 3px 5px; background: #f8faff;">
+                                            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+                                                <img src="${hnbLogoSrc}" alt="HNB" style="height: 16px; width: auto; max-width: 50px; object-fit: contain;">
+                                                <strong style="font-size: 8.5px; color: #0b2c6d; white-space: nowrap;">HNB Bank</strong>
+                                            </div>
+                                            <div style="font-size: 7.5px; color: #111; line-height: 1.25;">
+                                                <div>Name: <strong>Roohira Collection</strong></div>
+                                                <div>Acc: <strong style="font-size: 8px; color: #0b2c6d;">0840 2041 4386</strong></div>
+                                                <div>Branch: <strong>Kadawatha</strong></div>
+                                            </div>
+                                        </div>
+                                        <!-- People's Bank -->
+                                        <div style="border: 1px solid #7c0000; border-radius: 4px; padding: 3px 5px; background: #fffaf8;">
+                                            <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+                                                <img src="${pbLogoSrc}" alt="People's Bank" style="height: 16px; width: auto; max-width: 55px; object-fit: contain;">
+                                                <strong style="font-size: 8.5px; color: #7c0000; white-space: nowrap;">People's Bank</strong>
+                                            </div>
+                                            <div style="font-size: 7.5px; color: #111; line-height: 1.25;">
+                                                <div>Name: <strong>Onija Wathsuka</strong></div>
+                                                <div>Acc: <strong style="font-size: 8px; color: #7c0000;">217-200-4500-29209</strong></div>
+                                                <div>Branch: <strong>Mahara</strong></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 10px; align-items: center;">
+
+                                <!-- QR Codes -->
+                                <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
                                     <div style="text-align: center;">
-                                        <img src="https://i.ibb.co/sdr25nQc/FB-Page.jpg" style="height: 45px; width: 45px; object-fit: contain;">
-                                        <p style="font-size: 7px; font-weight: 800; margin: 2px 0 0 0; color: #555;">FB PAGE</p>
+                                        <img src="https://i.ibb.co/sdr25nQc/FB-Page.jpg" style="height: 38px; width: 38px; object-fit: contain;">
+                                        <p style="font-size: 6.5px; font-weight: 800; margin: 1px 0 0 0; color: #555;">FB PAGE</p>
                                     </div>
                                     <div style="text-align: center;">
-                                        <img src="https://i.ibb.co/ccT7rrCx/Web-site.jpg" style="height: 45px; width: 45px; object-fit: contain;">
-                                        <p style="font-size: 7px; font-weight: 800; margin: 2px 0 0 0; color: #555;">WEBSITE</p>
+                                        <img src="https://i.ibb.co/ccT7rrCx/Web-site.jpg" style="height: 38px; width: 38px; object-fit: contain;">
+                                        <p style="font-size: 6.5px; font-weight: 800; margin: 1px 0 0 0; color: #555;">WEBSITE</p>
                                     </div>
                                 </div>
                             </div>
-                            <p style="font-size: 11px; font-weight: 900; color: #000; text-align: center; margin-top: 5px; font-family: 'Outfit';">Thank You! Come Again.</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #ddd; padding-top: 2px;">
+                                <span style="font-size: 7px; color: #777; font-weight: 600;">Auto-generated Invoice &bull; ${new Date(o.date || Date.now()).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' })}</span>
+                                <span style="font-size: 9.5px; font-weight: 900; color: #000; font-family: 'Outfit';">Thank You! Come Again.</span>
+                            </div>
                         </div>
                     `;
                     pageDiv.innerHTML += totalsHtml + footerHtml;
@@ -885,7 +1395,7 @@
                 printContainer.appendChild(pageDiv);
             });
 
-            // Generate Delivery Page for the record
+            // Generate Delivery / Waybill Page for the record
             const deliveryPageDiv = document.createElement('div');
             deliveryPageDiv.className = 'receipt-page';
             deliveryPageDiv.style.pageBreakBefore = 'always';
@@ -895,13 +1405,13 @@
             deliveryPageDiv.style.color = 'black';
             deliveryPageDiv.style.fontFamily = "'Inter', sans-serif";
             
-            const trackingId = o.trackingNo || o.orderId || o.id || '0000';
-            const itemsText = o.items.map(i => `${i.name} (${i.size || 'N/A'}) x${i.qty}`).join('\n');
-            const qrText = `Roohira Collection\nOrder ID: #${o.orderId || o.id}\nCustomer: ${o.customer || 'Guest'}\nPhone: ${o.phone || 'N/A'}\nAddress: ${o.address || 'N/A'}\nCity: ${o.city || 'N/A'}\nDelivery: ${o.deliveryMethod || 'N/A'}\nTracking No: ${trackingId}\nItems:\n${itemsText}\nTotal: Rs. ${o.total.toLocaleString()}\nThank you for shopping with us!`;
-            const isCOD = o.deliveryMethod === 'COD';
+            const trackingId = o.trackingNo || '';
+            const itemsText = items.map(i => `${i.name} (${i.size || 'N/A'}) x${i.qty}`).join('\n');
+            const qrText = `Roohira Collection\nOrder ID: #${o.orderId || o.id}\nCustomer: ${o.customer || 'Guest'}\nPhone: ${o.phone || 'N/A'}\nAddress: ${o.address || 'N/A'}\nCity: ${o.city || 'N/A'}\nDelivery: ${o.deliveryMethod || 'N/A'}\nTracking No: ${trackingId || 'N/A'}\nItems:\n${itemsText}\nTotal: Rs. ${orderTotal.toLocaleString()}\nAdvance Paid: Rs. ${advancePaidAmt.toLocaleString()}\nBalance Due: Rs. ${balanceDueAmt.toLocaleString()}\nThank you for shopping with us!`;
+            const isCOD = o.deliveryMethod === 'COD' || balanceDueAmt > 0;
             const formattedDate = new Date(o.date || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-            const itemsTableRows = o.items.map(item => `
+            const itemsTableRows = items.map(item => `
                 <tr style="border-bottom: 1px solid #000;">
                     <td style="padding: 3px 0; text-align: left;">${item.name} ${item.size ? `(Size: ${item.size})` : ''}</td>
                     <td style="padding: 3px 0; text-align: center; width: 50px;">${item.qty}</td>
@@ -913,8 +1423,8 @@
                     <!-- Top Row: Logos & Waybill Text -->
                     <div style="display: flex; border-bottom: 2.5px solid #000; height: 50px;">
                         <div style="width: 65%; padding: 6px; display: flex; align-items: center; gap: 8px; border-right: 2.5px solid #000; box-sizing: border-box;">
-                            <img src="https://i.ibb.co/nsNtMvd8/Roohira-Batch.png" style="height: 32px; width: auto; object-fit: contain;">
-                            <div style="font-weight: 900; font-size: 11px; line-height: 1.1; font-family: 'Outfit', sans-serif; color: #000;">ROOHIRA<br><span style="font-size: 8px; font-weight: 700; color: #333;">COLLECTION</span></div>
+                            <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png" style="height: 32px; width: auto; object-fit: contain;">
+                            <div style="font-weight: 900; font-size: 13px; font-family: 'Outfit', Arial, sans-serif; color: #000; white-space: nowrap; letter-spacing: 0.5px;">Roohira Collection</div>
                         </div>
                         <div style="width: 35%; padding: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; letter-spacing: 2px; color: #000;">
                             WAYBILL
@@ -930,13 +1440,14 @@
                                 <div style="font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px; color: #555;">Order Details</div>
                                 <div><strong>Ship Date:</strong> ${formattedDate}</div>
                                 <div><strong>Weight (kg):</strong> ${o.weight ? o.weight : 'N/A'}</div>
+                                <div><strong>Tracking No:</strong> ${trackingId}</div>
                                 <div><strong>Order ID:</strong> ${o.orderId || o.id}</div>
                             </div>
                             <!-- Sender Details -->
                             <div style="padding: 6px; box-sizing: border-box;">
-                                <div style="font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px; color: #555;">Sender Details (Pengirim)</div>
+                                <div style="font-weight: 800; text-transform: uppercase; font-size: 8px; border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 4px; color: #555;">Sender Details</div>
                                 <div><strong>Name:</strong> Roohira Collection</div>
-                                <div><strong>Phone:</strong> 0720898640 / 0714433279</div>
+                                <div><strong>Phone:</strong> 072-089-8640 / 075-721-8786</div>
                                 <div style="font-size: 8px; color: #333;"><strong>Address:</strong> 65/11, Sooriyapaluwa, Eldeniya, Kadawatha.</div>
                                 <div style="margin-top: 3px; font-weight: 700;">Postcode: 11850</div>
                             </div>
@@ -944,22 +1455,22 @@
 
                         <!-- Right Side: Big QR Code -->
                         <div style="width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; box-sizing: border-box; text-align: center; background: #fff;">
-                            <div id="qr-waybill-${o.id}" style="width: 90px; height: 90px; display: flex; align-items: center; justify-content: center;"></div>
-                            <div style="font-size: 7px; font-weight: 900; color: #000; margin-top: 4px; letter-spacing: 0.5px;">ORDER DETAILS (SCAN ME)</div>
+                            <div id="qr-waybill-${o.id}" style="width: 115px; height: 115px; display: flex; align-items: center; justify-content: center; background: #ffffff; padding: 4px; border: 1.5px solid #000; border-radius: 4px; box-sizing: border-box;"></div>
+                            <div style="font-size: 7.5px; font-weight: 900; color: #000; margin-top: 4px; letter-spacing: 0.5px;">ORDER DETAILS (SCAN ME)</div>
                         </div>
                     </div>
 
                     <!-- Fourth Row: Recipient Details & Short Barcode -->
                     <div style="display: flex; border-bottom: 2.5px solid #000; flex-direction: column;">
                         <div style="width: 100%; padding: 8px; box-sizing: border-box; font-size: 10px;">
-                            <div style="font-weight: 900; text-transform: uppercase; font-size: 10px; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 6px; color: #333;">Recipient Details (Penerima)</div>
-                            <div style="margin-bottom: 3px;"><strong>Name:</strong> <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #000;">${o.customer || 'Guest Customer'}</span></div>
-                            <div style="margin-bottom: 3px;"><strong>Phone:</strong> <span style="font-size: 11px; font-weight: 800; color: #000;">${o.phone || 'N/A'}</span></div>
-                            <div style="margin-bottom: 4px; line-height: 1.3;"><strong>Address:</strong> <span style="font-size: 14px; font-weight: 900; color: #000;">${o.address ? o.address : 'Store Pickup / Address not provided'}</span></div>
-                            ${o.city ? `<div style="margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px;"><strong>City:</strong> <span style="font-size: 15px; font-weight: 950; text-transform: uppercase; color: #000;">${o.city}</span></div>` : ''}
+                            <div style="font-weight: 900; text-transform: uppercase; font-size: 10px; border-bottom: 1.5px solid #000; padding-bottom: 3px; margin-bottom: 6px; color: #333;">Recipient Details</div>
+                            <div style="margin-bottom: 3px;"><strong>Name:</strong> <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #000;">${displayCustName}</span></div>
+                            <div style="margin-bottom: 3px;"><strong>Phone:</strong> <span style="font-size: 10px; font-weight: 700; color: #000;">${o.phone || 'N/A'}</span></div>
+                            <div style="margin-bottom: 4px; line-height: 1.3;"><strong>Address:</strong> <span style="font-size: 10px; font-weight: 700; color: #000;">${o.address ? o.address : 'Store Pickup / Address not provided'}</span></div>
+                            ${o.city ? `<div style="margin-top: 4px; border-top: 1px dashed #000; padding-top: 4px;"><strong>City:</strong> <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #000;">${o.city}</span></div>` : ''}
                         </div>
                         <div style="display: flex; justify-content: center; align-items: center; padding: 6px; border-top: 1.5px solid #000; background: #fff;">
-                            <svg id="barcode-waybill-${o.id}" style="height: 24px;"></svg>
+                            <svg id="barcode-waybill-${o.id}" style="height: 32px; max-width: 95%;"></svg>
                         </div>
                     </div>
 
@@ -982,17 +1493,17 @@
                     <!-- Sixth Row: COD Box / Payment Info -->
                     <div style="display: flex; align-items: stretch; border-bottom: 2.5px solid #000; font-size: 8.5px;">
                         <div style="width: 55%; padding: 8px; display: flex; flex-direction: column; justify-content: center; border-right: 2.5px solid #000; background: #fafafa; box-sizing: border-box;">
-                            <div style="font-weight: 900; font-size: 10px; color: ${isCOD ? '#d32f2f' : '#2e7d32'}; text-transform: uppercase;">
-                                ${isCOD ? 'CASH ON DELIVERY (COD)' : 'PREPAID / PAID ONLINE'}
+                            <div style="font-weight: 900; font-size: 10px; color: ${balanceDueAmt > 0 ? '#d32f2f' : '#2e7d32'}; text-transform: uppercase;">
+                                ${balanceDueAmt > 0 ? (advancePaidAmt > 0 ? 'PARTIAL COD (COLLECT BALANCE)' : 'CASH ON DELIVERY (COD)') : 'PREPAID / PAID ONLINE (FULL)'}
                             </div>
                             <div style="font-size: 16px; font-weight: 900; margin-top: 3px; font-family: 'Outfit';">
-                                LKR ${o.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                LKR ${(balanceDueAmt > 0 ? balanceDueAmt : orderTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                         </div>
                         <div style="width: 45%; padding: 6px; font-size: 8px; line-height: 1.3; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box;">
                             <strong>Courier Notes:</strong><br>
                             • Verify recipient name & phone.<br>
-                            ${isCOD ? '• Collect exact LKR amount before delivery.' : '• Prepaid Order: DO NOT collect cash.'}
+                            ${balanceDueAmt > 0 ? `• Advance Paid: LKR ${advancePaidAmt.toLocaleString()}<br>• <strong>Collect remaining LKR ${balanceDueAmt.toLocaleString()} before delivery.</strong>` : '• <strong>Prepaid Order: DO NOT collect cash.</strong>'}
                         </div>
                     </div>
 
@@ -1011,47 +1522,41 @@
             `;
             printContainer.appendChild(deliveryPageDiv);
 
-            // Wait for DOM update
-            setTimeout(() => {
-                if (typeof JsBarcode !== 'undefined') {
-                    try {
-                        JsBarcode(`#barcode-waybill-${o.id}`, trackingId.toString(), {
-                            format: "CODE128",
-                            width: 1.2,
-                            height: 20,
-                            displayValue: true,
-                            fontSize: 9,
-                            margin: 0
-                        });
-                    } catch(e) { console.error("Barcode error", e); }
-                }
+            // Render Barcode and QR Code synchronously
+            const barcodeText = trackingId || (o.orderId ? o.orderId : ('ORD-' + o.id));
+            const barcodeSvg = document.getElementById(`barcode-waybill-${o.id}`);
+            if (typeof JsBarcode !== 'undefined' && barcodeText && barcodeSvg) {
+                try {
+                    barcodeSvg.style.display = 'block';
+                    JsBarcode(`#barcode-waybill-${o.id}`, barcodeText.toString(), {
+                        format: "CODE128",
+                        width: 1.4,
+                        height: 30,
+                        displayValue: true,
+                        fontSize: 10,
+                        margin: 2
+                    });
+                } catch(e) { console.error("Barcode error", e); }
+            }
 
-                if (typeof QRCode !== 'undefined') {
-                    try {
-                        new QRCode(document.getElementById(`qr-waybill-${o.id}`), {
-                            text: qrText,
-                            width: 90,
-                            height: 90,
-                            colorDark : "#000000",
-                            colorLight : "#ffffff",
-                            correctLevel : QRCode.CorrectLevel.M
-                        });
-                    } catch(e) { console.error("QR Code error", e); }
-                }
-            }, 0);
+            renderWaybillQR(`qr-waybill-${o.id}`, o);
 
             if (triggerPrint) {
                 setTimeout(() => {
                     window.print();
                     printContainer.style.display = 'none';
-                }, 500);
+                }, 300);
             }
         }
 
         function downloadHTMLBill(filename) {
-            const billContent = document.getElementById('printableReceipt').innerHTML;
-            const fullHtml = `
-<!DOCTYPE html>
+            const printEl = document.getElementById('printableReceipt');
+            if (!printEl || !printEl.innerHTML || printEl.innerHTML.trim() === '') {
+                alert("බිල්පත සකස් වෙමින් පවතී. කරුණාකර තත්පරයක් රැඳී නැවත උත්සාහ කරන්න.");
+                return;
+            }
+            const billContent = printEl.innerHTML;
+            const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1061,10 +1566,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { margin: 0; padding: 20px; background: #f4f7f6; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .receipt-page { background: white; width: 148mm; min-height: 210mm; padding: 10mm; padding-top: 15mm; border: 1px solid #000; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; margin-bottom: 20px; }
+        .receipt-page { background: white; width: 148mm; min-height: 210mm; padding: 10mm; padding-top: 15mm; border: 1px solid #000; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; margin-bottom: 20px; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .seal-watermark-wrap { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         @media print {
             body { padding: 0; background: white; }
-            .receipt-page { box-shadow: none; margin: 0; width: 148mm; height: 210mm; padding-top: 15mm !important; border: 1px solid #000; page-break-after: always; }
+            .receipt-page { box-shadow: none; margin: 0; width: 148mm; height: 210mm; padding-top: 15mm !important; border: 1px solid #000; page-break-after: always; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .no-print { display: none !important; }
             @page { size: A5; margin: 0; }
         }
@@ -1082,15 +1588,41 @@
 </body>
 </html>`;
 
-            const blob = new Blob([fullHtml], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename + ".html";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const cleanName = (filename || 'Bill').toString().replace(/[^a-zA-Z0-9_\-]/g, '_') + '.html';
+            
+            try {
+                const dataUri = 'data:text/html;charset=utf-8,' + encodeURIComponent(fullHtml);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = dataUri;
+                a.download = cleanName;
+                a.setAttribute('download', cleanName);
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    if (document.body.contains(a)) document.body.removeChild(a);
+                }, 2000);
+            } catch (err1) {
+                console.warn("Data URI download failed, trying Blob:", err1);
+                try {
+                    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = cleanName;
+                    a.setAttribute('download', cleanName);
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        if (document.body.contains(a)) document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 60000);
+                } catch (err2) {
+                    console.error("HTML Download Error:", err2);
+                    alert("Download failed: " + err2.message);
+                }
+            }
         }
 
         function closeModal(id) {

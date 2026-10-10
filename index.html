@@ -60,6 +60,10 @@
                 <i class="fas fa-file-invoice"></i>
                 <span>Orders</span>
             </a>
+            <a href="waybill.html" class="nav-item">
+                <i class="fas fa-truck-fast"></i>
+                <span>Waybill Generator</span>
+            </a>
             <a href="inventory.html" class="nav-item">
                 <i class="fas fa-boxes"></i>
                 <span>Inventory</span>
@@ -89,6 +93,10 @@
                 <span>Settings</span>
             </a>
             <div style="border-top: 1px solid var(--border); margin: 10px 0; opacity: 0.5;"></div>
+            <a href="mobile.html" target="_blank" class="nav-item" style="color: #10b981; font-weight: 800;">
+                <i class="fas fa-mobile-alt"></i>
+                <span>Mobile App</span>
+            </a>
             <a href="https://onijawathsuka39-arch.github.io/Roohira-Online-Clothing-/index.html" target="_blank"
                 class="nav-item" style="color: var(--primary); font-weight: 800;">
                 <i class="fas fa-external-link-alt"></i>
@@ -134,6 +142,10 @@
                         style="padding: 8px; width: 40px; justify-content: center;" title="Toggle Theme">
                         <i class="fas fa-sun theme-toggle-icon"></i>
                     </button>
+                    <button class="btn btn-secondary fullscreen-btn" onclick="themeManager.toggleFullscreen()"
+                        style="padding: 8px; width: 40px; justify-content: center;" title="Full Screen">
+                        <i class="fas fa-expand fullscreen-toggle-icon"></i>
+                    </button>
                     <a href="login.html" class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;"><i
                             class="fas fa-sign-in-alt"></i> Login</a>
                     <button onclick="DB.logout()" class="btn btn-secondary"
@@ -143,61 +155,254 @@
             </div>
         </header>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="icon">
-                    <i class="fas fa-wallet"></i>
+        <!-- Custom Date Performance Filter Bar -->
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(190, 24, 93, 0.12); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
-                <div class="value" id="revenue-stat">Rs. 0.00</div>
-                <div class="label">Total Revenue</div>
-                <div class="trend up">
-                    <i class="fas fa-arrow-up"></i> 12.5% <span>vs last month</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
-                    <i class="fas fa-chart-pie"></i>
-                </div>
-                <div class="value" id="profit-stat">Rs. 0.00</div>
-                <div class="label">Net Profit</div>
-                <div class="trend up">
-                    <i class="fas fa-arrow-up"></i> 8.2% <span>vs last month</span>
+                <div>
+                    <h3 style="font-size: 15px; font-weight: 700; margin: 0;">Date Performance Filter</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">Select any date to inspect Revenue, Profit, Sales &amp; Orders</p>
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
-                    <i class="fas fa-shopping-bag"></i>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <input type="date" id="custom-stats-date" class="btn btn-secondary" style="padding: 8px 12px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--text-color); background: var(--card-bg);" onchange="loadCustomDateStats()">
+                <button class="btn btn-secondary" onclick="setStatsDatePreset('today')" style="padding: 8px 14px; font-size: 12px; font-weight: 700;"><i class="fas fa-sun" style="color:#f59e0b; margin-right: 4px;"></i> Today</button>
+                <button class="btn btn-secondary" onclick="setStatsDatePreset('yesterday')" style="padding: 8px 14px; font-size: 12px; font-weight: 700;"><i class="fas fa-history" style="color:#6366f1; margin-right: 4px;"></i> Yesterday</button>
+            </div>
+        </div>
+
+        <!-- Selected Date Banner -->
+        <div id="selected-date-banner" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-filter"></i> Performance for: <span id="selected-date-label" style="text-decoration: underline;">Today</span>
+            </div>
+            <div id="selected-date-badge" class="badge badge-success" style="font-size: 11px;">CUSTOM DATE METRICS</div>
+        </div>
+
+        <!-- Selected Date Cards Grid (4 Cards) -->
+        <div class="stats-grid-compact" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 24px;">
+            <div class="stat-card-compact" style="--card-accent: #059669; background: rgba(16, 185, 129, 0.04);">
+                <div class="card-top">
+                    <span class="title-tag">Selected Revenue</span>
+                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+                        <i class="fas fa-coins"></i>
+                    </div>
                 </div>
-                <div class="value" id="orders-stat">0</div>
-                <div class="label">Total Sales</div>
-                <div class="trend up">
-                    <i class="fas fa-arrow-up"></i> 5.4% <span>vs last month</span>
+                <div class="card-value" id="custom-revenue-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Revenue on Date</span>
+                    <span class="badge-mini" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">REVENUE</span>
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
-                    <i class="fas fa-money-bill-wave"></i>
+            <div class="stat-card-compact" style="--card-accent: #0d9488; background: rgba(13, 148, 136, 0.04);">
+                <div class="card-top">
+                    <span class="title-tag">Selected Profit</span>
+                    <div class="card-icon" style="background: rgba(13, 148, 136, 0.15); color: #0d9488;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
                 </div>
-                <div class="value" id="expenses-stat">Rs. 0.00</div>
-                <div class="label">Total Expenses</div>
-                <div class="trend down">
-                    <i class="fas fa-arrow-down"></i> overhead costs
+                <div class="card-value" id="custom-profit-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Gross Profit on Date</span>
+                    <span class="badge-mini" style="background: rgba(13, 148, 136, 0.2); color: #0d9488;">PROFIT</span>
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
-                    <i class="fas fa-exclamation-triangle"></i>
+            <div class="stat-card-compact" style="--card-accent: #2563eb; background: rgba(37, 99, 235, 0.04);">
+                <div class="card-top">
+                    <span class="title-tag">Selected Sales Count</span>
+                    <div class="card-icon" style="background: rgba(37, 99, 235, 0.15); color: #2563eb;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
                 </div>
-                <div class="value" id="low-stock-stat">0</div>
-                <div class="label">Low Stock items</div>
-                <div class="trend down">
-                    <i class="fas fa-triangle-exclamation"></i> Action required
+                <div class="card-value" id="custom-sales-count-stat">0</div>
+                <div class="card-bottom">
+                    <span>Sales Completed</span>
+                    <span class="badge-mini" style="background: rgba(37, 99, 235, 0.2); color: #2563eb;">SALES</span>
                 </div>
+            </div>
+
+            <div class="stat-card-compact" style="--card-accent: #7c3aed; background: rgba(124, 58, 237, 0.04);">
+                <div class="card-top">
+                    <span class="title-tag">Selected Orders Count</span>
+                    <div class="card-icon" style="background: rgba(124, 58, 237, 0.15); color: #7c3aed;">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="custom-orders-count-stat">0</div>
+                <div class="card-bottom">
+                    <span>Orders Placed</span>
+                    <span class="badge-mini" style="background: rgba(124, 58, 237, 0.2); color: #7c3aed;">ORDERS</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; padding: 0 4px;">
+            <i class="fas fa-th-large"></i> Standard Dashboard Overview
+        </div>
+
+        <!-- Compact Dashboard Stats Grid -->
+        <div class="stats-grid-compact">
+            <!-- Today Revenue -->
+            <div class="stat-card-compact" style="--card-accent: #10b981;">
+                <div class="card-top">
+                    <span class="title-tag">Today Revenue</span>
+                    <div class="card-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="today-revenue-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Today Sales Total</span>
+                    <span class="badge-mini" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">TODAY</span>
+                </div>
+            </div>
+
+            <!-- Today Profit -->
+            <div class="stat-card-compact" style="--card-accent: #0d9488;">
+                <div class="card-top">
+                    <span class="title-tag">Today Profit</span>
+                    <div class="card-icon" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="today-profit-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Gross Profit</span>
+                    <span class="badge-mini" style="background: rgba(13, 148, 136, 0.15); color: #0d9488;">PROFIT</span>
+                </div>
+            </div>
+
+            <!-- Today Sale Count & Orders -->
+            <div class="stat-card-compact" style="--card-accent: #3b82f6;">
+                <div class="card-top">
+                    <span class="title-tag">Today Sales &amp; Orders</span>
+                    <div class="card-icon" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                </div>
+                <div class="card-value" style="display:flex; align-items:baseline; gap:6px;">
+                    <span id="today-sales-count-stat">0</span>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Sales</span>
+                </div>
+                <div class="card-bottom">
+                    <span>Orders: <strong id="today-orders-count-stat" style="color:var(--primary); font-weight:800;">0</strong></span>
+                    <span class="badge-mini" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">TOTAL</span>
+                </div>
+            </div>
+
+            <!-- Yesterday Revenue -->
+            <div class="stat-card-compact" style="--card-accent: #6366f1;">
+                <div class="card-top">
+                    <span class="title-tag">Yesterday Revenue</span>
+                    <div class="card-icon" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="yesterday-revenue-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Yesterday Sales Total</span>
+                    <span class="badge-mini" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">YESTERDAY</span>
+                </div>
+            </div>
+
+            <!-- Yesterday Profit -->
+            <div class="stat-card-compact" style="--card-accent: #8b5cf6;">
+                <div class="card-top">
+                    <span class="title-tag">Yesterday Profit</span>
+                    <div class="card-icon" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="yesterday-profit-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Yesterday Profit</span>
+                    <span class="badge-mini" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">PROFIT</span>
+                </div>
+            </div>
+
+            <!-- Yesterday Sale Count & Orders -->
+            <div class="stat-card-compact" style="--card-accent: #f59e0b;">
+                <div class="card-top">
+                    <span class="title-tag">Yesterday Sales &amp; Orders</span>
+                    <div class="card-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                </div>
+                <div class="card-value" style="display:flex; align-items:baseline; gap:6px;">
+                    <span id="yesterday-sales-count-stat">0</span>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Sales</span>
+                </div>
+                <div class="card-bottom">
+                    <span>Orders: <strong id="yesterday-orders-count-stat" style="color:var(--primary); font-weight:800;">0</strong></span>
+                    <span class="badge-mini" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">TOTAL</span>
+                </div>
+            </div>
+
+            <!-- This Month Revenue -->
+            <div class="stat-card-compact" style="--card-accent: #ec4899;">
+                <div class="card-top">
+                    <span class="title-tag">This Month Revenue</span>
+                    <div class="card-icon" style="background: rgba(236, 72, 153, 0.12); color: #ec4899;">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="month-revenue-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Current Month Total</span>
+                    <span class="badge-mini" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">MONTH</span>
+                </div>
+            </div>
+
+            <!-- This Month Profit -->
+            <div class="stat-card-compact" style="--card-accent: #be185d;">
+                <div class="card-top">
+                    <span class="title-tag">This Month Profit</span>
+                    <div class="card-icon" style="background: rgba(190, 24, 93, 0.12); color: #be185d;">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                </div>
+                <div class="card-value" id="month-profit-stat">Rs. 0.00</div>
+                <div class="card-bottom">
+                    <span>Current Month Margin</span>
+                    <span class="badge-mini" style="background: rgba(190, 24, 93, 0.15); color: #be185d;">PROFIT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Strip for Low Stock & System Totals -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 180px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning); font-size: 15px;"></i>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Low Stock Alert</span>
+                </div>
+                <span id="low-stock-stat" style="font-weight:800; font-size:13px; color:var(--warning);">0 items</span>
+            </div>
+            <div style="flex: 1; min-width: 180px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-infinity" style="color: var(--primary); font-size: 15px;"></i>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">All-Time Revenue</span>
+                </div>
+                <span id="revenue-stat" style="font-weight:800; font-size:13px; color:var(--primary);">Rs. 0.00</span>
+            </div>
+            <div style="flex: 1; min-width: 180px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-chart-bar" style="color: var(--success); font-size: 15px;"></i>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">All-Time Gross Profit</span>
+                </div>
+                <span id="profit-stat" style="font-weight:800; font-size:13px; color:var(--success);">Rs. 0.00</span>
+            </div>
+            <div style="flex: 1; min-width: 180px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-money-bill-wave" style="color: var(--danger); font-size: 15px;"></i>
+                    <span style="font-size:12px; font-weight:600; color:var(--text-muted);">All-Time Expenses</span>
+                </div>
+                <span id="expenses-stat" style="font-weight:800; font-size:13px; color:var(--danger);">Rs. 0.00</span>
             </div>
         </div>
 
@@ -293,20 +498,66 @@
         let revenueChart = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Set initial date picker value to today
+            const picker = document.getElementById('custom-stats-date');
+            if (picker) {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                const d = String(now.getDate()).padStart(2, '0');
+                picker.value = `${y}-${m}-${d}`;
+            }
+
+            // Load custom date stats
+            await loadCustomDateStats();
             // Load combined sales + orders for staff
             await loadStaffCombined();
             // Initial chart load
             await updateRevenueChart();
         });
 
+        async function loadCustomDateStats() {
+            const picker = document.getElementById('custom-stats-date');
+            const dateVal = picker && picker.value ? picker.value : new Date().toISOString().split('T')[0];
+            const stats = await DB.getStatsForDate(dateVal);
+            const fmtRs = (val) => `Rs. ${(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            if (document.getElementById('selected-date-label')) {
+                const dateObj = new Date(dateVal + 'T00:00:00');
+                document.getElementById('selected-date-label').textContent = isNaN(dateObj.getTime()) ? dateVal : dateObj.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            }
+
+            if (document.getElementById('custom-revenue-stat')) document.getElementById('custom-revenue-stat').textContent = fmtRs(stats.revenue);
+            if (document.getElementById('custom-profit-stat')) document.getElementById('custom-profit-stat').textContent = fmtRs(stats.grossProfit);
+            if (document.getElementById('custom-sales-count-stat')) document.getElementById('custom-sales-count-stat').textContent = stats.salesCount || 0;
+            if (document.getElementById('custom-orders-count-stat')) document.getElementById('custom-orders-count-stat').textContent = stats.ordersCount || 0;
+        }
+
+        function setStatsDatePreset(preset) {
+            const picker = document.getElementById('custom-stats-date');
+            const now = new Date();
+            if (preset === 'yesterday') {
+                now.setDate(now.getDate() - 1);
+            }
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            if (picker) {
+                picker.value = `${y}-${m}-${d}`;
+                loadCustomDateStats();
+            }
+        }
+
         async function updateRevenueChart() {
             const rangeInput = document.getElementById('revenue-range');
             const range = rangeInput ? rangeInput.value : '7';
-            const salesData = await DB.getAllSales();
+            const [salesData, ordersData] = await Promise.all([DB.getAllSales(), DB.getAllOrders()]);
 
             let labels = [];
             let dataValues = [];
             const revenueMap = {};
+
+            const isPaidOrder = o => o.paymentStatus === 'paid' || o.status === 'Paid';
 
             if (range === 'year') {
                 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -318,7 +569,16 @@
                     const d = new Date(sale.date);
                     if (d.getFullYear() === currentYear) {
                         const m = months[d.getMonth()];
-                        revenueMap[m] += sale.total;
+                        revenueMap[m] += (Number(sale.total) || 0);
+                    }
+                });
+                ordersData.forEach(order => {
+                    if (isPaidOrder(order)) {
+                        const d = new Date(order.date);
+                        if (d.getFullYear() === currentYear) {
+                            const m = months[d.getMonth()];
+                            revenueMap[m] += (Number(order.total) || 0);
+                        }
                     }
                 });
                 dataValues = months.map(m => revenueMap[m]);
@@ -335,9 +595,18 @@
                 }
 
                 salesData.forEach(sale => {
-                    const ds = sale.date.split('T')[0];
+                    const ds = (sale.date || '').split('T')[0];
                     if (revenueMap.hasOwnProperty(ds)) {
-                        revenueMap[ds] += sale.total;
+                        revenueMap[ds] += (Number(sale.total) || 0);
+                    }
+                });
+
+                ordersData.forEach(order => {
+                    if (isPaidOrder(order)) {
+                        const ds = (order.date || '').split('T')[0];
+                        if (revenueMap.hasOwnProperty(ds)) {
+                            revenueMap[ds] += (Number(order.total) || 0);
+                        }
                     }
                 });
 
@@ -348,13 +617,32 @@
                 dataValues = dateList.map(ds => revenueMap[ds]);
             }
 
-            // Update Statistics - Set to ALL TIME (as requested)
-            const allTimeStats = await DB.getDashboardStats();
-            document.getElementById('revenue-stat').textContent = `Rs. ${allTimeStats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('profit-stat').textContent = `Rs. ${allTimeStats.grossProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('expenses-stat').textContent = `Rs. ${allTimeStats.totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            document.getElementById('orders-stat').textContent = allTimeStats.totalOrders;
-            document.getElementById('low-stock-stat').textContent = allTimeStats.lowStockCount;
+            // Update Statistics
+            const stats = await DB.getDashboardStats();
+            const fmtRs = (val) => `Rs. ${(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            // Today Metrics
+            if (document.getElementById('today-revenue-stat')) document.getElementById('today-revenue-stat').textContent = fmtRs(stats.todayRevenue);
+            if (document.getElementById('today-profit-stat')) document.getElementById('today-profit-stat').textContent = fmtRs(stats.todayProfit);
+            if (document.getElementById('today-sales-count-stat')) document.getElementById('today-sales-count-stat').textContent = stats.todaySalesCount || 0;
+            if (document.getElementById('today-orders-count-stat')) document.getElementById('today-orders-count-stat').textContent = stats.todayOrdersCount || 0;
+
+            // Yesterday Metrics
+            if (document.getElementById('yesterday-revenue-stat')) document.getElementById('yesterday-revenue-stat').textContent = fmtRs(stats.yesterdayRevenue);
+            if (document.getElementById('yesterday-profit-stat')) document.getElementById('yesterday-profit-stat').textContent = fmtRs(stats.yesterdayProfit);
+            if (document.getElementById('yesterday-sales-count-stat')) document.getElementById('yesterday-sales-count-stat').textContent = stats.yesterdaySalesCount || 0;
+            if (document.getElementById('yesterday-orders-count-stat')) document.getElementById('yesterday-orders-count-stat').textContent = stats.yesterdayOrdersCount || 0;
+
+            // This Month Metrics
+            if (document.getElementById('month-revenue-stat')) document.getElementById('month-revenue-stat').textContent = fmtRs(stats.thisMonthRevenue);
+            if (document.getElementById('month-profit-stat')) document.getElementById('month-profit-stat').textContent = fmtRs(stats.thisMonthProfit);
+
+            // Summary & All-Time Strip
+            if (document.getElementById('revenue-stat')) document.getElementById('revenue-stat').textContent = fmtRs(stats.totalRevenue);
+            if (document.getElementById('profit-stat')) document.getElementById('profit-stat').textContent = fmtRs(stats.grossProfit);
+            if (document.getElementById('expenses-stat')) document.getElementById('expenses-stat').textContent = fmtRs(stats.totalExpenses);
+            if (document.getElementById('orders-stat')) document.getElementById('orders-stat').textContent = stats.totalOrders || 0;
+            if (document.getElementById('low-stock-stat')) document.getElementById('low-stock-stat').textContent = `${stats.lowStockCount || 0} items`;
 
             const ctx = document.getElementById('revenueChart').getContext('2d');
 
