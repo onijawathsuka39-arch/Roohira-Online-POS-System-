@@ -55,6 +55,10 @@ function _docToObj(doc) {
     } else {
         data.id = isNaN(Number(docId)) ? docId : Number(docId);
     }
+    // Parse items field if stored as JSON string (legacy format from server.js)
+    if (data.items && typeof data.items === 'string') {
+        try { data.items = JSON.parse(data.items); } catch(e) { data.items = []; }
+    }
     return data;
 }
 
@@ -125,8 +129,13 @@ const _FS = {
     },
 
     async deleteDoc(col, id) {
-        const res = await fetch(`${FIRESTORE_BASE}/${col}/${encodeURIComponent(id)}`, { method: 'DELETE' });
-        if (!res.ok && res.status !== 404) throw new Error(`FS deleteDoc ${col}/${id}: ${await res.text()}`);
+        // Try both string and number forms of the ID
+        const strId = String(id);
+        const res = await fetch(`${FIRESTORE_BASE}/${col}/${encodeURIComponent(strId)}`, { method: 'DELETE' });
+        if (!res.ok && res.status !== 404) {
+            const errText = await res.text();
+            throw new Error(`FS deleteDoc ${col}/${strId}: ${errText}`);
+        }
         return { success: true };
     },
 
