@@ -23,25 +23,10 @@ app.use((req, res, next) => {
 // Serve static files from the project root
 app.use(express.static(__dirname));
 
-// Turso Cloud Database Configuration
-const { createClient } = require('@libsql/client');
-const TURSO_URL = process.env.TURSO_DATABASE_URL || 'libsql://roohira-collection-pos-onija2008.aws-ap-southeast-2.turso.io';
-const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3OTE2NTg3ODMsImlkIjoiMDFhMTI3MmUtOWYwMS03MWVhLTgxYWItZDdmYTFmZDc2NjExIiwia2lkIjoiS1hHUWlZMkViZk1GazdDbGdxVlBmZjZzMHVUd25xekMtaUZDS3ZUdFJDNCIsInJpZCI6IjAyMGExMWFkLTA4MzAtNDY5YS1hOWE1LTU3NjRhNThlNzM2MiJ9.vTVE-iYOoSLkcACa3cVv0PPxhLNYd0mmdwYgo1L9d4XVDhxcKAPr_KAHu9L3uJFIoiXPuGzI-btTQm68n945Bw';
+// Running with local SQLite database (database.db)
+console.log('Running with local SQLite database (database.db)');
 
-let turso = null;
-try {
-    if (TURSO_URL && TURSO_TOKEN) {
-        turso = createClient({
-            url: TURSO_URL,
-            authToken: TURSO_TOKEN
-        });
-        console.log(' Connected to Turso Online Cloud Database successfully! (' + TURSO_URL + ')');
-    }
-} catch (tErr) {
-    console.error('Failed to initialize Turso client, falling back to local SQLite:', tErr);
-}
-
-// Open SQLite database (always initialized as fallback or local cache)
+// Open SQLite database
 const dbPath = path.join(__dirname, 'database.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -310,21 +295,8 @@ function seedSQLite(backupData) {
 
 
 
-// Helper functions for Database queries (Turso Cloud with Local SQLite fallback)
-const runQuery = async (sql, params = []) => {
-    if (turso) {
-        try {
-            const res = await turso.execute({ sql, args: params });
-            // Asynchronously sync to local SQLite so local db is always up-to-date
-            try { db.run(sql, params, () => {}); } catch(e) {}
-            return {
-                lastID: res.lastInsertRowid !== undefined && res.lastInsertRowid !== null ? Number(res.lastInsertRowid) : undefined,
-                changes: res.rowsAffected
-            };
-        } catch (tursoErr) {
-            console.error("Turso runQuery error, falling back to local SQLite:", tursoErr.message);
-        }
-    }
+// Helper functions for SQLite queries to support promises
+const runQuery = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.run(sql, params, function(err) {
             if (err) reject(err);
@@ -333,19 +305,7 @@ const runQuery = async (sql, params = []) => {
     });
 };
 
-const getQuery = async (sql, params = []) => {
-    if (turso) {
-        try {
-            const res = await turso.execute({ sql, args: params });
-            if (res.rows && res.rows.length > 0) {
-                // Convert row object cleanly
-                return { ...res.rows[0] };
-            }
-            return null;
-        } catch (tursoErr) {
-            console.error("Turso getQuery error, falling back to local SQLite:", tursoErr.message);
-        }
-    }
+const getQuery = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.get(sql, params, (err, row) => {
             if (err) reject(err);
@@ -354,18 +314,7 @@ const getQuery = async (sql, params = []) => {
     });
 };
 
-const allQuery = async (sql, params = []) => {
-    if (turso) {
-        try {
-            const res = await turso.execute({ sql, args: params });
-            if (res.rows) {
-                return res.rows.map(r => ({ ...r }));
-            }
-            return [];
-        } catch (tursoErr) {
-            console.error("Turso allQuery error, falling back to local SQLite:", tursoErr.message);
-        }
-    }
+const allQuery = (sql, params = []) => {
     return new Promise((resolve, reject) => {
         db.all(sql, params, (err, rows) => {
             if (err) reject(err);
