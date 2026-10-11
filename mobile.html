@@ -3979,8 +3979,10 @@
                 const dateFormatted = dateObj.toLocaleDateString();
                 const timeFormatted = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const refCode = isSales ? `SL-${rec.id}` : (rec.orderId || rec.id);
-                const statusStr = isSales ? (rec.paymentStatus || 'Paid') : (rec.status || 'Pending');
-                const statusClass = statusStr.toLowerCase();
+                const deliveryStatusStr = rec.status || 'Pending';
+                const deliveryStatusClass = deliveryStatusStr.toLowerCase();
+                const paymentStatusStr = (rec.paymentStatus || 'unpaid').toUpperCase();
+                const paymentStatusClass = (rec.paymentStatus || 'unpaid').toLowerCase();
 
                 const itemsCount = fin.items.length;
                 const itemsPreview = fin.items.map(i => `${i.name}${i.size ? ' (' + i.size + ')' : ''} x${i.qty}`).join(', ');
@@ -3988,12 +3990,23 @@
                 return `
                     <div class="history-card">
                         <!-- Top Row: Ref ID, Status, Timestamp -->
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <span style="font-weight:900; font-size:13.5px; color:var(--primary);">#${refCode}</span>
                                 <span style="font-size:10px; color:var(--text-sub);">${dateFormatted} ${timeFormatted}</span>
                             </div>
-                            <span class="order-badge status-${statusClass}">${statusStr}</span>
+                            <div style="display:flex; align-items:center; gap:4px;">
+                                ${!isSales ? `
+                                <span class="order-badge status-${deliveryStatusClass}" title="Delivery Status" style="font-size:10px; padding:3px 7px;">
+                                    🚚 ${deliveryStatusStr}
+                                </span>
+                                <span class="order-badge" title="Payment Status" style="font-size:10px; padding:3px 7px; ${paymentStatusClass === 'paid' ? 'background:rgba(16,185,129,0.15); color:var(--success); border:1px solid rgba(16,185,129,0.3);' : paymentStatusClass === 'advance' ? 'background:rgba(251,191,36,0.15); color:var(--warning); border:1px solid rgba(251,191,36,0.3);' : 'background:rgba(239,68,68,0.15); color:var(--danger); border:1px solid rgba(239,68,68,0.3);'}">
+                                    💳 ${paymentStatusStr}
+                                </span>
+                                ` : `
+                                <span class="order-badge status-${(rec.paymentStatus || 'paid').toLowerCase()}">${(rec.paymentStatus || 'Paid').toUpperCase()}</span>
+                                `}
+                            </div>
                         </div>
 
                         <!-- Customer Line -->
@@ -4201,16 +4214,61 @@
                     </div>
                 </div>
 
-                <!-- Order Status Controls (For Orders) -->
+                <!-- 🚚 DELIVERY STATUS + 💳 PAYMENT STATUS (For Orders) -->
                 ${type === 'order' ? `
-                <div class="form-group" style="margin-top:2px;">
-                    <label class="form-label">Update Order Status</label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                        <button class="btn-sm" onclick="changeCurrentOrderStatus('Pending')"><i class="fas fa-clock" style="color:var(--warning);"></i> Pending</button>
-                        <button class="btn-sm" onclick="changeCurrentOrderStatus('Confirmed')"><i class="fas fa-check" style="color:var(--info);"></i> Confirmed</button>
-                        <button class="btn-sm" onclick="changeCurrentOrderStatus('Shipped')"><i class="fas fa-truck" style="color:var(--purple);"></i> Shipped</button>
-                        <button class="btn-sm" onclick="changeCurrentOrderStatus('Delivered')"><i class="fas fa-check-double" style="color:var(--success);"></i> Delivered</button>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+
+                    <!-- Delivery Status -->
+                    <div class="card" style="padding:10px; margin-bottom:0;">
+                        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:8px; letter-spacing:0.5px;">
+                            🚚 Delivery Status
+                            <span style="float:right; font-size:11px; color:var(--text-sub); text-transform:none; font-weight:600;">
+                                Current: <strong style="color:var(--primary);">${record.status || 'Pending'}</strong>
+                            </span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+                            <button class="btn-sm ${(record.status||'').toLowerCase()==='pending'?'active-status-btn':''}" onclick="changeDeliveryStatus('${record.id}', 'Pending')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='pending'?'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);':''}">
+                                <i class="fas fa-clock"></i> Pending
+                            </button>
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Confirmed')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='confirmed'?'background:rgba(99,102,241,0.2);border-color:#818cf8;color:#818cf8;':''}">
+                                <i class="fas fa-check"></i> Confirmed
+                            </button>
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Shipped')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='shipped'?'background:rgba(139,92,246,0.2);border-color:#a78bfa;color:#a78bfa;':''}">
+                                <i class="fas fa-truck"></i> Shipped
+                            </button>
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Delivered')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='delivered'?'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);':''}">
+                                <i class="fas fa-check-double"></i> Delivered
+                            </button>
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Returned')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='returned'?'background:rgba(245,158,11,0.2);border-color:#f59e0b;color:#f59e0b;':''}">
+                                <i class="fas fa-undo"></i> Returned
+                            </button>
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Cancelled')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='cancelled'?'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);':''}">
+                                <i class="fas fa-times"></i> Cancelled
+                            </button>
+                        </div>
                     </div>
+
+                    <!-- Payment Status -->
+                    <div class="card" style="padding:10px; margin-bottom:0;">
+                        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:8px; letter-spacing:0.5px;">
+                            💳 Payment Status
+                            <span style="float:right; font-size:11px; color:var(--text-sub); text-transform:none; font-weight:600;">
+                                Current: <strong style="color:${(record.paymentStatus||'').toLowerCase()==='paid'?'var(--success)':(record.paymentStatus||'').toLowerCase()==='advance'?'var(--warning)':'var(--danger)'}">${(record.paymentStatus||'Unpaid').toUpperCase()}</strong>
+                            </span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'unpaid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='unpaid'?'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);':''}">
+                                <i class="fas fa-times-circle"></i> Unpaid
+                            </button>
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'advance')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='advance'?'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);':''}">
+                                <i class="fas fa-hand-holding-usd"></i> Advance
+                            </button>
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'paid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='paid'?'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);':''}">
+                                <i class="fas fa-check-circle"></i> Paid
+                            </button>
+                        </div>
+                    </div>
+
                 </div>` : ''}
 
                 <!-- ✅ MARK AS PAID BUTTON -->
@@ -4426,7 +4484,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Payment Status</label>
+                            <label class="form-label">Payment Status 💳</label>
                             <select id="edit-payment-status" class="form-select" onchange="recalculateEditTotals()">
                                 <option value="Paid" ${(record.paymentStatus || '').toLowerCase() === 'paid' ? 'selected' : ''}>Paid</option>
                                 <option value="Advance" ${(record.paymentStatus || '').toLowerCase() === 'advance' ? 'selected' : ''}>Advance</option>
@@ -4441,12 +4499,13 @@
                         </div>
                         ${type === 'order' ? `
                         <div class="form-group">
-                            <label class="form-label">Order Status</label>
+                            <label class="form-label">Delivery Status 🚚</label>
                             <select id="edit-order-status" class="form-select">
                                 <option value="Pending" ${record.status === 'Pending' ? 'selected' : ''}>Pending</option>
                                 <option value="Confirmed" ${record.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
                                 <option value="Shipped" ${record.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                                 <option value="Delivered" ${record.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Returned" ${record.status === 'Returned' ? 'selected' : ''}>Returned</option>
                                 <option value="Cancelled" ${record.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                         </div>
@@ -4687,6 +4746,52 @@
                 await refreshAllData();
             } catch (err) {
                 alert("Failed: " + err.message);
+            }
+        }
+
+        // ── Delivery Status change from History Modal ──────────
+        async function changeDeliveryStatus(id, newStatus) {
+            try {
+                await DB.updateOrder(id, { status: newStatus });
+                // Update local array
+                const idx = allOrders.findIndex(o => String(o.id) === String(id));
+                if (idx !== -1) allOrders[idx].status = newStatus;
+                // Also update currentViewingOrder
+                if (currentViewingOrder && String(currentViewingOrder.id) === String(id)) {
+                    currentViewingOrder.status = newStatus;
+                }
+                showToast(`🚚 Delivery: ${newStatus}`);
+                closeHistoryDetailsModal();
+                renderDashboardMetrics();
+                renderHistorySection();
+            } catch (err) {
+                alert('Failed: ' + err.message);
+            }
+        }
+
+        // ── Payment Status change from History Modal ───────────
+        async function changePaymentStatus(id, newPaymentStatus) {
+            try {
+                const updateData = { paymentStatus: newPaymentStatus };
+                if (newPaymentStatus === 'paid') updateData.status = updateData.status || currentViewingOrder?.status || 'Delivered';
+                await DB.updateOrder(id, updateData);
+                // Update local array
+                const idx = allOrders.findIndex(o => String(o.id) === String(id));
+                if (idx !== -1) {
+                    allOrders[idx].paymentStatus = newPaymentStatus;
+                    if (newPaymentStatus === 'paid') allOrders[idx].status = allOrders[idx].status || 'Delivered';
+                }
+                if (currentViewingOrder && String(currentViewingOrder.id) === String(id)) {
+                    currentViewingOrder.paymentStatus = newPaymentStatus;
+                }
+                const label = newPaymentStatus === 'paid' ? '✅ PAID — Added to Dashboard!' :
+                              newPaymentStatus === 'advance' ? '⏳ Advance Payment recorded' : '❌ Marked as Unpaid';
+                showToast(`💳 ${label}`);
+                closeHistoryDetailsModal();
+                renderDashboardMetrics();
+                renderHistorySection();
+            } catch (err) {
+                alert('Failed: ' + err.message);
             }
         }
 
