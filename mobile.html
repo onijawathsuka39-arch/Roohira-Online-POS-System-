@@ -4191,28 +4191,26 @@
 
             try {
                 showToast("Deleting record...");
-                const endpoint = type === 'order' ? `/api/orders/${id}` : `/api/sales/${id}`;
-                const res = await fetch(endpoint, {
-                    method: 'DELETE',
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
-                });
-                if (!res.ok) throw new Error("Delete failed with code " + res.status);
 
+                // Use DB methods directly - works on Netlify (Firebase) and local server
                 if (type === 'order') {
+                    await DB.deleteOrder(id);
                     allOrders = allOrders.filter(o => String(o.id) !== String(id) && String(o.orderId) !== String(id));
                 } else {
+                    await DB.deleteSale(id);
                     allSales = allSales.filter(s => String(s.id) !== String(id));
                 }
 
                 closeHistoryDetailsModal();
                 renderDashboardMetrics();
                 renderHistorySection();
-                showToast(`${type === 'order' ? 'Order' : 'Sale'} #${refCode} deleted!`);
+                showToast(`${type === 'order' ? 'Order' : 'Sale'} #${refCode} deleted! ✅`);
             } catch (err) {
                 console.error("Delete error:", err);
                 showToast("Failed to delete record: " + err.message);
             }
         }
+
 
         let currentEditingRecord = null;
         let currentEditingType = null;
@@ -5282,35 +5280,39 @@
 
         // ================= CONNECT PHONE & QR CODE =================
         async function initPhoneConnectLink() {
+            // Default to Netlify URL (works 24/7 without server)
+            let mobileUrl = 'https://roohiracollectionmobilepos.netlify.app/';
+
             try {
                 const res = await fetch('/api/server-info', {
-                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                    headers: { 'ngrok-skip-browser-warning': 'true' },
+                    signal: AbortSignal.timeout(3000) // 3s timeout
                 });
-                const info = await res.json();
-                let mobileUrl = info.cloudMobile || 'https://distant-oxygen-vice.ngrok-free.dev/mobile.html';
-                if (!mobileUrl && info.ips && info.ips.length > 0) {
-                    mobileUrl = `http://${info.ips[0]}:${info.port || 3005}/mobile.html`;
-                } else if (!mobileUrl) {
-                    mobileUrl = `http://localhost:${info.port || 3005}/mobile.html`;
+                if (res.ok) {
+                    const info = await res.json();
+                    if (info.cloudMobile) mobileUrl = info.cloudMobile;
+                    else if (info.ips && info.ips.length > 0)
+                        mobileUrl = `http://${info.ips[0]}:${info.port || 3005}/mobile.html`;
                 }
+            } catch (e) {
+                // Server not available (Netlify mode) - use Netlify URL
+                console.log('Using Netlify URL for QR code');
+            }
 
-                const linkInput = document.getElementById('phone-link-input');
-                if (linkInput) linkInput.value = mobileUrl;
+            const linkInput = document.getElementById('phone-link-input');
+            if (linkInput) linkInput.value = mobileUrl;
 
-                const qrContainer = document.getElementById('phone-qr-code');
-                if (qrContainer && typeof QRCode !== 'undefined') {
-                    qrContainer.innerHTML = '';
-                    new QRCode(qrContainer, {
-                        text: mobileUrl,
-                        width: 180,
-                        height: 180,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-                }
-            } catch (err) {
-                console.warn("Server info error:", err);
+            const qrContainer = document.getElementById('phone-qr-code');
+            if (qrContainer && typeof QRCode !== 'undefined') {
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: mobileUrl,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
             }
         }
 
