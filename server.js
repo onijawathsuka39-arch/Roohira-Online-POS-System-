@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const firestoreClient = require('./firestore_client');
 
 const app = express();
 const PORT = process.env.PORT || 3005;
@@ -23,8 +24,8 @@ app.use((req, res, next) => {
 // Serve static files from the project root
 app.use(express.static(__dirname));
 
-// Running with local SQLite database (database.db)
-console.log('Running with local SQLite database (database.db)');
+// Running with Firebase Cloud Firestore (with SQLite fallback)
+console.log('🔥 Running with Firebase Cloud Firestore (roohiracollectionpos)');
 
 // Open SQLite database
 const dbPath = path.join(__dirname, 'database.db');
@@ -404,29 +405,27 @@ function broadcastRealtimeEvent(event, data = {}) {
     });
 }
 
-// Database Abstraction Layer (DB Service)
+// Database Abstraction Layer (DB Service) - Powered by Firebase Cloud Firestore
 const dbService = {
-    isFirebase: () => false,
-
     // Notes
     getNotes: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('notes').orderBy('date', 'desc').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('notes');
+            return rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        } catch (e) {
             return await allQuery("SELECT * FROM notes ORDER BY date DESC");
         }
     },
     addNote: async (note) => {
-        if (dbService.isFirebase()) {
+        try {
             const data = {
                 title: note.title,
                 content: note.content,
                 date: note.date || new Date().toISOString()
             };
-            const docRef = await firestoreDb.collection('notes').add(data);
-            return { id: docRef.id };
-        } else {
+            const doc = await firestoreClient.addDoc('notes', data);
+            return { id: doc.id };
+        } catch (e) {
             const result = await runQuery(
                 "INSERT INTO notes (title, content, date) VALUES (?, ?, ?)",
                 [note.title, note.content, note.date || new Date().toISOString()]
@@ -435,10 +434,10 @@ const dbService = {
         }
     },
     deleteNote: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('notes').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('notes', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM notes WHERE id = ?", [id]);
             return { success: true };
         }
@@ -446,10 +445,20 @@ const dbService = {
 
     // Orders
     getOrders: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('orders').orderBy('date', 'desc').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('orders');
+            return rows.map(r => {
+                let parsedItems = [];
+                if (r.items) {
+                    if (typeof r.items === 'string') {
+                        try { parsedItems = JSON.parse(r.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(r.items)) {
+                        parsedItems = r.items;
+                    }
+                }
+                return { ...r, items: parsedItems };
+            }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        } catch (e) {
             const rows = await allQuery("SELECT * FROM orders ORDER BY date DESC");
             return rows.map(r => {
                 let parsedItems = [];
@@ -460,38 +469,45 @@ const dbService = {
                         parsedItems = r.items;
                     }
                 }
-                return {
-                    ...r,
-                    items: parsedItems
-                };
+                return { ...r, items: parsedItems };
             });
         }
     },
     getOrder: async (id) => {
-        if (dbService.isFirebase()) {
-            const doc = await firestoreDb.collection('orders').doc(String(id)).get();
-            return doc.exists ? { id: doc.id, ...doc.data() } : null;
-        } else {
-            const row = await getQuery("SELECT * FROM orders WHERE id = ?", [id]);
-            if (row) {
-                let parsedItems = [];
-                if (row.items) {
-                    if (typeof row.items === 'string') {
-                        try { parsedItems = JSON.parse(row.items); } catch(e) { parsedItems = []; }
-                    } else if (Array.isArray(row.items)) {
-                        parsedItems = row.items;
-                    }
+        try {
+            const doc = await firestoreClient.getDoc('orders', String(id));
+            if (doc) {
+                if (typeof doc.items === 'string') {
+                    try { doc.items = JSON.parse(doc.items); } catch(e) { doc.items = []; }
                 }
-                row.items = parsedItems;
+                return doc;
             }
-            return row || null;
+        } catch (e) {}
+        const row = await getQuery("SELECT * FROM orders WHERE id = ?", [id]);
+        if (row && typeof row.items === 'string') {
+            try { row.items = JSON.parse(row.items); } catch(e) { row.items = []; }
         }
+        return row || null;
     },
     addOrder: async (o) => {
-        if (dbService.isFirebase()) {
+        try {
+            // Find next sequential numeric ID
+            const allOrders = await firestoreClient.getCollection('orders');
+            let maxId = 0;
+            for (const item of allOrders) {
+                const num = parseInt(item.id, 10);
+                if (!isNaN(num) && num > maxId) maxId = num;
+            }
+            const nextId = String(maxId + 1);
+
+            // Generate clean standard Order ID (e.g. ORD-1526)
+            const cleanOrderId = o.orderId && o.orderId.startsWith('ORD-') 
+                ? o.orderId 
+                : ('ORD-' + Math.floor(Math.random() * 9000 + 1000));
+
             const data = {
-                orderId: o.orderId || '',
-                customer: o.customer || '',
+                orderId: cleanOrderId,
+                customer: o.customer || 'Guest',
                 phone: o.phone || '',
                 address: o.address || '',
                 items: o.items || [],
@@ -518,9 +534,9 @@ const dbService = {
                 pointsEarned: Number(o.pointsEarned) || 0,
                 totalPoints: Number(o.totalPoints) || 0
             };
-            const docRef = await firestoreDb.collection('orders').add(data);
-            return { id: docRef.id };
-        } else {
+            await firestoreClient.setDoc('orders', nextId, data);
+            return { id: nextId, orderId: cleanOrderId };
+        } catch (e) {
             const result = await runQuery(
                 `INSERT INTO orders (orderId, customer, phone, address, items, total, status, deliveryStatus, deliveryMethod, paymentStatus, paymentMethod, date, buyTotal, discount, delivery, loyaltyDiscount, cardDiscount, customerId, weight, trackingNo, city, advancePaid, balanceDue, received, balance, pointsEarned, totalPoints)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -536,17 +552,10 @@ const dbService = {
         }
     },
     updateOrder: async (id, o) => {
-        if (dbService.isFirebase()) {
-            const cleanData = {};
-            const VALID_COLS = ['orderId','customer','phone','address','items','total','status','deliveryStatus','deliveryMethod','paymentStatus','paymentMethod','date','buyTotal','discount','delivery','loyaltyDiscount','cardDiscount','customerId','weight','trackingNo','city','advancePaid','balanceDue','received','balance','pointsEarned','totalPoints'];
-            for (const [key, val] of Object.entries(o)) {
-                if (VALID_COLS.includes(key)) {
-                    cleanData[key] = val;
-                }
-            }
-            await firestoreDb.collection('orders').doc(String(id)).update(cleanData);
+        try {
+            await firestoreClient.updateDoc('orders', String(id), o);
             return { success: true };
-        } else {
+        } catch (e) {
             const VALID_COLS = ['orderId','customer','phone','address','items','total','status','deliveryStatus','deliveryMethod','paymentStatus','paymentMethod','date','buyTotal','discount','delivery','loyaltyDiscount','cardDiscount','customerId','weight','trackingNo','city','advancePaid','balanceDue','received','balance','pointsEarned','totalPoints'];
             const updates = [];
             const params = [];
@@ -564,10 +573,10 @@ const dbService = {
         }
     },
     deleteOrder: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('orders').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('orders', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM orders WHERE id = ? OR orderId = ?", [id, id]);
             return { success: true };
         }
@@ -575,19 +584,19 @@ const dbService = {
 
     // Settings
     getSetting: async (key) => {
-        if (dbService.isFirebase()) {
-            const doc = await firestoreDb.collection('settings').doc(key).get();
-            return doc.exists ? doc.data().value : null;
-        } else {
+        try {
+            const doc = await firestoreClient.getDoc('settings', key);
+            return doc ? doc.value : null;
+        } catch (e) {
             const row = await getQuery("SELECT value FROM settings WHERE key = ?", [key]);
             return row ? row.value : null;
         }
     },
     setSetting: async (key, value) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('settings').doc(key).set({ value });
+        try {
+            await firestoreClient.setDoc('settings', key, { key, value });
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", [key, value]);
             return { success: true };
         }
@@ -595,10 +604,16 @@ const dbService = {
 
     // Inventory
     getInventory: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('inventory').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('inventory');
+            return rows.map(r => ({
+                ...r,
+                stock: Number(r.stock) || 0,
+                buyPrice: Number(r.buyPrice) || 0,
+                sellPrice: Number(r.sellPrice) || 0,
+                packageItems: (typeof r.packageItems === 'string') ? JSON.parse(r.packageItems || 'null') : r.packageItems
+            }));
+        } catch (e) {
             const rows = await allQuery("SELECT * FROM inventory");
             return rows.map(r => ({
                 ...r,
@@ -607,19 +622,16 @@ const dbService = {
         }
     },
     getItem: async (id) => {
-        if (dbService.isFirebase()) {
-            const doc = await firestoreDb.collection('inventory').doc(String(id)).get();
-            return doc.exists ? { id: doc.id, ...doc.data() } : null;
-        } else {
-            const row = await getQuery("SELECT * FROM inventory WHERE id = ?", [id]);
-            if (row) {
-                row.packageItems = row.packageItems ? JSON.parse(row.packageItems) : null;
-            }
-            return row || null;
-        }
+        try {
+            const doc = await firestoreClient.getDoc('inventory', String(id));
+            if (doc) return doc;
+        } catch (e) {}
+        const row = await getQuery("SELECT * FROM inventory WHERE id = ?", [id]);
+        if (row) row.packageItems = row.packageItems ? JSON.parse(row.packageItems) : null;
+        return row || null;
     },
     addItem: async (i) => {
-        if (dbService.isFirebase()) {
+        try {
             const data = {
                 name: i.name || '',
                 category: i.category || '',
@@ -630,9 +642,9 @@ const dbService = {
                 size: i.size || '',
                 packageItems: i.packageItems || null
             };
-            const docRef = await firestoreDb.collection('inventory').add(data);
-            return { id: docRef.id };
-        } else {
+            const doc = await firestoreClient.addDoc('inventory', data);
+            return { id: doc.id };
+        } catch (e) {
             const result = await runQuery(
                 `INSERT INTO inventory (name, category, type, stock, buyPrice, sellPrice, size, packageItems)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -642,17 +654,10 @@ const dbService = {
         }
     },
     updateItem: async (id, i) => {
-        if (dbService.isFirebase()) {
-            const cleanData = {};
-            const VALID_KEYS = ['name', 'category', 'type', 'stock', 'buyPrice', 'sellPrice', 'size', 'packageItems'];
-            for (const [key, val] of Object.entries(i)) {
-                if (VALID_KEYS.includes(key)) {
-                    cleanData[key] = val;
-                }
-            }
-            await firestoreDb.collection('inventory').doc(String(id)).update(cleanData);
+        try {
+            await firestoreClient.updateDoc('inventory', String(id), i);
             return { success: true };
-        } else {
+        } catch (e) {
             const updates = [];
             const params = [];
             for (const [key, val] of Object.entries(i)) {
@@ -668,10 +673,10 @@ const dbService = {
         }
     },
     deleteItem: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('inventory').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('inventory', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM inventory WHERE id = ?", [id]);
             return { success: true };
         }
@@ -679,10 +684,20 @@ const dbService = {
 
     // Sales
     getSales: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('sales').orderBy('date', 'desc').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('sales');
+            return rows.map(r => {
+                let parsedItems = [];
+                if (r.items) {
+                    if (typeof r.items === 'string') {
+                        try { parsedItems = JSON.parse(r.items); } catch(e) { parsedItems = []; }
+                    } else if (Array.isArray(r.items)) {
+                        parsedItems = r.items;
+                    }
+                }
+                return { ...r, items: parsedItems };
+            }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        } catch (e) {
             const rows = await allQuery("SELECT * FROM sales ORDER BY date DESC");
             return rows.map(r => {
                 let parsedItems = [];
@@ -693,35 +708,37 @@ const dbService = {
                         parsedItems = r.items;
                     }
                 }
-                return {
-                    ...r,
-                    items: parsedItems
-                };
+                return { ...r, items: parsedItems };
             });
         }
     },
     getSale: async (id) => {
-        if (dbService.isFirebase()) {
-            const doc = await firestoreDb.collection('sales').doc(String(id)).get();
-            return doc.exists ? { id: doc.id, ...doc.data() } : null;
-        } else {
-            const row = await getQuery("SELECT * FROM sales WHERE id = ?", [id]);
-            if (row) {
-                let parsedItems = [];
-                if (row.items) {
-                    if (typeof row.items === 'string') {
-                        try { parsedItems = JSON.parse(row.items); } catch(e) { parsedItems = []; }
-                    } else if (Array.isArray(row.items)) {
-                        parsedItems = row.items;
-                    }
+        try {
+            const doc = await firestoreClient.getDoc('sales', String(id));
+            if (doc) {
+                if (typeof doc.items === 'string') {
+                    try { doc.items = JSON.parse(doc.items); } catch(e) { doc.items = []; }
                 }
-                row.items = parsedItems;
+                return doc;
             }
-            return row || null;
+        } catch (e) {}
+        const row = await getQuery("SELECT * FROM sales WHERE id = ?", [id]);
+        if (row && typeof row.items === 'string') {
+            try { row.items = JSON.parse(row.items); } catch(e) { row.items = []; }
         }
+        return row || null;
     },
     addSale: async (s) => {
-        if (dbService.isFirebase()) {
+        try {
+            // Find next sequential numeric ID
+            const allSales = await firestoreClient.getCollection('sales');
+            let maxId = 0;
+            for (const item of allSales) {
+                const num = parseInt(item.id, 10);
+                if (!isNaN(num) && num > maxId) maxId = num;
+            }
+            const nextId = String(maxId + 1);
+
             const data = {
                 total: Number(s.total) || 0,
                 buyTotal: Number(s.buyTotal) || 0,
@@ -748,9 +765,9 @@ const dbService = {
                 pointsEarned: Number(s.pointsEarned) || 0,
                 totalPoints: Number(s.totalPoints) || 0
             };
-            const docRef = await firestoreDb.collection('sales').add(data);
-            return { id: docRef.id };
-        } else {
+            await firestoreClient.setDoc('sales', nextId, data);
+            return { id: nextId };
+        } catch (e) {
             const result = await runQuery(
                 `INSERT INTO sales (total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, cardDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance, advancePaid, balanceDue, pointsEarned, totalPoints)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -767,17 +784,10 @@ const dbService = {
         }
     },
     updateSale: async (id, s) => {
-        if (dbService.isFirebase()) {
-            const cleanData = {};
-            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
-            for (const [key, val] of Object.entries(s)) {
-                if (VALID_COLS.includes(key)) {
-                    cleanData[key] = val;
-                }
-            }
-            await firestoreDb.collection('sales').doc(String(id)).update(cleanData);
+        try {
+            await firestoreClient.updateDoc('sales', String(id), s);
             return { success: true };
-        } else {
+        } catch (e) {
             const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
             const updates = [];
             const params = [];
@@ -794,10 +804,10 @@ const dbService = {
         }
     },
     deleteSale: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('sales').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('sales', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM sales WHERE id = ?", [id]);
             return { success: true };
         }
@@ -805,18 +815,16 @@ const dbService = {
 
     // Customers
     getCustomers: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('customers').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            return await firestoreClient.getCollection('customers');
+        } catch (e) {
             return await allQuery("SELECT * FROM customers");
         }
     },
     addCustomer: async (c) => {
-        if (dbService.isFirebase()) {
-            // Generate customer ID based on count
-            const snapshot = await firestoreDb.collection('customers').get();
-            const count = snapshot.size;
+        try {
+            const existing = await firestoreClient.getCollection('customers');
+            const count = existing.length;
             const shortId = 'CUS-' + (100 + count + 1);
 
             const data = {
@@ -830,9 +838,9 @@ const dbService = {
                 loyaltyPoints: Number(c.loyaltyPoints) || 0,
                 profilePic: c.profilePic || ''
             };
-            const docRef = await firestoreDb.collection('customers').add(data);
-            return { id: docRef.id, custId: shortId };
-        } else {
+            const doc = await firestoreClient.addDoc('customers', data);
+            return { id: doc.id, custId: shortId };
+        } catch (e) {
             const countRow = await getQuery("SELECT COUNT(*) as count FROM customers");
             const count = countRow ? countRow.count : 0;
             const shortId = 'CUS-' + (100 + count + 1);
@@ -849,38 +857,10 @@ const dbService = {
         }
     },
     updateCustomer: async (id, c) => {
-        if (dbService.isFirebase()) {
-            const oldCustDoc = await firestoreDb.collection('customers').doc(String(id)).get();
-            const oldCust = oldCustDoc.exists ? oldCustDoc.data() : null;
-
-            const cleanData = {};
-            const VALID_KEYS = ['name', 'phone', 'address', 'totalOrders', 'totalSpent', 'isBlacklisted', 'loyaltyPoints', 'profilePic'];
-            for (const [key, val] of Object.entries(c)) {
-                if (VALID_KEYS.includes(key)) {
-                    cleanData[key] = key === 'isBlacklisted' ? (val ? 1 : 0) : val;
-                }
-            }
-            await firestoreDb.collection('customers').doc(String(id)).update(cleanData);
-
-            if (oldCust && c.name && c.name !== oldCust.name) {
-                const salesSnapshot = await firestoreDb.collection('sales').where('customerId', '==', oldCust.custId).get();
-                const salesBatch = firestoreDb.batch();
-                salesSnapshot.docs.forEach(doc => {
-                    salesBatch.update(doc.ref, { customer: c.name, customerPhone: c.phone || doc.data().customerPhone || '' });
-                });
-                await salesBatch.commit();
-
-                const ordersSnapshot = await firestoreDb.collection('orders').where('customerId', '==', oldCust.custId).get();
-                const ordersBatch = firestoreDb.batch();
-                ordersSnapshot.docs.forEach(doc => {
-                    ordersBatch.update(doc.ref, { customer: c.name, phone: c.phone || doc.data().phone || '' });
-                });
-                await ordersBatch.commit();
-            }
+        try {
+            await firestoreClient.updateDoc('customers', String(id), c);
             return { success: true };
-        } else {
-            const oldCust = await getQuery("SELECT name, custId, phone FROM customers WHERE id = ?", [id]);
-
+        } catch (e) {
             const updates = [];
             const params = [];
             for (const [key, val] of Object.entries(c)) {
@@ -892,23 +872,14 @@ const dbService = {
             if (updates.length > 0) {
                 await runQuery(`UPDATE customers SET ${updates.join(', ')} WHERE id = ?`, params);
             }
-
-            if (oldCust && c.name && c.name !== oldCust.name) {
-                await runQuery("UPDATE sales SET customer = ? WHERE customerId = ? OR (customerId IS NULL AND customer = ?)", [c.name, oldCust.custId, oldCust.name]);
-                await runQuery("UPDATE orders SET customer = ? WHERE customerId = ? OR (customerId IS NULL AND customer = ?)", [c.name, oldCust.custId, oldCust.name]);
-            }
-            if (oldCust && c.phone && c.phone !== oldCust.phone) {
-                await runQuery("UPDATE sales SET customerPhone = ? WHERE customerId = ?", [c.phone, oldCust.custId]);
-                await runQuery("UPDATE orders SET phone = ? WHERE customerId = ?", [c.phone, oldCust.custId]);
-            }
             return { success: true };
         }
     },
     deleteCustomer: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('customers').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('customers', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM customers WHERE id = ?", [id]);
             return { success: true };
         }
@@ -916,31 +887,30 @@ const dbService = {
 
     // Categories
     getCategories: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('categories').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            return await firestoreClient.getCollection('categories');
+        } catch (e) {
             return await allQuery("SELECT * FROM categories");
         }
     },
     addCategory: async (c) => {
-        if (dbService.isFirebase()) {
+        try {
             const data = {
                 name: c.name || '',
                 description: c.description || ''
             };
-            const docRef = await firestoreDb.collection('categories').add(data);
-            return { id: docRef.id };
-        } else {
+            const doc = await firestoreClient.addDoc('categories', data);
+            return { id: doc.id };
+        } catch (e) {
             const result = await runQuery("INSERT INTO categories (name, description) VALUES (?, ?)", [c.name, c.description]);
             return { id: result.lastID };
         }
     },
     deleteCategory: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('categories').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('categories', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM categories WHERE id = ?", [id]);
             return { success: true };
         }
@@ -948,23 +918,23 @@ const dbService = {
 
     // Expenses
     getExpenses: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('expenses').orderBy('date', 'desc').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('expenses');
+            return rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        } catch (e) {
             return await allQuery("SELECT * FROM expenses ORDER BY date DESC");
         }
     },
     addExpense: async (e) => {
-        if (dbService.isFirebase()) {
+        try {
             const data = {
                 reason: e.reason || '',
                 amount: Number(e.amount) || 0,
                 date: e.date || new Date().toISOString()
             };
-            const docRef = await firestoreDb.collection('expenses').add(data);
-            return { id: docRef.id };
-        } else {
+            const doc = await firestoreClient.addDoc('expenses', data);
+            return { id: doc.id };
+        } catch (e) {
             const result = await runQuery(
                 "INSERT INTO expenses (reason, amount, date) VALUES (?, ?, ?)",
                 [e.reason, e.amount, e.date || new Date().toISOString()]
@@ -973,10 +943,10 @@ const dbService = {
         }
     },
     deleteExpense: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('expenses').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('expenses', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM expenses WHERE id = ?", [id]);
             return { success: true };
         }
@@ -984,10 +954,13 @@ const dbService = {
 
     // Waybills
     getWaybills: async () => {
-        if (dbService.isFirebase()) {
-            const snapshot = await firestoreDb.collection('waybills').orderBy('date', 'desc').get();
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        } else {
+        try {
+            const rows = await firestoreClient.getCollection('waybills');
+            return rows.map(r => ({
+                ...r,
+                items: r.items ? (typeof r.items === 'string' ? JSON.parse(r.items) : r.items) : []
+            })).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        } catch (e) {
             const rows = await allQuery("SELECT * FROM waybills ORDER BY id DESC");
             return rows.map(r => ({
                 ...r,
@@ -996,8 +969,7 @@ const dbService = {
         }
     },
     addWaybill: async (w) => {
-        const itemsJson = typeof w.items === 'object' ? JSON.stringify(w.items) : (w.items || '[]');
-        if (dbService.isFirebase()) {
+        try {
             const data = {
                 orderId: w.orderId || '',
                 trackingNo: w.trackingNo || '',
@@ -1022,9 +994,10 @@ const dbService = {
                 items: w.items || [],
                 status: w.status || 'Generated'
             };
-            const docRef = await firestoreDb.collection('waybills').add(data);
-            return { id: docRef.id };
-        } else {
+            const doc = await firestoreClient.addDoc('waybills', data);
+            return { id: doc.id };
+        } catch (e) {
+            const itemsJson = typeof w.items === 'object' ? JSON.stringify(w.items) : (w.items || '[]');
             const result = await runQuery(
                 `INSERT INTO waybills (
                     orderId, trackingNo, date, senderName, senderAddress, senderPhone1, senderPhone2,
@@ -1061,10 +1034,10 @@ const dbService = {
         }
     },
     deleteWaybill: async (id) => {
-        if (dbService.isFirebase()) {
-            await firestoreDb.collection('waybills').doc(String(id)).delete();
+        try {
+            await firestoreClient.deleteDoc('waybills', String(id));
             return { success: true };
-        } else {
+        } catch (e) {
             await runQuery("DELETE FROM waybills WHERE id = ?", [id]);
             return { success: true };
         }
@@ -1072,12 +1045,11 @@ const dbService = {
 
     // Users (Auth)
     getUser: async (username) => {
-        if (dbService.isFirebase()) {
-            const doc = await firestoreDb.collection('users').doc(username).get();
-            return doc.exists ? doc.data() : null;
-        } else {
-            return await getQuery("SELECT * FROM users WHERE username = ?", [username]);
-        }
+        try {
+            const doc = await firestoreClient.getDoc('users', username);
+            if (doc) return doc;
+        } catch (e) {}
+        return await getQuery("SELECT * FROM users WHERE username = ?", [username]);
     }
 };
 
