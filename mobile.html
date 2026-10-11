@@ -2448,39 +2448,39 @@
             const todayStr = now.toISOString().split('T')[0];
             const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-            // Helper: check if order is paid
-            const isOrderPaid = (o) => {
-                const ps = (o.paymentStatus || '').toLowerCase();
-                const st = (o.status || '').toLowerCase();
+            // Helper: check if record (sale or order) is paid
+            const isRecordPaid = (r) => {
+                const ps = (r.paymentStatus || '').toLowerCase();
+                const st = (r.status || '').toLowerCase();
                 return ps === 'paid' || st === 'paid';
             };
 
-            // Today's Sales
-            const todaySalesList = allSales.filter(s => s.date && s.date.startsWith(todayStr));
-            const todaySalesTotal = todaySalesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            // Today's Sales: only PAID sales count toward dashboard revenue
+            const todayPaidSalesList = allSales.filter(s => s.date && s.date.startsWith(todayStr) && isRecordPaid(s));
+            const todaySalesTotal = todayPaidSalesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
 
             // Today's Paid Orders revenue added to dashboard total
-            const todayPaidOrders = allOrders.filter(o => o.date && o.date.startsWith(todayStr) && isOrderPaid(o));
+            const todayPaidOrders = allOrders.filter(o => o.date && o.date.startsWith(todayStr) && isRecordPaid(o));
             const todayPaidOrdersTotal = todayPaidOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             const todayTotal = todaySalesTotal + todayPaidOrdersTotal;
 
             document.getElementById('kpi-today-sales').textContent = `Rs. ${todayTotal.toLocaleString()}`;
-            document.getElementById('kpi-sales-count').textContent = `${todaySalesList.length} bills + ${todayPaidOrders.length} paid orders`;
+            document.getElementById('kpi-sales-count').textContent = `${todayPaidSalesList.length} paid bills + ${todayPaidOrders.length} paid orders`;
 
             // Today's Orders
             const todayOrdersList = allOrders.filter(o => o.date && o.date.startsWith(todayStr));
             const pendingOrdersList = allOrders.filter(o => {
                 const st = (o.status || '').toLowerCase();
-                return st !== 'cancelled' && !isOrderPaid(o);
+                return st !== 'cancelled' && !isRecordPaid(o);
             });
             document.getElementById('kpi-today-orders').textContent = todayOrdersList.length;
             document.getElementById('kpi-pending-orders').textContent = `${pendingOrdersList.length} pending`;
 
-            // Month Revenue (Sales + Paid Orders)
-            const monthSalesList = allSales.filter(s => s.date && s.date.startsWith(monthPrefix));
-            const monthSalesTotal = monthSalesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+            // Month Revenue (Paid Sales + Paid Orders)
+            const monthPaidSalesList = allSales.filter(s => s.date && s.date.startsWith(monthPrefix) && isRecordPaid(s));
+            const monthSalesTotal = monthPaidSalesList.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
             const monthPaidOrdersTotal = allOrders
-                .filter(o => o.date && o.date.startsWith(monthPrefix) && isOrderPaid(o))
+                .filter(o => o.date && o.date.startsWith(monthPrefix) && isRecordPaid(o))
                 .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
             document.getElementById('kpi-month-sales').textContent = `Rs. ${(monthSalesTotal + monthPaidOrdersTotal).toLocaleString()}`;
 
@@ -4271,18 +4271,15 @@
 
                 </div>` : ''}
 
-                <!-- ✅ MARK AS PAID BUTTON -->
+                <!-- ✅ MARK AS PAID BUTTON (Only for Unpaid records) -->
                 ${(() => {
                     const isPaid = (record.paymentStatus || '').toLowerCase() === 'paid' || (record.status || '').toLowerCase() === 'paid';
                     if (!isPaid) {
                         return `<button onclick="markRecordAsPaid('${record.id}', '${type}')" style="width:100%; padding:12px; background:linear-gradient(135deg,#10b981,#059669); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px; box-shadow:0 4px 12px rgba(16,185,129,0.35);">
                             <i class='fas fa-check-circle'></i> Mark as PAID &amp; Add to Dashboard
                         </button>`;
-                    } else {
-                        return `<div style="text-align:center; padding:10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:10px; color:var(--success); font-weight:800; font-size:13px; margin-top:4px;">
-                            <i class='fas fa-check-circle'></i> PAID — Already added to Dashboard
-                        </div>`;
                     }
+                    return '';
                 })()}
 
                 <!-- Actions -->
