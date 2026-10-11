@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
@@ -92,7 +92,9 @@ db.serialize(() => {
         "ALTER TABLE sales ADD COLUMN advancePaid REAL",
         "ALTER TABLE sales ADD COLUMN balanceDue REAL",
         "ALTER TABLE sales ADD COLUMN pointsEarned REAL",
-        "ALTER TABLE sales ADD COLUMN totalPoints REAL"
+        "ALTER TABLE sales ADD COLUMN totalPoints REAL",
+        "ALTER TABLE sales ADD COLUMN paymentStatus TEXT",
+        "ALTER TABLE sales ADD COLUMN status TEXT"
     ];
     salesExtraCols.forEach(sql => db.run(sql, [], () => {}));
 
@@ -746,21 +748,26 @@ const dbService = {
                 advancePaid: s.advancePaid !== undefined && s.advancePaid !== null && s.advancePaid !== '' ? Number(s.advancePaid) : null,
                 balanceDue: s.balanceDue !== undefined && s.balanceDue !== null && s.balanceDue !== '' ? Number(s.balanceDue) : null,
                 pointsEarned: Number(s.pointsEarned) || 0,
-                totalPoints: Number(s.totalPoints) || 0
+                totalPoints: Number(s.totalPoints) || 0,
+                paymentStatus: (s.paymentStatus || 'paid').toLowerCase(),
+                status: s.status || (s.paymentStatus === 'unpaid' ? 'Pending' : 'Paid')
             };
             const docRef = await firestoreDb.collection('sales').add(data);
             return { id: docRef.id };
         } else {
+            const pStatus = (s.paymentStatus || (Number(s.balanceDue) > 0 ? 'advance' : 'paid')).toLowerCase();
+            const sStatus = s.status || (pStatus === 'unpaid' ? 'Pending' : 'Paid');
             const result = await runQuery(
-                `INSERT INTO sales (total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, cardDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance, advancePaid, balanceDue, pointsEarned, totalPoints)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO sales (total, buyTotal, date, customer, paymentMethod, items, discount, delivery, loyaltyDiscount, cardDiscount, customerId, customerPhone, orderId, weight, trackingNo, deliveryMethod, address, city, received, balance, advancePaid, balanceDue, pointsEarned, totalPoints, paymentStatus, status)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     s.total, s.buyTotal, s.date || new Date().toISOString(), s.customer, s.paymentMethod,
                     JSON.stringify(s.items || []), s.discount, s.delivery, s.loyaltyDiscount, s.cardDiscount || 0, s.customerId, s.customerPhone, s.orderId,
                     s.weight || '', s.trackingNo || '', s.deliveryMethod || '', s.address || '', s.city || '', s.received || 0, s.balance || 0,
                     (s.advancePaid !== undefined && s.advancePaid !== null && s.advancePaid !== '') ? Number(s.advancePaid) : null,
                     (s.balanceDue !== undefined && s.balanceDue !== null && s.balanceDue !== '') ? Number(s.balanceDue) : null,
-                    Number(s.pointsEarned) || 0, Number(s.totalPoints) || 0
+                    Number(s.pointsEarned) || 0, Number(s.totalPoints) || 0,
+                    pStatus, sStatus
                 ]
             );
             return { id: result.lastID };
@@ -769,7 +776,7 @@ const dbService = {
     updateSale: async (id, s) => {
         if (dbService.isFirebase()) {
             const cleanData = {};
-            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
+            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints','paymentStatus','status'];
             for (const [key, val] of Object.entries(s)) {
                 if (VALID_COLS.includes(key)) {
                     cleanData[key] = val;
@@ -778,7 +785,7 @@ const dbService = {
             await firestoreDb.collection('sales').doc(String(id)).update(cleanData);
             return { success: true };
         } else {
-            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints'];
+            const VALID_COLS = ['total','buyTotal','date','customer','paymentMethod','items','discount','delivery','loyaltyDiscount','cardDiscount','customerId','customerPhone','orderId','received','balance','weight','trackingNo','deliveryMethod','address','city','advancePaid','balanceDue','pointsEarned','totalPoints','paymentStatus','status'];
             const updates = [];
             const params = [];
             for (const [key, val] of Object.entries(s)) {
