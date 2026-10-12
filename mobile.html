@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Roohira POS Mobile</title>
 
     <!-- PWA Settings -->
@@ -20,7 +21,9 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Libraries -->
@@ -33,7 +36,7 @@
 
     <style>
         :root {
-            --primary: #ff4b7d;
+            --primary: #ff4b7f;
             --primary-rgb: 255, 75, 125;
             --primary-dark: #e11d48;
             --primary-light: rgba(255, 75, 125, 0.15);
@@ -82,7 +85,9 @@
             user-select: none;
         }
 
-        input, textarea, select {
+        input,
+        textarea,
+        select {
             user-select: auto;
         }
 
@@ -134,7 +139,7 @@
             object-fit: contain;
             background: #fff;
             padding: 2px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .brand-text h1 {
@@ -164,9 +169,20 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.3); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.8; }
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
         }
 
         .top-actions {
@@ -286,8 +302,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Common Cards */
@@ -346,9 +369,17 @@
             background: var(--primary);
         }
 
-        .kpi-card.green::before { background: var(--success); }
-        .kpi-card.amber::before { background: var(--warning); }
-        .kpi-card.blue::before { background: var(--info); }
+        .kpi-card.green::before {
+            background: var(--success);
+        }
+
+        .kpi-card.amber::before {
+            background: var(--warning);
+        }
+
+        .kpi-card.blue::before {
+            background: var(--info);
+        }
 
         .kpi-label {
             font-size: 10.5px;
@@ -380,7 +411,9 @@
             scrollbar-width: none;
         }
 
-        .quick-actions::-webkit-scrollbar { display: none; }
+        .quick-actions::-webkit-scrollbar {
+            display: none;
+        }
 
         .action-chip {
             flex-shrink: 0;
@@ -422,7 +455,9 @@
             scrollbar-width: none;
         }
 
-        .category-scroll::-webkit-scrollbar { display: none; }
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
 
         .cat-pill {
             flex-shrink: 0;
@@ -547,9 +582,20 @@
             font-weight: 700;
         }
 
-        .stock-in { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-        .stock-low { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .stock-out { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .stock-in {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .stock-low {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .stock-out {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
 
         .prod-price {
             font-size: 12px;
@@ -601,8 +647,15 @@
         }
 
         @keyframes bounceIn {
-            0% { transform: translateY(20px); opacity: 0; }
-            100% { transform: translateY(0); opacity: 1; }
+            0% {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .cart-bar-left {
@@ -661,11 +714,35 @@
             text-transform: uppercase;
         }
 
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.4); }
-        .status-confirmed { background: rgba(59, 130, 246, 0.2); color: var(--info); border: 1px solid rgba(59, 130, 246, 0.4); }
-        .status-shipped { background: rgba(139, 92, 246, 0.2); color: var(--purple); border: 1px solid rgba(139, 92, 246, 0.4); }
-        .status-delivered { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.4); }
-        .status-cancelled { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.4); }
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .status-confirmed {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .status-shipped {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--purple);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+        }
+
+        .status-delivered {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
 
         .order-cust {
             font-size: 12px;
@@ -715,10 +792,27 @@
             gap: 4px;
         }
 
-        .btn-sm:active { transform: scale(0.95); }
-        .btn-sm.primary { background: var(--primary); border-color: var(--primary); color: white; }
-        .btn-sm.success { background: var(--success); border-color: var(--success); color: white; }
-        .btn-sm.whatsapp { background: #25D366; border-color: #25D366; color: white; }
+        .btn-sm:active {
+            transform: scale(0.95);
+        }
+
+        .btn-sm.primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .btn-sm.success {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .btn-sm.whatsapp {
+            background: #25D366;
+            border-color: #25D366;
+            color: white;
+        }
 
         /* Modal & Bottom Sheets */
         .modal-overlay {
@@ -758,8 +852,13 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         .sheet-handle {
@@ -810,7 +909,9 @@
             text-transform: uppercase;
         }
 
-        .form-input, .form-select, .form-textarea {
+        .form-input,
+        .form-select,
+        .form-textarea {
             width: 100%;
             height: 40px;
             background: var(--bg-card);
@@ -828,7 +929,9 @@
             resize: none;
         }
 
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
             border-color: var(--primary);
         }
 
@@ -855,7 +958,9 @@
             box-shadow: 0 4px 15px rgba(255, 75, 125, 0.35);
         }
 
-        .btn-full:active { transform: scale(0.98); }
+        .btn-full:active {
+            transform: scale(0.98);
+        }
 
         /* Cart Items List */
         .cart-item-row {
@@ -1014,7 +1119,7 @@
             display: flex;
             flex-direction: column;
             gap: 9px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
             transition: border-color 0.2s;
         }
 
@@ -1097,7 +1202,7 @@
             max-height: 70vh;
             overflow-y: auto;
             border: 1px solid #cbd5e1;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
             box-sizing: border-box;
         }
 
@@ -1106,19 +1211,25 @@
                 size: 80mm auto;
                 margin: 0;
             }
-            html, body {
+
+            html,
+            body {
                 background: #fff !important;
                 color: #000 !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 80mm !important;
             }
+
             body * {
                 visibility: hidden !important;
             }
-            #printable-area, #printable-area * {
+
+            #printable-area,
+            #printable-area * {
                 visibility: visible !important;
             }
+
             #printable-area {
                 position: absolute !important;
                 left: 0 !important;
@@ -1242,10 +1353,13 @@
                     <div class="card-title">
                         <i class="fas fa-truck-fast" style="color:var(--info);"></i> Recent Orders
                     </div>
-                    <a href="javascript:void(0)" onclick="switchHistorySubTab('orders'); switchTab('history');" style="font-size:11px; color:var(--primary); text-decoration:none; font-weight:700;">View All &rarr;</a>
+                    <a href="javascript:void(0)" onclick="switchHistorySubTab('orders'); switchTab('history');"
+                        style="font-size:11px; color:var(--primary); text-decoration:none; font-weight:700;">View All
+                        &rarr;</a>
                 </div>
                 <div id="home-recent-orders-list">
-                    <div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">Loading recent orders...</div>
+                    <div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">Loading recent
+                        orders...</div>
                 </div>
             </div>
 
@@ -1255,10 +1369,13 @@
                     <div class="card-title">
                         <i class="fas fa-history" style="color:var(--success);"></i> Recent Invoices
                     </div>
-                    <a href="javascript:void(0)" onclick="switchHistorySubTab('sales'); switchTab('history');" style="font-size:11px; color:var(--primary); text-decoration:none; font-weight:700;">View History &rarr;</a>
+                    <a href="javascript:void(0)" onclick="switchHistorySubTab('sales'); switchTab('history');"
+                        style="font-size:11px; color:var(--primary); text-decoration:none; font-weight:700;">View
+                        History &rarr;</a>
                 </div>
                 <div id="home-recent-sales-list">
-                    <div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">Loading recent sales...</div>
+                    <div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">Loading recent
+                        sales...</div>
                 </div>
             </div>
         </section>
@@ -1269,7 +1386,8 @@
             <div style="display:flex; gap:8px;">
                 <div class="search-box" style="flex:1;">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="pos-search-input" class="search-input" placeholder="Search product name or barcode..." oninput="filterPosProducts()">
+                    <input type="text" id="pos-search-input" class="search-input"
+                        placeholder="Search product name or barcode..." oninput="filterPosProducts()">
                 </div>
                 <button class="icon-btn" onclick="openScanner()" style="height:42px; width:42px;" title="Scan Barcode">
                     <i class="fas fa-camera"></i>
@@ -1283,7 +1401,8 @@
 
             <!-- Products Grid -->
             <div class="products-grid" id="pos-products-grid">
-                <div style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-sub);">Loading inventory items...</div>
+                <div style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-sub);">Loading
+                    inventory items...</div>
             </div>
         </section>
 
@@ -1320,7 +1439,8 @@
             <!-- Search Bar -->
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="history-search-input" class="search-input" placeholder="Search Bill/Order #, customer, phone, item..." oninput="onHistorySearchChanged()">
+                <input type="text" id="history-search-input" class="search-input"
+                    placeholder="Search Bill/Order #, customer, phone, item..." oninput="onHistorySearchChanged()">
             </div>
 
             <!-- Date Range Filters -->
@@ -1330,19 +1450,29 @@
                 <div class="cat-pill" onclick="selectHistoryDateFilter('yesterday', this)">Yesterday</div>
                 <div class="cat-pill" onclick="selectHistoryDateFilter('week', this)">This Week</div>
                 <div class="cat-pill" onclick="selectHistoryDateFilter('month', this)">This Month</div>
-                <div class="cat-pill" onclick="selectHistoryDateFilter('custom', this)"><i class="fas fa-calendar-alt"></i> Custom</div>
+                <div class="cat-pill" onclick="selectHistoryDateFilter('custom', this)"><i
+                        class="fas fa-calendar-alt"></i> Custom</div>
             </div>
 
             <!-- Custom Date Range Picker for History -->
-            <div id="history-custom-range-box" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">
+            <div id="history-custom-range-box"
+                style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                     <div>
-                        <label style="display:block; font-size:9.5px; font-weight:700; color:var(--text-muted); margin-bottom:3px; text-transform:uppercase;">From Date</label>
-                        <input type="date" id="history-start-date" class="form-input" style="padding:6px 8px; font-size:11.5px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;" onchange="renderHistorySection()">
+                        <label
+                            style="display:block; font-size:9.5px; font-weight:700; color:var(--text-muted); margin-bottom:3px; text-transform:uppercase;">From
+                            Date</label>
+                        <input type="date" id="history-start-date" class="form-input"
+                            style="padding:6px 8px; font-size:11.5px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;"
+                            onchange="renderHistorySection()">
                     </div>
                     <div>
-                        <label style="display:block; font-size:9.5px; font-weight:700; color:var(--text-muted); margin-bottom:3px; text-transform:uppercase;">To Date</label>
-                        <input type="date" id="history-end-date" class="form-input" style="padding:6px 8px; font-size:11.5px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;" onchange="renderHistorySection()">
+                        <label
+                            style="display:block; font-size:9.5px; font-weight:700; color:var(--text-muted); margin-bottom:3px; text-transform:uppercase;">To
+                            Date</label>
+                        <input type="date" id="history-end-date" class="form-input"
+                            style="padding:6px 8px; font-size:11.5px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;"
+                            onchange="renderHistorySection()">
                     </div>
                 </div>
             </div>
@@ -1369,7 +1499,8 @@
 
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" id="inventory-search-input" class="search-input" placeholder="Search product by name or barcode..." oninput="filterInventoryList()">
+                <input type="text" id="inventory-search-input" class="search-input"
+                    placeholder="Search product by name or barcode..." oninput="filterInventoryList()">
             </div>
 
             <!-- Category Filter for Inventory -->
@@ -1389,14 +1520,17 @@
 
             <!-- Menu Grid -->
             <div class="card" style="padding: 10px;">
-                <div class="cart-item-row" onclick="switchHistorySubTab('sales'); switchTab('history');" style="cursor:pointer; padding:12px;">
+                <div class="cart-item-row" onclick="switchHistorySubTab('sales'); switchTab('history');"
+                    style="cursor:pointer; padding:12px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(16,185,129,0.15); color:var(--success); display:flex; align-items:center; justify-content:center; font-size:16px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:rgba(16,185,129,0.15); color:var(--success); display:flex; align-items:center; justify-content:center; font-size:16px;">
                             <i class="fas fa-receipt"></i>
                         </div>
                         <div>
                             <div style="font-weight:700; font-size:14px;">Sales History & Invoices</div>
-                            <div style="font-size:11px; color:var(--text-muted);">View past invoices, profits and bills</div>
+                            <div style="font-size:11px; color:var(--text-muted);">View past invoices, profits and bills
+                            </div>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
@@ -1404,12 +1538,14 @@
 
                 <div class="cart-item-row" onclick="openCustomersSheet()" style="cursor:pointer; padding:12px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,75,125,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:16px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:rgba(255,75,125,0.15); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:16px;">
                             <i class="fas fa-users"></i>
                         </div>
                         <div>
                             <div style="font-weight:700; font-size:14px;">Customers CRM & Loyalty</div>
-                            <div style="font-size:11px; color:var(--text-muted);">Customer points, orders & details</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Customer points, orders & details
+                            </div>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
@@ -1417,12 +1553,14 @@
 
                 <div class="cart-item-row" onclick="openExpensesSheet()" style="cursor:pointer; padding:12px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.15); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:16px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.15); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:16px;">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
                         <div>
                             <div style="font-weight:700; font-size:14px;">Shop Expenses</div>
-                            <div style="font-size:11px; color:var(--text-muted);">Track daily and monthly spendings</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Track daily and monthly spendings
+                            </div>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
@@ -1430,7 +1568,8 @@
 
                 <div class="cart-item-row" onclick="openAnalyticsSheet()" style="cursor:pointer; padding:12px;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(59,130,246,0.15); color:var(--info); display:flex; align-items:center; justify-content:center; font-size:16px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:rgba(59,130,246,0.15); color:var(--info); display:flex; align-items:center; justify-content:center; font-size:16px;">
                             <i class="fas fa-chart-pie"></i>
                         </div>
                         <div>
@@ -1441,14 +1580,17 @@
                     <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                 </div>
 
-                <div class="cart-item-row" onclick="openConnectModal()" style="cursor:pointer; padding:12px; border:none;">
+                <div class="cart-item-row" onclick="openConnectModal()"
+                    style="cursor:pointer; padding:12px; border:none;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(245,158,11,0.15); color:var(--warning); display:flex; align-items:center; justify-content:center; font-size:16px;">
+                        <div
+                            style="width:36px; height:36px; border-radius:10px; background:rgba(245,158,11,0.15); color:var(--warning); display:flex; align-items:center; justify-content:center; font-size:16px;">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
                         <div>
                             <div style="font-weight:700; font-size:14px;">Connect Phone Link & QR</div>
-                            <div style="font-size:11px; color:var(--text-muted);">Open this app on other mobile phones</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Open this app on other mobile phones
+                            </div>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
@@ -1456,13 +1598,16 @@
             </div>
 
             <!-- Install as App Banner -->
-            <div class="card" style="background:linear-gradient(135deg, rgba(255,75,125,0.15), rgba(99,102,241,0.15)); border:1px solid rgba(255,75,125,0.3);">
+            <div class="card"
+                style="background:linear-gradient(135deg, rgba(255,75,125,0.15), rgba(99,102,241,0.15)); border:1px solid rgba(255,75,125,0.3);">
                 <div style="display:flex; gap:12px; align-items:center;">
-                    <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png" style="width:48px; height:48px; border-radius:12px; background:white; padding:3px;">
+                    <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png"
+                        style="width:48px; height:48px; border-radius:12px; background:white; padding:3px;">
                     <div>
                         <div style="font-weight:800; font-size:14px;">Install as Mobile App (PWA)</div>
                         <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
-                            Tap your browser menu (<i class="fas fa-ellipsis-v"></i> or Share) &rarr; <strong>"Add to Home Screen"</strong> to use as a native app!
+                            Tap your browser menu (<i class="fas fa-ellipsis-v"></i> or Share) &rarr; <strong>"Add to
+                                Home Screen"</strong> to use as a native app!
                         </div>
                     </div>
                 </div>
@@ -1511,48 +1656,64 @@
 
     <!-- CART & CHECKOUT SHEET -->
     <div class="modal-overlay" id="cart-modal">
-        <div class="bottom-sheet" style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(35px + var(--safe-bottom));">
+        <div class="bottom-sheet"
+            style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(35px + var(--safe-bottom));">
             <div class="sheet-handle"></div>
             <div class="sheet-header" style="margin-bottom:10px;">
                 <div class="sheet-title">
                     <i class="fas fa-shopping-bag" style="color:var(--primary);"></i> Cart & Checkout
-                    <span id="cart-header-count" style="font-size:11px; background:var(--primary); color:#fff; padding:2px 8px; border-radius:12px; margin-left:6px; font-weight:800;">0 Items</span>
+                    <span id="cart-header-count"
+                        style="font-size:11px; background:var(--primary); color:#fff; padding:2px 8px; border-radius:12px; margin-left:6px; font-weight:800;">0
+                        Items</span>
                 </div>
                 <button class="close-btn" onclick="closeCartSheet()">&times;</button>
             </div>
 
             <!-- Dedicated Section Switcher Navigation -->
-            <div class="cart-section-nav" style="display:flex; gap:6px; background:var(--bg-card); padding:4px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border);">
-                <button id="cart-nav-tab-items" class="cart-nav-tab" onclick="switchCartSection('items')" style="flex:1; padding:9px 10px; border-radius:9px; border:none; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; background:var(--primary); color:#fff; transition:all 0.2s;">
+            <div class="cart-section-nav"
+                style="display:flex; gap:6px; background:var(--bg-card); padding:4px; border-radius:12px; margin-bottom:12px; border:1px solid var(--border);">
+                <button id="cart-nav-tab-items" class="cart-nav-tab" onclick="switchCartSection('items')"
+                    style="flex:1; padding:9px 10px; border-radius:9px; border:none; font-weight:800; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; background:var(--primary); color:#fff; transition:all 0.2s;">
                     <i class="fas fa-boxes"></i> <span>Added Products</span>
-                    <span id="cart-tab-badge" style="background:rgba(255,255,255,0.25); color:#fff; font-size:10.5px; padding:2px 7px; border-radius:10px; font-weight:900;">0</span>
+                    <span id="cart-tab-badge"
+                        style="background:rgba(255,255,255,0.25); color:#fff; font-size:10.5px; padding:2px 7px; border-radius:10px; font-weight:900;">0</span>
                 </button>
-                <button id="cart-nav-tab-checkout" class="cart-nav-tab" onclick="switchCartSection('checkout')" style="flex:1; padding:9px 10px; border-radius:9px; border:none; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:var(--text-muted); transition:all 0.2s;">
+                <button id="cart-nav-tab-checkout" class="cart-nav-tab" onclick="switchCartSection('checkout')"
+                    style="flex:1; padding:9px 10px; border-radius:9px; border:none; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:var(--text-muted); transition:all 0.2s;">
                     <i class="fas fa-credit-card"></i> <span>Billing & Checkout</span>
                 </button>
             </div>
 
             <!-- SECTION 1: DEDICATED ADDED PRODUCTS VIEW (NEVER COLLAPSED) -->
             <div id="cart-section-items" style="display:block;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 2px;">
-                    <span style="font-size:12px; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 2px;">
+                    <span
+                        style="font-size:12px; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">
                         <i class="fas fa-list-check" style="color:var(--primary);"></i> Products in Cart
                     </span>
-                    <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);" id="cart-subtotal-header-badge">Subtotal: Rs. 0</span>
+                    <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);"
+                        id="cart-subtotal-header-badge">Subtotal: Rs. 0</span>
                 </div>
 
                 <!-- Cart Items List: Dedicated full scrollable container -->
-                <div id="cart-items-container" style="display:flex; flex-direction:column; gap:10px; min-height:140px; margin-bottom:12px;">
+                <div id="cart-items-container"
+                    style="display:flex; flex-direction:column; gap:10px; min-height:140px; margin-bottom:12px;">
                     <!-- dynamic rows -->
                 </div>
 
                 <!-- Section 1 Bottom Action Card -->
-                <div style="background:var(--bg-card); border:1px solid var(--border-strong); border-radius:14px; padding:12px 14px; margin-top:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+                <div
+                    style="background:var(--bg-card); border:1px solid var(--border-strong); border-radius:14px; padding:12px 14px; margin-top:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 15px rgba(0,0,0,0.2);">
                     <div>
-                        <div style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">Cart Subtotal</div>
-                        <div style="font-size:17px; font-weight:900; color:var(--primary);" id="cart-items-subtotal-display">Rs. 0</div>
+                        <div
+                            style="font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase;">
+                            Cart Subtotal</div>
+                        <div style="font-size:17px; font-weight:900; color:var(--primary);"
+                            id="cart-items-subtotal-display">Rs. 0</div>
                     </div>
-                    <button class="btn-full" onclick="switchCartSection('checkout')" style="width:auto; padding:10px 18px; margin:0; font-size:13px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                    <button class="btn-full" onclick="switchCartSection('checkout')"
+                        style="width:auto; padding:10px 18px; margin:0; font-size:13px; font-weight:800; display:flex; align-items:center; gap:8px;">
                         <span>Proceed to Checkout</span> <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -1561,12 +1722,14 @@
             <!-- SECTION 2: BILLING & CHECKOUT VIEW -->
             <div id="cart-section-checkout" style="display:none;">
                 <!-- Summary bar linking back to items -->
-                <div onclick="switchCartSection('items')" style="cursor:pointer; background:rgba(255,75,125,0.08); border:1px solid rgba(255,75,125,0.25); border-radius:10px; padding:9px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div onclick="switchCartSection('items')"
+                    style="cursor:pointer; background:rgba(255,75,125,0.08); border:1px solid rgba(255,75,125,0.25); border-radius:10px; padding:9px 12px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:12px; font-weight:700; color:var(--text-main);">
                         <i class="fas fa-boxes" style="color:var(--primary); margin-right:6px;"></i>
                         <span id="checkout-summary-text">0 items selected</span>
                     </span>
-                    <span style="font-size:11px; color:var(--primary); font-weight:800; display:flex; align-items:center; gap:4px;">
+                    <span
+                        style="font-size:11px; color:var(--primary); font-weight:800; display:flex; align-items:center; gap:4px;">
                         <i class="fas fa-edit"></i> Edit Items
                     </span>
                 </div>
@@ -1575,15 +1738,18 @@
                 <div class="form-group">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <label class="form-label">Customer</label>
-                        <a href="javascript:void(0)" onclick="openAddCustomerModal()" style="font-size:11px; color:var(--primary); font-weight:700;">+ New Customer</a>
+                        <a href="javascript:void(0)" onclick="openAddCustomerModal()"
+                            style="font-size:11px; color:var(--primary); font-weight:700;">+ New Customer</a>
                     </div>
                     <select id="cart-customer-select" class="form-select" onchange="onCartCustomerChanged()">
                         <option value="Guest">Guest Customer</option>
                     </select>
                     <!-- Loyalty Points Tag -->
-                    <div id="cart-loyalty-box" style="display:none; margin-top:6px; background:#fffbeb; border:1px solid #fef3c7; border-radius:6px; padding:6px 10px; font-size:11px; color:#92400e;">
+                    <div id="cart-loyalty-box"
+                        style="display:none; margin-top:6px; background:#fffbeb; border:1px solid #fef3c7; border-radius:6px; padding:6px 10px; font-size:11px; color:#92400e;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span><i class="fas fa-star" style="color:#f59e0b;"></i> Customer Points: <strong id="cart-cust-pts">0</strong> (Rs. <span id="cart-pts-val">0</span>)</span>
+                            <span><i class="fas fa-star" style="color:#f59e0b;"></i> Customer Points: <strong
+                                    id="cart-cust-pts">0</strong> (Rs. <span id="cart-pts-val">0</span>)</span>
                             <label style="display:flex; align-items:center; gap:4px; font-weight:700; cursor:pointer;">
                                 <input type="checkbox" id="cart-use-loyalty" onchange="updateCartTotals()"> Use Points
                             </label>
@@ -1595,11 +1761,13 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Discount (Rs)</label>
-                        <input type="number" id="cart-discount-input" class="form-input" value="0" min="0" oninput="updateCartTotals()">
+                        <input type="number" id="cart-discount-input" class="form-input" value="0" min="0"
+                            oninput="updateCartTotals()">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Delivery (Rs)</label>
-                        <input type="number" id="cart-delivery-input" class="form-input" value="0" min="0" oninput="updateCartTotals()">
+                        <input type="number" id="cart-delivery-input" class="form-input" value="0" min="0"
+                            oninput="updateCartTotals()">
                     </div>
                 </div>
 
@@ -1642,28 +1810,34 @@
                     </div>
                     <div class="form-group" id="advance-field-group" style="display:none;">
                         <label class="form-label">Advance Paid (Rs)</label>
-                        <input type="number" id="cart-advance-input" class="form-input" value="0" min="0" oninput="updateCartTotals()">
+                        <input type="number" id="cart-advance-input" class="form-input" value="0" min="0"
+                            oninput="updateCartTotals()">
                     </div>
                 </div>
 
                 <!-- Total Breakdown -->
-                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; font-size:12px; display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">
+                <div
+                    style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 14px; font-size:12px; display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
                         <span>Subtotal:</span> <span id="cart-subtotal-text">Rs. 0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);" id="row-cart-disc">
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);"
+                        id="row-cart-disc">
                         <span>Discount:</span> <span id="cart-disc-text">- Rs. 0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);" id="row-cart-loyalty">
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted);"
+                        id="row-cart-loyalty">
                         <span>Loyalty Redeemed:</span> <span id="cart-loyalty-text">- Rs. 0</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; color:var(--text-muted);">
                         <span>Delivery Charge:</span> <span id="cart-delivery-text">+ Rs. 0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:var(--primary); border-top:1px dashed var(--border); padding-top:6px; margin-top:2px;">
+                    <div
+                        style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; color:var(--primary); border-top:1px dashed var(--border); padding-top:6px; margin-top:2px;">
                         <span>Net Total:</span> <span id="cart-final-total-text">Rs. 0</span>
                     </div>
-                    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--warning); font-weight:700;" id="row-cart-balance">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--warning); font-weight:700;"
+                        id="row-cart-balance">
                         <span>Balance Due:</span> <span id="cart-balance-due-text">Rs. 0</span>
                     </div>
                 </div>
@@ -1673,7 +1847,8 @@
                     <button class="btn-full" onclick="completeSale('sale')">
                         <i class="fas fa-check-circle"></i> Complete Sale & Bill
                     </button>
-                    <button class="btn-sm" onclick="completeSale('order')" style="width:100%; justify-content:center; padding:10px; background:var(--bg-card); border:1px solid var(--border);">
+                    <button class="btn-sm" onclick="completeSale('order')"
+                        style="width:100%; justify-content:center; padding:10px; background:var(--bg-card); border:1px solid var(--border);">
                         <i class="fas fa-file-invoice"></i> Save As Order Instead
                     </button>
                 </div>
@@ -1683,7 +1858,8 @@
 
     <!-- BILL / INVOICE PREVIEW & PRINT MODAL (80mm Thermal Receipt Size) -->
     <div class="modal-overlay" id="bill-modal">
-        <div class="bottom-sheet" style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(30px + var(--safe-bottom));">
+        <div class="bottom-sheet"
+            style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(30px + var(--safe-bottom));">
             <div class="sheet-handle"></div>
             <div class="sheet-header">
                 <div class="sheet-title">
@@ -1703,20 +1879,28 @@
                     <button class="btn-full" onclick="printThermalBill()" style="margin:0; font-size:12px;">
                         <i class="fas fa-print"></i> Print (80mm)
                     </button>
-                    <button class="btn-full" onclick="printA4RightBill()" style="margin:0; font-size:12px; background:var(--info);">
+                    <button class="btn-full" onclick="printA4RightBill()"
+                        style="margin:0; font-size:12px; background:var(--info);">
                         <i class="fas fa-file-alt"></i> Print A4 (Right)
                     </button>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <button class="btn-full" onclick="downloadA4PDFBill()" style="margin:0; font-size:12px; background:var(--purple);">
+                    <button class="btn-full" onclick="downloadA4PDFBill()"
+                        style="margin:0; font-size:12px; background:var(--purple);">
                         <i class="fas fa-file-pdf"></i> Download PDF (A4)
                     </button>
-                    <button class="btn-full" onclick="downloadHTMLBillMobile()" style="margin:0; font-size:12px; background:var(--warning);">
+                    <button class="btn-full" onclick="downloadHTMLBillMobile()"
+                        style="margin:0; font-size:12px; background:var(--warning);">
                         <i class="fas fa-code"></i> HTML Bill
                     </button>
                 </div>
-                <button class="btn-full" id="btn-share-whatsapp" onclick="shareBillWhatsApp()" style="background:#25D366; box-shadow:none; font-size:13px; margin:0;">
-                    <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                <button class="btn-full" onclick="shareHtmlBillPdfWhatsAppCurrent()"
+                    style="background:linear-gradient(135deg,#be185d,#ec4899); box-shadow:none; font-size:13px; font-weight:800; margin:0; color:#fff;">
+                    <i class="fas fa-file-pdf"></i> Main Bill (1st Page) PDF via WhatsApp
+                </button>
+                <button class="btn-full" id="btn-share-whatsapp" onclick="shareBillWhatsApp()"
+                    style="background:#25D366; box-shadow:none; font-size:13px; margin:0;">
+                    <i class="fab fa-whatsapp"></i> Share Text via WhatsApp
                 </button>
             </div>
         </div>
@@ -1733,7 +1917,8 @@
                 <button class="close-btn" onclick="closeHistoryDetailsModal()">&times;</button>
             </div>
 
-            <div id="history-modal-body" style="font-size:12px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; max-height:74vh; padding-bottom:8px;">
+            <div id="history-modal-body"
+                style="font-size:12px; display:flex; flex-direction:column; gap:10px; overflow-y:auto; max-height:74vh; padding-bottom:8px;">
                 <!-- dynamic: Full financial & item details -->
             </div>
         </div>
@@ -1741,7 +1926,8 @@
 
     <!-- EDIT ORDER / SALE MODAL -->
     <div class="modal-overlay" id="edit-history-modal">
-        <div class="bottom-sheet" style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(35px + var(--safe-bottom));">
+        <div class="bottom-sheet"
+            style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(35px + var(--safe-bottom));">
             <div class="sheet-handle"></div>
             <div class="sheet-header" style="margin-bottom:12px;">
                 <div class="sheet-title" id="edit-history-modal-title">
@@ -1793,10 +1979,14 @@
             <div class="form-group" style="margin-top:8px;">
                 <label class="form-label">Update Order Status</label>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Pending')"><i class="fas fa-clock" style="color:var(--warning);"></i> Pending</button>
-                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Confirmed')"><i class="fas fa-check" style="color:var(--info);"></i> Confirmed</button>
-                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Shipped')"><i class="fas fa-truck" style="color:var(--purple);"></i> Shipped</button>
-                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Delivered')"><i class="fas fa-check-double" style="color:var(--success);"></i> Delivered</button>
+                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Pending')"><i class="fas fa-clock"
+                            style="color:var(--warning);"></i> Pending</button>
+                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Confirmed')"><i class="fas fa-check"
+                            style="color:var(--info);"></i> Confirmed</button>
+                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Shipped')"><i class="fas fa-truck"
+                            style="color:var(--purple);"></i> Shipped</button>
+                    <button class="btn-sm" onclick="changeCurrentOrderStatus('Delivered')"><i
+                            class="fas fa-check-double" style="color:var(--success);"></i> Delivered</button>
                 </div>
             </div>
 
@@ -1805,7 +1995,8 @@
                 <button class="btn-full" id="btn-order-print-bill" onclick="printOrderFromModal()" style="flex:1;">
                     <i class="fas fa-print"></i> Print Bill
                 </button>
-                <button class="btn-full" id="btn-order-whatsapp" onclick="sendOrderWhatsApp()" style="flex:1; background:#25D366; box-shadow:none;">
+                <button class="btn-full" id="btn-order-whatsapp" onclick="sendOrderWhatsApp()"
+                    style="flex:1; background:#25D366; box-shadow:none;">
                     <i class="fab fa-whatsapp"></i> WhatsApp
                 </button>
             </div>
@@ -1831,7 +2022,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <input type="text" id="p-category" class="form-input" placeholder="e.g. T-Shirts" list="categories-datalist">
+                    <input type="text" id="p-category" class="form-input" placeholder="e.g. T-Shirts"
+                        list="categories-datalist">
                     <datalist id="categories-datalist"></datalist>
                 </div>
                 <div class="form-group">
@@ -1892,7 +2084,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Category</label>
-                    <input type="text" id="ep-category" class="form-input" placeholder="Category" list="categories-datalist">
+                    <input type="text" id="ep-category" class="form-input" placeholder="Category"
+                        list="categories-datalist">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Stock Qty</label>
@@ -1927,7 +2120,8 @@
                 <input type="text" id="ep-barcode" class="form-input" placeholder="Barcode">
             </div>
 
-            <button class="btn-full" onclick="saveEditProduct()" style="background:linear-gradient(135deg,#6366f1,#818cf8);">
+            <button class="btn-full" onclick="saveEditProduct()"
+                style="background:linear-gradient(135deg,#6366f1,#818cf8);">
                 <i class="fas fa-save"></i> Save Changes
             </button>
         </div>
@@ -1957,7 +2151,8 @@
 
             <div class="form-group">
                 <label class="form-label">Delivery Address</label>
-                <textarea id="c-address" class="form-textarea" placeholder="Full address for waybill delivery"></textarea>
+                <textarea id="c-address" class="form-textarea"
+                    placeholder="Full address for waybill delivery"></textarea>
             </div>
 
             <button class="btn-full" onclick="saveNewCustomer()">
@@ -1979,7 +2174,8 @@
 
             <div class="form-group">
                 <label class="form-label">Expense Reason / Note</label>
-                <input type="text" id="e-reason" class="form-input" placeholder="e.g. Courier packaging, electricity...">
+                <input type="text" id="e-reason" class="form-input"
+                    placeholder="e.g. Courier packaging, electricity...">
             </div>
 
             <div class="form-group">
@@ -2005,7 +2201,8 @@
             </div>
 
             <p style="font-size:12px; color:var(--text-muted);">
-                Select items from the POS Terminal and click <strong>"Save As Order"</strong>, or quick create an order below:
+                Select items from the POS Terminal and click <strong>"Save As Order"</strong>, or quick create an order
+                below:
             </p>
 
             <button class="btn-full" onclick="closeNewOrderModal(); switchTab('pos');" style="margin-top:6px;">
@@ -2043,7 +2240,9 @@
             </div>
 
             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <input type="text" id="cust-filter-input" class="form-input" placeholder="Search customer name or phone..." oninput="filterCustomerDirectory()" style="height:36px;">
+                <input type="text" id="cust-filter-input" class="form-input"
+                    placeholder="Search customer name or phone..." oninput="filterCustomerDirectory()"
+                    style="height:36px;">
             </div>
 
             <div id="customers-list-container" style="overflow-y:auto; max-height:60vh;">
@@ -2076,7 +2275,8 @@
 
     <!-- ANALYTICS DASHBOARD SHEET -->
     <div class="modal-overlay" id="analytics-sheet">
-        <div class="bottom-sheet" style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(30px + var(--safe-bottom));">
+        <div class="bottom-sheet"
+            style="max-height:94vh; overflow-y:auto; display:block; padding-bottom:calc(30px + var(--safe-bottom));">
             <div class="sheet-handle"></div>
             <div class="sheet-header">
                 <div class="sheet-title">
@@ -2092,39 +2292,54 @@
                 <div class="cat-pill" onclick="selectAnalyticsPeriod('week', this)">This Week</div>
                 <div class="cat-pill" onclick="selectAnalyticsPeriod('month', this)">This Month</div>
                 <div class="cat-pill" onclick="selectAnalyticsPeriod('year', this)">This Year</div>
-                <div class="cat-pill" onclick="selectAnalyticsPeriod('custom', this)"><i class="fas fa-calendar-alt"></i> Custom Range</div>
+                <div class="cat-pill" onclick="selectAnalyticsPeriod('custom', this)"><i
+                        class="fas fa-calendar-alt"></i> Custom Range</div>
             </div>
 
             <!-- Custom Date Range Filter Box for Analytics -->
-            <div id="analytics-custom-range-box" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px;">
-                <div style="font-size:11px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <div id="analytics-custom-range-box"
+                style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px;">
+                <div
+                    style="font-size:11px; font-weight:800; color:var(--text-main); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
                     <i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Custom Time Period Analysis
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;">
                     <div>
-                        <label style="display:block; font-size:10px; font-weight:700; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">From Date</label>
-                        <input type="date" id="analytics-start-date" class="form-input" style="padding:7px 8px; font-size:12px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;" onchange="onCustomDateRangeChanged()">
+                        <label
+                            style="display:block; font-size:10px; font-weight:700; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">From
+                            Date</label>
+                        <input type="date" id="analytics-start-date" class="form-input"
+                            style="padding:7px 8px; font-size:12px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;"
+                            onchange="onCustomDateRangeChanged()">
                     </div>
                     <div>
-                        <label style="display:block; font-size:10px; font-weight:700; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">To Date</label>
-                        <input type="date" id="analytics-end-date" class="form-input" style="padding:7px 8px; font-size:12px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;" onchange="onCustomDateRangeChanged()">
+                        <label
+                            style="display:block; font-size:10px; font-weight:700; color:var(--text-muted); margin-bottom:4px; text-transform:uppercase;">To
+                            Date</label>
+                        <input type="date" id="analytics-end-date" class="form-input"
+                            style="padding:7px 8px; font-size:12px; font-weight:700; background:var(--bg-surface); border:1px solid var(--border); border-radius:8px; color:var(--text-main); width:100%; box-sizing:border-box;"
+                            onchange="onCustomDateRangeChanged()">
                     </div>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span id="analytics-range-indicator" style="font-size:10.5px; color:var(--text-muted); font-weight:600;">Pick dates to filter</span>
-                    <button class="btn-sm primary" onclick="renderAnalyticsDashboard()" style="padding:6px 14px; font-size:11px; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
+                    <span id="analytics-range-indicator"
+                        style="font-size:10.5px; color:var(--text-muted); font-weight:600;">Pick dates to filter</span>
+                    <button class="btn-sm primary" onclick="renderAnalyticsDashboard()"
+                        style="padding:6px 14px; font-size:11px; font-weight:800; border-radius:8px; display:inline-flex; align-items:center; gap:5px;">
                         <i class="fas fa-filter"></i> Apply
                     </button>
                 </div>
             </div>
 
             <!-- KPI Cards -->
-            <div id="analytics-kpi-box" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+            <div id="analytics-kpi-box"
+                style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
                 <!-- dynamic -->
             </div>
 
             <!-- Monthly Revenue + Profit Chart -->
-            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:12px;">
+            <div
+                style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:12px;">
                 <div style="font-size:12px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
                     <i class="fas fa-chart-line" style="color:var(--info);"></i> Monthly Revenue & Profit
                 </div>
@@ -2132,7 +2347,8 @@
             </div>
 
             <!-- Orders vs Sales Chart -->
-            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:12px;">
+            <div
+                style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:12px;">
                 <div style="font-size:12px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
                     <i class="fas fa-chart-bar" style="color:var(--purple);"></i> Orders vs Sales Count (Monthly)
                 </div>
@@ -2140,7 +2356,8 @@
             </div>
 
             <!-- Top Products -->
-            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:10px;">
+            <div
+                style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:10px;">
                 <div style="font-size:12px; font-weight:800; color:var(--text-main); margin-bottom:8px;">
                     <i class="fas fa-fire" style="color:var(--warning);"></i> Top Selling Products
                 </div>
@@ -2165,7 +2382,8 @@
             </div>
 
             <!-- QR Code container -->
-            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px; background:white; border-radius:var(--radius-md); margin:0 auto; width:fit-content;">
+            <div
+                style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14px; background:white; border-radius:var(--radius-md); margin:0 auto; width:fit-content;">
                 <div id="phone-qr-code"></div>
                 <div style="font-size:11px; font-weight:800; color:#000; margin-top:8px;">SCAN WITH PHONE CAMERA</div>
             </div>
@@ -2185,7 +2403,8 @@
                 <p><strong>📱 How to open from your phone:</strong></p>
                 <p>1. Connect your phone to the <strong>same Wi-Fi or Hotspot</strong> as this computer.</p>
                 <p>2. Scan the QR code above with your phone camera, or type the link in Chrome / Safari.</p>
-                <p>3. Tap browser menu &rarr; <strong>"Add to Home Screen"</strong> to install as a full Mobile App icon!</p>
+                <p>3. Tap browser menu &rarr; <strong>"Add to Home Screen"</strong> to install as a full Mobile App
+                    icon!</p>
             </div>
         </div>
     </div>
@@ -2333,7 +2552,7 @@
                 navHistoryStack.push(tabId);
                 try {
                     window.history.pushState({ tab: tabId }, '');
-                } catch (e) {}
+                } catch (e) { }
             }
 
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -2409,7 +2628,7 @@
             document.querySelectorAll('.modal-overlay').forEach(el => {
                 modalObserver.observe(el, { attributes: true, attributeFilter: ['class'] });
             });
-        } catch (e) {}
+        } catch (e) { }
 
         // ================= DATA FETCHING =================
         async function refreshAllData() {
@@ -2518,7 +2737,7 @@
             document.getElementById('kpi-low-stock').textContent = `${lowStockCount} low stock`;
 
             // Recent Orders list (Top 4)
-            const recentOrders = [...allOrders].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 4);
+            const recentOrders = [...allOrders].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 4);
             const ordContainer = document.getElementById('home-recent-orders-list');
             if (recentOrders.length === 0) {
                 ordContainer.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">No orders yet</div>';
@@ -2538,7 +2757,7 @@
             }
 
             // Recent Sales list (Top 4)
-            const recentSales = [...allSales].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 4);
+            const recentSales = [...allSales].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 4);
             const salesContainer = document.getElementById('home-recent-sales-list');
             if (recentSales.length === 0) {
                 salesContainer.innerHTML = '<div style="text-align:center; padding:15px; color:var(--text-sub); font-size:12px;">No sales yet</div>';
@@ -2547,7 +2766,7 @@
                     <div class="cart-item-row" onclick="viewSaleBill('${s.id}')" style="cursor:pointer; padding:6px 0;">
                         <div>
                             <div style="font-weight:700; font-size:12px;">#SL-${s.id} - ${s.customer || 'Guest'}</div>
-                            <div style="font-size:10px; color:var(--text-sub);">${new Date(s.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} | ${s.paymentMethod || 'Cash'}</div>
+                            <div style="font-size:10px; color:var(--text-sub);">${new Date(s.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} | ${s.paymentMethod || 'Cash'}</div>
                         </div>
                         <div style="text-align:right;">
                             <div style="font-weight:800; font-size:12px; color:var(--success);">Rs. ${(Number(s.total) || 0).toLocaleString()}</div>
@@ -2595,7 +2814,7 @@
                 if (stock <= 0) return false;
 
                 const matchCat = (selectedPosCategory === 'ALL' || p.category === selectedPosCategory);
-                const matchQuery = !query || 
+                const matchQuery = !query ||
                     (p.name && p.name.toLowerCase().includes(query)) ||
                     (p.barcode && p.barcode.toLowerCase().includes(query)) ||
                     (p.category && p.category.toLowerCase().includes(query));
@@ -2778,7 +2997,7 @@
             switchCartSection('items');
             document.getElementById('cart-modal').classList.add('show');
             updateBackButtonVisibility();
-            try { window.history.pushState({ modal: 'cart-modal' }, ''); } catch (e) {}
+            try { window.history.pushState({ modal: 'cart-modal' }, ''); } catch (e) { }
         }
 
         function closeCartSheet() {
@@ -3387,17 +3606,17 @@
                             <span style="text-align:right;">AMOUNT (RS)</span>
                         </div>
                         ${items.map(item => {
-                            let opts = [];
-                            if (item.size) opts.push('Size: ' + item.size);
-                            if (item.colour || item.color) opts.push('Color: ' + (item.colour || item.color));
-                            let optStr = opts.length > 0 ? ` (${opts.join(' | ')})` : '';
+                let opts = [];
+                if (item.size) opts.push('Size: ' + item.size);
+                if (item.colour || item.color) opts.push('Color: ' + (item.colour || item.color));
+                let optStr = opts.length > 0 ? ` (${opts.join(' | ')})` : '';
 
-                            const origP = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
-                            const sellP = parseFloat(item.sellPrice) || 0;
-                            const qty = parseFloat(item.qty) || 1;
-                            const diff = origP - sellP;
+                const origP = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
+                const sellP = parseFloat(item.sellPrice) || 0;
+                const qty = parseFloat(item.qty) || 1;
+                const diff = origP - sellP;
 
-                            return `
+                return `
                                 <div style="border-bottom:1px solid #e2e8f0; padding:3px 0;">
                                     <div style="font-weight:700; color:#000; font-size:9.5px;">${item.name} <span style="font-size:8px; color:#555; font-weight:600;">${optStr}</span></div>
                                     <div style="display:flex; justify-content:space-between; font-size:8.5px; color:#444; margin-top:1px;">
@@ -3409,7 +3628,7 @@
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+            }).join('')}
                     </div>
 
                     <!-- Straight Solid Line Divider -->
@@ -3915,7 +4134,7 @@
             });
 
             // Sort newest first
-            filtered.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+            filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
             // 2. Render Financial KPI Bar
             const kpiContainer = document.getElementById('history-kpi-summary');
@@ -4090,11 +4309,14 @@
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </div>
-                            <div style="display:flex; gap:6px;">
-                                <button class="btn-sm" onclick="shareHistoryWhatsAppDirect('${rec.id}', '${isSales ? 'sale' : 'order'}')" style="background:#25D366; color:#fff; border-color:#25D366; padding:6px 10px;">
+                            <div style="display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;">
+                                <button class="btn-sm" onclick="shareHtmlBillPdfWhatsAppDirect('${rec.id}', '${isSales ? 'sale' : 'order'}')" style="background:linear-gradient(135deg,#be185d,#ec4899); color:#fff; border:none; padding:6px 9px; font-weight:800;" title="Share Main HTML Bill 1st Page as PDF to WhatsApp">
+                                    <i class="fas fa-file-pdf"></i> PDF WA
+                                </button>
+                                <button class="btn-sm" onclick="shareHistoryWhatsAppDirect('${rec.id}', '${isSales ? 'sale' : 'order'}')" style="background:#25D366; color:#fff; border-color:#25D366; padding:6px 9px;" title="Share WhatsApp Message">
                                     <i class="fab fa-whatsapp"></i>
                                 </button>
-                                <button class="btn-sm primary" onclick="printHistoryBillDirect('${rec.id}', '${isSales ? 'sale' : 'order'}')" style="padding:6px 12px;">
+                                <button class="btn-sm primary" onclick="printHistoryBillDirect('${rec.id}', '${isSales ? 'sale' : 'order'}')" style="padding:6px 11px;">
                                     <i class="fas fa-print"></i> Bill
                                 </button>
                             </div>
@@ -4255,22 +4477,22 @@
                             </span>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
-                            <button class="btn-sm ${(record.status||'').toLowerCase()==='pending'?'active-status-btn':''}" onclick="changeDeliveryStatus('${record.id}', 'Pending')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='pending'?'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);':''}">
+                            <button class="btn-sm ${(record.status || '').toLowerCase() === 'pending' ? 'active-status-btn' : ''}" onclick="changeDeliveryStatus('${record.id}', 'Pending')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'pending' ? 'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);' : ''}">
                                 <i class="fas fa-clock"></i> Pending
                             </button>
-                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Confirmed')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='confirmed'?'background:rgba(99,102,241,0.2);border-color:#818cf8;color:#818cf8;':''}">
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Confirmed')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'confirmed' ? 'background:rgba(99,102,241,0.2);border-color:#818cf8;color:#818cf8;' : ''}">
                                 <i class="fas fa-check"></i> Confirmed
                             </button>
-                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Shipped')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='shipped'?'background:rgba(139,92,246,0.2);border-color:#a78bfa;color:#a78bfa;':''}">
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Shipped')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'shipped' ? 'background:rgba(139,92,246,0.2);border-color:#a78bfa;color:#a78bfa;' : ''}">
                                 <i class="fas fa-truck"></i> Shipped
                             </button>
-                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Delivered')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='delivered'?'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);':''}">
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Delivered')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'delivered' ? 'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);' : ''}">
                                 <i class="fas fa-check-double"></i> Delivered
                             </button>
-                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Returned')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='returned'?'background:rgba(245,158,11,0.2);border-color:#f59e0b;color:#f59e0b;':''}">
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Returned')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'returned' ? 'background:rgba(245,158,11,0.2);border-color:#f59e0b;color:#f59e0b;' : ''}">
                                 <i class="fas fa-undo"></i> Returned
                             </button>
-                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Cancelled')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status||'').toLowerCase()==='cancelled'?'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);':''}">
+                            <button class="btn-sm" onclick="changeDeliveryStatus('${record.id}', 'Cancelled')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.status || '').toLowerCase() === 'cancelled' ? 'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);' : ''}">
                                 <i class="fas fa-times"></i> Cancelled
                             </button>
                         </div>
@@ -4281,17 +4503,17 @@
                         <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:8px; letter-spacing:0.5px;">
                             💳 Payment Status
                             <span style="float:right; font-size:11px; color:var(--text-sub); text-transform:none; font-weight:600;">
-                                Current: <strong style="color:${(record.paymentStatus||'').toLowerCase()==='paid'?'var(--success)':(record.paymentStatus||'').toLowerCase()==='advance'?'var(--warning)':'var(--danger)'}">${(record.paymentStatus||'Unpaid').toUpperCase()}</strong>
+                                Current: <strong style="color:${(record.paymentStatus || '').toLowerCase() === 'paid' ? 'var(--success)' : (record.paymentStatus || '').toLowerCase() === 'advance' ? 'var(--warning)' : 'var(--danger)'}">${(record.paymentStatus || 'Unpaid').toUpperCase()}</strong>
                             </span>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px;">
-                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'unpaid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='unpaid'?'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);':''}">
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'unpaid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus || '').toLowerCase() === 'unpaid' ? 'background:rgba(239,68,68,0.2);border-color:var(--danger);color:var(--danger);' : ''}">
                                 <i class="fas fa-times-circle"></i> Unpaid
                             </button>
-                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'advance')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='advance'?'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);':''}">
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'advance')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus || '').toLowerCase() === 'advance' ? 'background:rgba(251,191,36,0.2);border-color:var(--warning);color:var(--warning);' : ''}">
                                 <i class="fas fa-hand-holding-usd"></i> Advance
                             </button>
-                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'paid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus||'').toLowerCase()==='paid'?'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);':''}">
+                            <button class="btn-sm" onclick="changePaymentStatus('${record.id}', 'paid')" style="justify-content:center; font-size:11px; padding:7px 4px; ${(record.paymentStatus || '').toLowerCase() === 'paid' ? 'background:rgba(16,185,129,0.2);border-color:var(--success);color:var(--success);' : ''}">
                                 <i class="fas fa-check-circle"></i> Paid
                             </button>
                         </div>
@@ -4316,8 +4538,13 @@
                         <button class="btn-full" onclick="printHistoryBillDirect('${record.id}', '${type}')" style="flex:1; margin:0;">
                             <i class="fas fa-print"></i> Thermal Receipt (80mm)
                         </button>
+                        <button class="btn-full" onclick="shareHtmlBillPdfWhatsAppDirect('${record.id}', '${type}')" style="flex:1; background:linear-gradient(135deg,#be185d,#ec4899); box-shadow:none; margin:0; color:#fff; font-weight:800;">
+                            <i class="fas fa-file-pdf"></i> PDF via WhatsApp
+                        </button>
+                    </div>
+                    <div style="display:flex; gap:8px;">
                         <button class="btn-full" onclick="shareHistoryWhatsAppDirect('${record.id}', '${type}')" style="flex:1; background:#25D366; box-shadow:none; margin:0;">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
+                            <i class="fab fa-whatsapp"></i> Text WhatsApp
                         </button>
                     </div>
                     <div style="display:flex; gap:8px;">
@@ -4353,6 +4580,453 @@
             if (record) {
                 lastGeneratedBill = { record, type };
                 shareBillWhatsApp();
+            }
+        }
+
+        // ================= MAIN SYSTEM HTML BILL (1st Page) PDF & WHATSAPP SHARING =================
+        function shareHtmlBillPdfWhatsAppCurrent() {
+            if (!lastGeneratedBill || !lastGeneratedBill.record) {
+                showToast("No active bill found");
+                return;
+            }
+            shareHtmlBillPdfWhatsAppDirect(lastGeneratedBill.record, lastGeneratedBill.type || 'sale');
+        }
+
+        function buildMainSystemBillFirstPageHtml(record, type) {
+            const isGuest = !record.customer || record.customer.trim().toLowerCase() === 'guest' || record.customer.trim().toLowerCase() === 'guest customer';
+            const cleanCustName = (record.customer || '').trim();
+            const strippedName = cleanCustName.replace(/^\(?(Miss\.|Mrs\.|Mr\.)(\s*[\/\.,]\s*(Miss\.|Mrs\.|Mr\.))*\)?\s*/i, '').trim();
+            const finalCustName = isGuest ? (record.customer || 'Guest Customer') : (strippedName || cleanCustName);
+            const displayCustName = finalCustName;
+
+            const itemsPerPage = 22;
+            const items = Array.isArray(record.items) ? record.items : [];
+            const chunk = items.slice(0, itemsPerPage);
+            const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
+            const isLastPage = totalPages === 1;
+
+            const pointsEarnedVal = Number(record.pointsEarned) || 0;
+            let totalPointsDisplay = 0;
+            if (record.totalPoints !== undefined && record.totalPoints !== null && record.totalPoints !== '') {
+                totalPointsDisplay = Number(record.totalPoints) || 0;
+            } else if (!isGuest && typeof allCustomers !== 'undefined' && allCustomers.length > 0) {
+                const foundCust = allCustomers.find(c => (record.customerId && String(c.custId) === String(record.customerId)) || (c.name && c.name.trim().toLowerCase() === displayCustName.toLowerCase()));
+                if (foundCust) totalPointsDisplay = Number(foundCust.loyaltyPoints) || 0;
+            }
+
+            // Header HTML matching pos.html
+            const headerHtml = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img src="https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png" style="height: 44px; width: auto; object-fit: contain;">
+                        <div>
+                            <div style="font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 0.5px; color: #000; text-transform: uppercase; line-height: 1.1;">
+                                Roohira Collection
+                            </div>
+                            <div style="font-size: 9.5px; color: #333; font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <span>by Roohira Online</span>
+                                <span style="color:#bbb;">|</span>
+                                <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                    <strong style="color: #25D366; font-size: 11px;">WA:</strong>
+                                    <strong style="color: #000;">075 721 8786</strong>
+                                </span>
+                                <span style="color:#bbb;">|</span>
+                                <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                    <strong style="color: #000;">072-089-8640 / 075-721-8786</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="border-bottom: 2.5px solid #000; margin-top: 4px; width: 100%;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; padding-bottom: 6px; border-bottom: 1px solid #ccc;">
+                    <div style="text-align: left;">
+                        <h1 style="font-size: 18px; font-weight: 800; margin: 0; color: #000; letter-spacing: 5px; text-transform: uppercase;">${type === 'sale' ? 'INVOICE' : 'ORDER'}</h1>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-size: 9.5px; color: #555; margin: 0;">Page 1 of ${totalPages}</p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 8.5px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0 0 2px 0;">CUSTOMER DETAILS</h3>
+                        ${!isGuest ? `<div style="font-size: 8.5px; font-weight: 700; color: #666; margin-bottom: 1px; letter-spacing: 0.3px;">(Mr. / Mrs. / Miss.)</div>` : ''}
+                        <p style="font-weight: 800; font-size: 13.5px; margin: 0; color: #000;">${finalCustName}</p>
+                        ${record.customerId && record.customerId !== 'Guest' ? `<p style="font-size: 9.5px; margin: 1px 0 0 0; font-weight: 700; color: #be185d;">ID: ${record.customerId}</p>` : ''}
+                        <p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">${(record.customerPhone || record.phone) || 'N/A'}</p>
+                        ${record.address && record.address !== 'N/A' ? `<p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">Addr: ${record.address}</p>` : ''}
+                        ${record.city ? `<p style="font-size: 10.5px; margin: 1px 0 0 0; font-weight: 500; color: #333;">City: ${record.city}</p>` : ''}
+                        ${!isGuest ? `
+                        <div style="margin-top: 5px; padding: 3px 8px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px; font-size: 8.5px; color: #92400e; display: inline-flex; align-items: center; gap: 6px;">
+                            <span style="font-weight: 800; color: #b45309; text-transform: uppercase; font-size: 8px;">Loyalty:</span>
+                            <span>Earned: <strong style="color: #d97706; font-size: 9px;">+${pointsEarnedVal}</strong></span>
+                            <span style="color: #fcd34d;">|</span>
+                            <span>Total: <strong style="color: #b45309; font-size: 9px;">${totalPointsDisplay} pts</strong></span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="font-weight: 800; font-size: 10.5px; margin: 0; color: #000;">${type === 'sale' ? 'Invoice: #SL-' + record.id : 'Order Ref: #' + (record.orderId || record.id)}</p>
+                        ${(type === 'sale' && record.orderId) ? `<p style="font-weight: 800; font-size: 10.5px; margin: 2px 0 0 0; color: #444;">Order Ref: #${record.orderId}</p>` : ''}
+                        <p style="font-size: 10.5px; color: #444; margin: 2px 0 0 0; font-weight: 500;">Date: ${new Date(record.date || Date.now()).toLocaleDateString()}</p>
+                        ${record.deliveryMethod ? `<p style="font-size: 10.5px; margin: 2px 0 0 0; font-weight: 600; color: #111;">Method: ${record.deliveryMethod}</p>` : `<p style="font-size: 10.5px; margin: 2px 0 0 0; font-weight: 600; color: #111;">Method: Store Pickup</p>`}
+                    </div>
+                </div>
+            `;
+
+            // Table Rows
+            const tableRows = chunk.map(item => {
+                const originalPrice = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
+                const sellPrice = parseFloat(item.sellPrice) || 0;
+                const qty = parseFloat(item.qty) || 1;
+                const priceDiff = originalPrice - sellPrice;
+
+                let discDisplay = `<span style="color: #aaa; font-size: 9px;">-</span>`;
+                if (priceDiff > 0 && originalPrice > 0) {
+                    const discPct = Math.round((priceDiff / originalPrice) * 100);
+                    discDisplay = `<span style="color: #be185d; font-weight: 800; font-size: 9px; background: #fdf2f8; padding: 1px 4px; border-radius: 3px; border: 1px solid #fbcfe8;">${discPct}%</span>`;
+                }
+
+                let priceDetails = `Rs. ${sellPrice.toLocaleString()}`;
+                if (priceDiff > 0) {
+                    priceDetails = `Rs. ${sellPrice.toLocaleString()}<br><span style="font-size:7.5px; color:#888; text-decoration: line-through;">Rs. ${originalPrice.toLocaleString()}</span>`;
+                } else if (priceDiff < 0) {
+                    priceDetails = `Rs. ${sellPrice.toLocaleString()}<br><span style="font-size:7.5px; color:#b45309;">(Orig: Rs. ${originalPrice.toLocaleString()})</span>`;
+                }
+
+                let opts = [];
+                if (item.size) opts.push(`Size: ${item.size}`);
+                if (item.colour || item.color) opts.push(`Color: ${item.colour || item.color}`);
+                let optStr = opts.length > 0 ? `<br><span style="font-size:8px; color:#555; font-weight:600;">(${opts.join(' | ')})</span>` : '';
+
+                return `
+                    <tr style="border-bottom: 1.5px solid #000;">
+                        <td style="padding:5px 0; text-align: left; font-weight: 500; font-size: 9.5px;">
+                            ${item.name}
+                            ${optStr}
+                        </td>
+                        <td style="padding:5px 0; text-align: center; font-size: 9.5px;">${qty}</td>
+                        <td style="padding:5px 0; text-align: right; font-size: 9.5px;">${priceDetails}</td>
+                        <td style="padding:5px 0; text-align: center; font-size: 9.5px;">${discDisplay}</td>
+                        <td style="padding:5px 0; text-align: right; font-weight: 700; font-size: 9.5px;">Rs. ${(sellPrice * qty).toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const tableHtml = `
+                <div style="margin-top: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid #000;">
+                                <th style="padding: 5px 0; text-align: left; font-size: 8.5px; font-weight: 800; text-transform: uppercase;">Item Descriptions</th>
+                                <th style="padding: 5px 0; text-align: center; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 32px;">Qty</th>
+                                <th style="padding: 5px 0; text-align: right; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 65px;">Price</th>
+                                <th style="padding: 5px 0; text-align: center; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 48px;">Disc (%)</th>
+                                <th style="padding: 5px 0; text-align: right; font-size: 8.5px; font-weight: 800; text-transform: uppercase; width: 68px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody style="font-size: 9.5px;">
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Calculate Totals for Page 1 (if single page, show full details; otherwise show first page summary)
+            const subtotal = items.reduce((sum, item) => sum + ((parseFloat(item.sellPrice) || 0) * (parseFloat(item.qty) || 1)), 0);
+            const orderDiscPercent = parseFloat(record.discount) || 0;
+            const orderDiscVal = Math.round(((subtotal * orderDiscPercent) / 100) * 100) / 100;
+            const itemSavings = items.reduce((sum, item) => {
+                const orig = parseFloat(item.originalPrice) || parseFloat(item.sellPrice) || 0;
+                const sell = parseFloat(item.sellPrice) || 0;
+                const qty = parseFloat(item.qty) || 1;
+                return sum + (orig > sell ? (orig - sell) * qty : 0);
+            }, 0);
+            const loyaltyDisc = parseFloat(record.loyaltyDiscount) || 0;
+            const totalSavingsAmount = orderDiscVal + itemSavings + loyaltyDisc;
+
+            let advancePaidAmt;
+            if (record.advancePaid !== undefined && record.advancePaid !== null && record.advancePaid !== '') {
+                advancePaidAmt = parseFloat(record.advancePaid) || 0;
+            } else {
+                advancePaidAmt = (type === 'sale') ? record.total : 0;
+            }
+            let balanceDueAmt;
+            if (record.balanceDue !== undefined && record.balanceDue !== null && record.balanceDue !== '') {
+                balanceDueAmt = parseFloat(record.balanceDue) || 0;
+            } else {
+                balanceDueAmt = Math.max(0, record.total - advancePaidAmt);
+            }
+
+            const isFullPaid = (type === 'sale')
+                ? (balanceDueAmt <= 0 || (record.paymentStatus && record.paymentStatus.toLowerCase() === 'paid'))
+                : (balanceDueAmt <= 0 || record.status === 'Paid' || (record.paymentStatus && record.paymentStatus.toLowerCase() === 'paid') || (record.total > 0 && advancePaidAmt >= record.total));
+            const isAdvancePaid = !isFullPaid && (advancePaidAmt > 0);
+
+            // Stamp watermark
+            let sealSvg = '';
+            if (isFullPaid) {
+                sealSvg = generateBillSealSVG('FULL_PAID');
+            } else if (isAdvancePaid) {
+                sealSvg = generateBillSealSVG('ADVANCE_PAID');
+            }
+
+            const sealHtml = sealSvg ? `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px;">
+                    <div style="transform: rotate(-10deg); opacity: 0.28; mix-blend-mode: multiply;">
+                        ${sealSvg}
+                    </div>
+                </div>
+            ` : '';
+
+            const totalsHtml = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; width: 100%;">
+                    <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 0 10px 0 0; min-height: 150px;">
+                        <div style="width: 100%; text-align: center;">
+                            ${sealHtml}
+                        </div>
+                    </div>
+                    <div style="width: 240px; flex-shrink: 0;">
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px;">
+                            <span style="font-weight: 600; color: #555;">Subtotal:</span>
+                            <span style="font-weight: 700;">Rs. ${subtotal.toLocaleString()}</span>
+                        </div>
+                        ${itemSavings > 0 ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #be185d;">
+                            <span style="font-weight: 600;">Item Discounts:</span>
+                            <span style="font-weight: 700;">- Rs. ${itemSavings.toLocaleString()}</span>
+                        </div>` : ''}
+                        ${orderDiscPercent > 0 ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #dc2626;">
+                            <span style="font-weight: 600;">Bill Discount (${orderDiscPercent}%):</span>
+                            <span style="font-weight: 700;">- Rs. ${orderDiscVal.toLocaleString()}</span>
+                        </div>` : ''}
+                        ${loyaltyDisc > 0 ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #b45309;">
+                            <span style="font-weight: 600;">Loyalty Discount:</span>
+                            <span style="font-weight: 700;">- Rs. ${loyaltyDisc.toLocaleString()}</span>
+                        </div>` : ''}
+                        ${totalSavingsAmount > 0 && (itemSavings > 0 || loyaltyDisc > 0) ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 5px; font-size: 10px; color: #15803d; background: #f0fdf4; border-radius: 3px; margin: 2px 0; border: 1px dashed #86efac;">
+                            <span style="font-weight: 700;">Total Saved:</span>
+                            <span style="font-weight: 800;">Rs. ${totalSavingsAmount.toLocaleString()}</span>
+                        </div>` : ''}
+                        ${record.cardDiscount > 0 ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10px; color: #92400e; background:#fffbeb; padding: 2px 4px; border-radius:3px;">
+                            <span style="font-weight: 600;">Card Fee:</span>
+                            <span style="font-weight: 700;">- Rs. ${record.cardDiscount.toLocaleString()}</span>
+                        </div>` : ''}
+                        ${record.delivery > 0 ? `
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 10.5px; color: #555;">
+                            <span style="font-weight: 600;">Delivery Charge:</span>
+                            <span style="font-weight: 700;">+ Rs. ${Number(record.delivery).toLocaleString()}</span>
+                        </div>` : ''}
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0 3px; border-top: 2px solid #000; margin-top: 3px; font-size: 14px; font-weight: 900; color: #000;">
+                            <span>TOTAL:</span>
+                            <span>Rs. ${Number(record.total).toLocaleString()}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 6px; font-size: 11px; color: #047857; font-weight: 800; background: #ecfdf5; border-radius: 4px; margin-top: 3px; border: 1px solid #a7f3d0;">
+                            <span>Advance Paid:</span>
+                            <span>Rs. ${advancePaidAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 3px 6px; font-size: 12px; color: ${balanceDueAmt > 0 ? '#b91c1c' : '#047857'}; font-weight: 900; background: ${balanceDueAmt > 0 ? '#fef2f2' : '#ecfdf5'}; border-radius: 4px; margin-top: 3px; border: 1px solid ${balanceDueAmt > 0 ? '#fecaca' : '#a7f3d0'};">
+                            <span>Remaining Balance:</span>
+                            <span>Rs. ${balanceDueAmt.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 8.5px; color: #444; margin-top: 4px; border-top: 1px solid #eee;">
+                            <span style="font-weight: 500;">Pay Method:</span>
+                            <span style="font-weight: 700; text-transform: uppercase;">${record.paymentMethod || 'Cash'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const hnbLogoSrc = (typeof HNB_LOGO_B64 !== 'undefined') ? HNB_LOGO_B64 : 'https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png';
+            const pbLogoSrc = (typeof PEOPLES_BANK_LOGO_B64 !== 'undefined') ? PEOPLES_BANK_LOGO_B64 : 'https://i.ibb.co/gL6x68W4/Roohira-Collection-Monogram-Logo-1.png';
+
+            const footerHtml = `
+                <div style="margin-top: 10px; border-top: 1.5px solid #000; padding-top: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                        <!-- Bank Accounts Box with Official Original Logos -->
+                        <div style="flex: 1; min-width: 0;">
+                            <p style="margin: 0 0 3px 0; font-weight: 800; text-transform: uppercase; font-size: 8px; color: #444; letter-spacing: 0.5px;">Bank Transfer Details:</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                <!-- HNB Bank -->
+                                <div style="border: 1px solid #0b2c6d; border-radius: 4px; padding: 3px 5px; background: #f8faff;">
+                                    <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+                                        <img src="${hnbLogoSrc}" alt="HNB" style="height: 16px; width: auto; max-width: 50px; object-fit: contain;">
+                                        <strong style="font-size: 8.5px; color: #0b2c6d; white-space: nowrap;">HNB Bank</strong>
+                                    </div>
+                                    <div style="font-size: 7.5px; color: #111; line-height: 1.25;">
+                                        <div>Name: <strong>Roohira Collection</strong></div>
+                                        <div>Acc: <strong style="font-size: 8px; color: #0b2c6d;">0840 2041 4386</strong></div>
+                                        <div>Branch: <strong>Kadawatha</strong></div>
+                                    </div>
+                                </div>
+                                <!-- People's Bank -->
+                                <div style="border: 1px solid #7c0000; border-radius: 4px; padding: 3px 5px; background: #fffaf8;">
+                                    <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 2px;">
+                                        <img src="${pbLogoSrc}" alt="People's Bank" style="height: 16px; width: auto; max-width: 55px; object-fit: contain;">
+                                        <strong style="font-size: 8.5px; color: #7c0000; white-space: nowrap;">People's Bank</strong>
+                                    </div>
+                                    <div style="font-size: 7.5px; color: #111; line-height: 1.25;">
+                                        <div>Name: <strong>Onija Wathsuka</strong></div>
+                                        <div>Acc: <strong style="font-size: 8px; color: #7c0000;">217-200-4500-29209</strong></div>
+                                        <div>Branch: <strong>Mahara</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QR Codes -->
+                        <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+                            <div style="text-align: center;">
+                                <img src="https://i.ibb.co/sdr25nQc/FB-Page.jpg" style="height: 38px; width: 38px; object-fit: contain;">
+                                <p style="font-size: 6.5px; font-weight: 800; margin: 1px 0 0 0; color: #555;">FB PAGE</p>
+                            </div>
+                            <div style="text-align: center;">
+                                <img src="https://i.ibb.co/ccT7rrCx/Web-site.jpg" style="height: 38px; width: 38px; object-fit: contain;">
+                                <p style="font-size: 6.5px; font-weight: 800; margin: 1px 0 0 0; color: #555;">WEBSITE</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; border-top: 1px dashed #ddd; padding-top: 2px;">
+                        <span style="font-size: 7px; color: #777; font-weight: 600;">Auto-generated Invoice &bull; ${new Date(record.date || Date.now()).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'medium' })}</span>
+                        <span style="font-size: 9.5px; font-weight: 900; color: #000; font-family: 'Outfit';">Thank You! Come Again.</span>
+                    </div>
+                </div>
+            `;
+
+            return `
+                <div id="main-bill-a5-page-1" style="
+                    width: 148mm; min-height: 205mm; padding: 8mm; 
+                    box-sizing: border-box; background: #ffffff; 
+                    color: #000000; font-family: 'Inter', Arial, sans-serif;
+                    border: 2px solid #000000; position: relative; margin: 0 auto;
+                ">
+                    ${headerHtml}
+                    ${tableHtml}
+                    ${totalsHtml}
+                    ${footerHtml}
+                </div>
+            `;
+        }
+
+        async function shareHtmlBillPdfWhatsAppDirect(idOrRecord, type = 'sale') {
+            let record;
+            if (typeof idOrRecord === 'object' && idOrRecord !== null) {
+                record = idOrRecord;
+            } else {
+                const list = (type === 'sale') ? allSales : allOrders;
+                record = list.find(r => String(r.id) === String(idOrRecord) || String(r.orderId) === String(idOrRecord));
+            }
+
+            if (!record) {
+                showToast("Record not found!");
+                return;
+            }
+
+            showToast("Generating Main System A5 PDF Bill...");
+
+            const refNo = type === 'order' ? (record.orderId || record.id) : ('SL-' + record.id);
+            const rawPhone = (record.customerPhone || record.phone || '').replace(/[^0-9]/g, '');
+            let phoneNum = rawPhone;
+            if (phoneNum.startsWith('0')) {
+                phoneNum = '94' + phoneNum.substring(1);
+            }
+
+            // Create off-screen container for rendering
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.left = '-9999px';
+            container.style.top = '0';
+            container.style.width = '148mm';
+            container.style.background = '#ffffff';
+            container.style.zIndex = '-9999';
+            container.innerHTML = buildMainSystemBillFirstPageHtml(record, type);
+            document.body.appendChild(container);
+
+            const filename = `Roohira_Invoice_${refNo}_Page1.pdf`;
+            const opt = {
+                margin: [0, 0, 0, 0],
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
+            };
+
+            const itemsStr = (record.items || []).slice(0, 5).map(i => `• ${i.name} (x${i.qty})`).join('\n');
+            const shareText = 
+                `*ROOHIRA COLLECTION - OFFICIAL INVOICE*\n` +
+                `Ref: #${refNo}\n` +
+                `Customer: ${record.customer || 'Valued Customer'}\n` +
+                `Date: ${new Date(record.date || Date.now()).toLocaleDateString()}\n\n` +
+                `*Items:*\n${itemsStr}\n\n` +
+                `*Total Amount: Rs. ${(Number(record.total) || 0).toLocaleString()}*\n` +
+                (record.balanceDue > 0 ? `*Remaining Balance: Rs. ${Number(record.balanceDue).toLocaleString()}*\n` : '') +
+                `Payment: ${(record.paymentStatus || 'PAID').toUpperCase()}\n\n` +
+                `📄 Your Official 1st Page A5 Invoice PDF has been generated.\n` +
+                `Thank you for shopping with Roohira Collection! ❤️\nHotline / WhatsApp: 075 721 8786`;
+
+            try {
+                if (typeof html2pdf !== 'undefined') {
+                    // Generate PDF Blob
+                    const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
+                    const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+                    // Try Web Share API with File (Mobile Chrome, Safari, Android, iOS)
+                    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                        try {
+                            await navigator.share({
+                                files: [pdfFile],
+                                title: `Roohira Invoice #${refNo}`,
+                                text: shareText
+                            });
+                            showToast("PDF shared successfully via WhatsApp!");
+                            return;
+                        } catch (shareErr) {
+                            if (shareErr.name === 'AbortError') {
+                                // User cancelled share sheet
+                                return;
+                            }
+                            console.warn("navigator.share failed, fallback to download + WA:", shareErr);
+                        }
+                    }
+
+                    // Fallback: Download the PDF and open WhatsApp chat
+                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const dlLink = document.createElement('a');
+                    dlLink.href = blobUrl;
+                    dlLink.download = filename;
+                    document.body.appendChild(dlLink);
+                    dlLink.click();
+                    document.body.removeChild(dlLink);
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+                    showToast("PDF Downloaded! Opening WhatsApp chat...");
+                    const waUrl = phoneNum 
+                        ? `https://api.whatsapp.com/send?phone=${phoneNum}&text=${encodeURIComponent(shareText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                    window.open(waUrl, '_blank');
+                } else {
+                    showToast("html2pdf library not loaded, opening WhatsApp message...");
+                    const waUrl = phoneNum 
+                        ? `https://api.whatsapp.com/send?phone=${phoneNum}&text=${encodeURIComponent(shareText)}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                    window.open(waUrl, '_blank');
+                }
+            } catch (err) {
+                console.error("Error generating PDF or sharing to WhatsApp:", err);
+                showToast("Failed to generate PDF: " + err.message);
+                const waUrl = phoneNum 
+                    ? `https://api.whatsapp.com/send?phone=${phoneNum}&text=${encodeURIComponent(shareText)}`
+                    : `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                window.open(waUrl, '_blank');
+            } finally {
+                if (container.parentNode) {
+                    container.parentNode.removeChild(container);
+                }
             }
         }
 
@@ -4810,7 +5484,7 @@
                     currentViewingOrder.paymentStatus = newPaymentStatus;
                 }
                 const label = newPaymentStatus === 'paid' ? '✅ PAID — Added to Dashboard!' :
-                              newPaymentStatus === 'advance' ? '⏳ Advance Payment recorded' : '❌ Marked as Unpaid';
+                    newPaymentStatus === 'advance' ? '⏳ Advance Payment recorded' : '❌ Marked as Unpaid';
                 showToast(`💳 ${label}`);
                 closeHistoryDetailsModal();
                 renderDashboardMetrics();
@@ -4949,7 +5623,7 @@
             if (!record) return;
 
             const refCode = type === 'order' ? (record.orderId || `ORD-${id}`) : `SL-${id}`;
-            if (!confirm(`Mark ${refCode} as PAID?\n\nThis will add Rs. ${(Number(record.total)||0).toLocaleString()} to the Dashboard revenue.`)) return;
+            if (!confirm(`Mark ${refCode} as PAID?\n\nThis will add Rs. ${(Number(record.total) || 0).toLocaleString()} to the Dashboard revenue.`)) return;
 
             try {
                 showToast('Updating payment status...');
@@ -5175,7 +5849,7 @@
 
         function renderSalesHistoryList() {
             const container = document.getElementById('sales-history-container');
-            const sorted = [...allSales].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+            const sorted = [...allSales].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
             if (sorted.length === 0) {
                 container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sub);">No sales recorded yet</div>';
@@ -5187,7 +5861,7 @@
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
                             <div style="font-weight:700; font-size:13px;">#SL-${s.id} - ${s.customer || 'Guest'}</div>
-                            <div style="font-size:10px; color:var(--text-sub);">${new Date(s.date).toLocaleDateString()} ${new Date(s.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                            <div style="font-size:10px; color:var(--text-sub);">${new Date(s.date).toLocaleDateString()} ${new Date(s.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                         <div style="text-align:right;">
                             <div style="font-weight:800; font-size:14px; color:var(--success);">Rs. ${(Number(s.total) || 0).toLocaleString()}</div>
@@ -5221,7 +5895,7 @@
 
         function renderExpensesList() {
             const container = document.getElementById('expenses-list-container');
-            const sorted = [...allExpenses].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+            const sorted = [...allExpenses].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
             const total = sorted.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
             document.getElementById('sheet-exp-total').textContent = `Rs. ${total.toLocaleString()}`;
 
@@ -5371,7 +6045,7 @@
         function openAnalyticsSheet() {
             document.getElementById('analytics-sheet').classList.add('show');
             updateBackButtonVisibility();
-            try { window.history.pushState({ modal: 'analytics-sheet' }, ''); } catch (e) {}
+            try { window.history.pushState({ modal: 'analytics-sheet' }, ''); } catch (e) { }
             renderAnalyticsDashboard();
         }
 
@@ -5380,7 +6054,7 @@
             const filteredOrders = filterByPeriod(allOrders, 'date');
 
             const totalRevenue = filteredSales.reduce((s, r) => s + (Number(r.total) || 0), 0);
-            const totalCOGS    = filteredSales.reduce((s, r) => s + (Number(r.buyTotal) || 0), 0);
+            const totalCOGS = filteredSales.reduce((s, r) => s + (Number(r.buyTotal) || 0), 0);
             const totalDiscount = filteredSales.reduce((s, r) => s + (Number(r.discount) || 0), 0);
             const totalDelivery = filteredSales.reduce((s, r) => s + (Number(r.delivery) || 0), 0);
             const grossProfit = totalRevenue - totalCOGS;
@@ -5473,7 +6147,7 @@
                     responsive: true, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 } } } },
                     scales: {
                         x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        y: { ticks: { color: '#64748b', font: { size: 9 }, callback: v => 'Rs.' + (v >= 1000 ? (v/1000).toFixed(1)+'K' : v) }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                        y: { ticks: { color: '#64748b', font: { size: 9 }, callback: v => 'Rs.' + (v >= 1000 ? (v / 1000).toFixed(1) + 'K' : v) }, grid: { color: 'rgba(255,255,255,0.05)' } }
                     }
                 }
             });
@@ -5516,11 +6190,11 @@
                 : topProds.map(([name, data], i) => `
                     <div style="margin-bottom:8px;">
                         <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:700; color:var(--text-main); margin-bottom:3px;">
-                            <span>#${i+1} ${name}</span>
+                            <span>#${i + 1} ${name}</span>
                             <span style="color:var(--primary);">${data.qty} pcs | Rs. ${data.revenue.toLocaleString()}</span>
                         </div>
                         <div style="height:6px; background:var(--bg-surface); border-radius:4px; overflow:hidden;">
-                            <div style="height:100%; width:${Math.round((data.qty/maxQty)*100)}%; background:linear-gradient(90deg, var(--primary), var(--info)); border-radius:4px;"></div>
+                            <div style="height:100%; width:${Math.round((data.qty / maxQty) * 100)}%; background:linear-gradient(90deg, var(--primary), var(--info)); border-radius:4px;"></div>
                         </div>
                     </div>
                 `).join('');
@@ -5558,7 +6232,7 @@
                 (decodedText) => {
                     handleScannedCode(decodedText);
                 },
-                () => {}
+                () => { }
             ).catch(err => {
                 console.warn("Camera start error:", err);
                 document.getElementById('scanner-view').innerHTML = `
